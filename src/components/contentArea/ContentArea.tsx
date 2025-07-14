@@ -12,21 +12,37 @@ const ContentArea: React.FC = () => {
         zoom: 12,
         disableDefaultUI: true,
         zoomControl: true,
+        styles: [
+          {
+            featureType: "poi",
+            stylers: [{ visibility: "off" }]
+          },
+          {
+            featureType: "poi.business",
+            stylers: [{ visibility: "off" }]
+          },
+          {
+            featureType: "poi.park",
+            stylers: [{ visibility: "off" }]
+          },
+          {
+            featureType: "transit",
+            stylers: [{ visibility: "off" }]
+          },
+          {
+            featureType: "road",
+            elementType: "labels.icon",
+            stylers: [{ visibility: "off" }]
+          }
+        ]
       });
     }
   }, [isLoaded, google]);
 
   return (
-    <div className="col-start-2 col-end-6 h-full w-full box-border bg-purple-500 grid">
-      {/* Mapa ocupa toda la grilla */}
-      <div ref={mapRef} className="h-full w-full col-start-1 col-end-[-1] row-start-1 row-end-[-1] z-0" />
-      {/* Botón arriba a la derecha (última columna, primera fila) */}
-      <button
-        className="col-start-[-1] row-start-1 z-10 justify-self-end self-start m-4 bg-white px-4 py-2 rounded shadow"
-        onClick={() => alert('¡Botón sobre el mapa!')}
-      >
-        Botón
-      </button>
+    <div className="col-start-2 col-end-6 row-start-2 row-end-3 h-full min-h-screen w-full box-border relative">
+      {/* Mapa ocupa todo el espacio */}
+      <div ref={mapRef} className="h-full min-h-full min-h-screen w-full z-0" />
     </div>
   );
 };
