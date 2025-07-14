@@ -36,6 +36,7 @@ function loadGoogleMapsScript(libraries: string[] = ['places']): Promise<void> {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=${libraries.join(',')}`;
     script.async = true;
     script.defer = true;
+    script.setAttribute('loading', 'async');
     script.onload = () => resolve();
     script.onerror = (e) => reject(e);
     document.head.appendChild(script);

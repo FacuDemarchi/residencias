@@ -137,12 +137,6 @@ El proyecto incluye diagramas UML completos en formato PlantUML:
 
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## 📞 Contacto
-
-- **Desarrollador**: [Tu Nombre]
-- **Email**: [tu-email@ejemplo.com]
-- **LinkedIn**: [tu-linkedin]
-
 ---
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
