@@ -36,3 +36,22 @@
 .read-the-docs {
   color: #888;
 }
+
+.mi-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mi-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mi-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(136, 136, 136, 0.5);
+  border-radius: 4px;
+}
+
+/* Para Firefox */
+.mi-scrollbar {
+  scrollbar-color: #888 transparent;
+  scrollbar-width: thin;
+}

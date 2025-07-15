@@ -11,7 +11,7 @@ const Sidebar: React.FC = () => {
         <AddressSearchBar />
         <FiltersManager />
       </div>
-      <div className="overflow-y-auto space-y-2 mt-4">
+      <div className="overflow-y-auto space-y-2 mt-4 mi-scrollbar" style={{direction:'rtl'}}>
         {[...Array(30)].map((_, i) => (
           <PublicationCard key={i} />
         ))}
