@@ -6,22 +6,18 @@ import NewPublicationCard from './NewPublicationCard';
 
 const Sidebar: React.FC = () => {
   return (
-    <div className="col-start-1 col-end-2 row-start-1 row-end-3 h-full min-h-0 w-full box-border bg-blue-500 grid grid-rows-[auto_auto_1fr_3.5rem]">
-      <div className="row-start-1 row-end-2">
+    <div className="h-full w-full bg-blue-500 p-4 grid grid-rows-[auto_1fr_auto]" style={{height: '100vh'}}>
+      <div>
         <AddressSearchBar />
-      </div>
-      <div className="row-start-2 row-end-3">
         <FiltersManager />
       </div>
-      <div className="row-start-3 row-end-4 overflow-y-auto min-h-0 max-h-full w-full">
-        <PublicationCard />
-        <PublicationCard />
-        <PublicationCard />
-        <PublicationCard />
-        <PublicationCard />
+      <div className="overflow-y-auto space-y-2 mt-4">
+        {[...Array(30)].map((_, i) => (
+          <PublicationCard key={i} />
+        ))}
       </div>
-      <div className="row-start-[-1]">
-      <NewPublicationCard />
+      <div className="mt-4">
+        <NewPublicationCard />
       </div>
     </div>
   );
