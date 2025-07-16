@@ -1,47 +1,37 @@
 import React, { useEffect, useRef } from 'react';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
-import { useProvideAuth } from '../../hooks/useProvideAuth'; // Importa el hook
+import { useProvideAuth } from '../../hooks/useProvideAuth';
+import { useTags } from '../../context/TagsContext';
+import TagChip from '../common/TagChip';
 
 const ContentArea: React.FC = () => {
   const { isLoaded, google } = useGoogleMaps();
-  const { user, signInWithGoogle, signOut } = useProvideAuth(); // Extrae user, signIn y signOut
+  const { user, signInWithGoogle, signOut } = useProvideAuth();
+  const { tags, loading: tagsLoading } = useTags();
   const mapRef = useRef<HTMLDivElement>(null);
 
-  // Loguea la info del usuario cada vez que cambie
   useEffect(() => {
     console.log('Usuario autenticado:', user);
   }, [user]);
 
   useEffect(() => {
+    console.log('Tags cargados:', tags);
+  }, [tags]);
+
+  useEffect(() => {
     if (isLoaded && google && mapRef.current) {
       new google.maps.Map(mapRef.current, {
-        center: { lat: -31.4167, lng: -64.1833 }, // Córdoba, Argentina
+        center: { lat: -31.4167, lng: -64.1833 },
         zoom: 12,
         disableDefaultUI: true,
         zoomControl: true,
         gestureHandling: "greedy",
         styles: [
-          {
-            featureType: "poi",
-            stylers: [{ visibility: "off" }]
-          },
-          {
-            featureType: "poi.business",
-            stylers: [{ visibility: "off" }]
-          },
-          {
-            featureType: "poi.park",
-            stylers: [{ visibility: "off" }]
-          },
-          {
-            featureType: "transit",
-            stylers: [{ visibility: "off" }]
-          },
-          {
-            featureType: "road",
-            elementType: "labels.icon",
-            stylers: [{ visibility: "off" }]
-          }
+          { featureType: "poi", stylers: [{ visibility: "off" }] },
+          { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+          { featureType: "poi.park", stylers: [{ visibility: "off" }] },
+          { featureType: "transit", stylers: [{ visibility: "off" }] },
+          { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
         ]
       });
     }
@@ -50,8 +40,16 @@ const ContentArea: React.FC = () => {
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
       {/* Barra superior sobre el mapa */}
-      <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 border-b border-purple-200 backdrop-blur-sm">
-        <span className="text-purple-700 font-semibold justify-self-start w-full truncate">Carrusel de tags (próximamente)</span>
+      <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 backdrop-blur-sm">
+        <div className="justify-self-start w-full overflow-x-auto whitespace-nowrap flex gap-2 items-center h-full px-2">
+          {tagsLoading ? (
+            <span className="text-primary">Cargando tags...</span>
+          ) : (
+            tags.map(tag => (
+              <TagChip key={tag.name} label={tag.name} />
+            ))
+          )}
+        </div>
         {user ? (
           <button
             className="justify-self-end bg-white px-4 py-2 rounded shadow"

@@ -6,17 +6,17 @@ import NewPublicationCard from './NewPublicationCard';
 
 const Sidebar: React.FC = () => {
   return (
-    <div className="h-full w-full bg-blue-500 p-4 grid grid-rows-[auto_1fr_auto]" style={{height: '100vh'}}>
-      <div>
+    <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
+      <div className="flex flex-col gap-2">
         <AddressSearchBar />
         <FiltersManager />
       </div>
-      <div className="overflow-y-auto space-y-2 mt-4 mi-scrollbar" style={{direction:'rtl'}}>
+      <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
         {[...Array(30)].map((_, i) => (
           <PublicationCard key={i} />
         ))}
       </div>
-      <div className="mt-4">
+      <div>
         <NewPublicationCard />
       </div>
     </div>

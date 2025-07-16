@@ -2,8 +2,8 @@ import React from 'react';
 
 const FiltersManager: React.FC = () => {
   return (
-    <div className="w-full border-2 border-red-300 rounded-2xl bg-white box-border grid place-items-center">
-      <span className="text-red-400 font-semibold">Manejador de filtros</span>
+    <div className="w-full rounded-b-2xl bg-gray-50 shadow-sm px-4 py-3 box-border flex items-center">
+      <span className="text-primary font-semibold text-base">Manejador de filtros</span>
     </div>
   );
 };
