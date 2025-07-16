@@ -41,7 +41,17 @@ const ContentArea: React.FC = () => {
   }, [isLoaded, google]);
 
   return (
-    <div className="col-start-2 col-end-6 row-start-2 row-end-3 h-full w-full box-border relative">
+    <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
+      {/* Barra superior sobre el mapa */}
+      <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 border-b border-purple-200 backdrop-blur-sm">
+        <span className="text-purple-700 font-semibold justify-self-start w-full truncate">Carrusel de tags (próximamente)</span>
+        <button
+          className="justify-self-end bg-white px-4 py-2 rounded shadow"
+          onClick={() => alert('¡Botón sobre el mapa!')}
+        >
+          Google Login
+        </button>
+      </div>
       {/* Mapa ocupa todo el espacio */}
       <div ref={mapRef} className="h-full w-full z-0" />
     </div>
