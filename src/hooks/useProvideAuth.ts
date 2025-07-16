@@ -55,7 +55,7 @@ export function useProvideAuth() {
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo }
+      options: { redirectTo: redirectTo }
     });
   };
 
