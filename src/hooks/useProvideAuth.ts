@@ -49,8 +49,14 @@ export function useProvideAuth() {
     };
   }, []);
 
+  // Definir redirectTo según variable de entorno o window.location.origin
+  const redirectTo = import.meta.env.VITE_REDIRECT_URL || window.location.origin;
+
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo }
+    });
   };
 
   const signOut = async () => {

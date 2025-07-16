@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
+import { useProvideAuth } from '../../hooks/useProvideAuth'; // Importa el hook
 
 const ContentArea: React.FC = () => {
   const { isLoaded, google } = useGoogleMaps();
+  const { user, signInWithGoogle, signOut } = useProvideAuth(); // Extrae user, signIn y signOut
   const mapRef = useRef<HTMLDivElement>(null);
+
+  // Loguea la info del usuario cada vez que cambie
+  useEffect(() => {
+    console.log('Usuario autenticado:', user);
+  }, [user]);
 
   useEffect(() => {
     if (isLoaded && google && mapRef.current) {
@@ -45,12 +52,21 @@ const ContentArea: React.FC = () => {
       {/* Barra superior sobre el mapa */}
       <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 border-b border-purple-200 backdrop-blur-sm">
         <span className="text-purple-700 font-semibold justify-self-start w-full truncate">Carrusel de tags (próximamente)</span>
-        <button
-          className="justify-self-end bg-white px-4 py-2 rounded shadow"
-          onClick={() => alert('¡Botón sobre el mapa!')}
-        >
-          Google Login
-        </button>
+        {user ? (
+          <button
+            className="justify-self-end bg-white px-4 py-2 rounded shadow"
+            onClick={signOut}
+          >
+            Cerrar sesión
+          </button>
+        ) : (
+          <button
+            className="justify-self-end bg-white px-4 py-2 rounded shadow"
+            onClick={signInWithGoogle}
+          >
+            Google Login
+          </button>
+        )}
       </div>
       {/* Mapa ocupa todo el espacio */}
       <div ref={mapRef} className="h-full w-full z-0" />
