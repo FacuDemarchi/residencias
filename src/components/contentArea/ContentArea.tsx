@@ -12,6 +12,7 @@ const ContentArea: React.FC = () => {
         zoom: 12,
         disableDefaultUI: true,
         zoomControl: true,
+        gestureHandling: "greedy",
         styles: [
           {
             featureType: "poi",
@@ -40,9 +41,9 @@ const ContentArea: React.FC = () => {
   }, [isLoaded, google]);
 
   return (
-    <div className="col-start-2 col-end-6 row-start-2 row-end-3 h-full min-h-screen w-full box-border relative">
+    <div className="col-start-2 col-end-6 row-start-2 row-end-3 h-full w-full box-border relative">
       {/* Mapa ocupa todo el espacio */}
-      <div ref={mapRef} className="h-full min-h-full min-h-screen w-full z-0" />
+      <div ref={mapRef} className="h-full w-full z-0" />
     </div>
   );
 };
