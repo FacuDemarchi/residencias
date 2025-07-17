@@ -70,7 +70,7 @@ src/
 
 ## 📋 Tareas por realizar
 
-- [ ] Implementar tablas del diagrama entidad-relación
+- [X] Implementar tablas del diagrama entidad-relación
 - [ ] Crear modal de detalle de publicación
   - [ ] Mostrar información completa de la publicación
   - [ ] Permitir efectuar reserva desde el modal

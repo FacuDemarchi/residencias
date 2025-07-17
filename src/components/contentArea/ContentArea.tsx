@@ -45,7 +45,10 @@ const ContentArea: React.FC = () => {
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
       {/* Barra superior sobre el mapa */}
       <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 backdrop-blur-sm">
-        <div className="justify-self-start w-full overflow-x-auto whitespace-nowrap flex gap-2 items-center h-full px-2">
+        <div className="justify-self-start w-full whitespace-nowrap flex gap-2 items-center h-full px-2">
+          {/* Botones adicionales al inicio del carrusel */}
+          <TagChip label="Mis publicaciones" />
+          <TagChip label="Mis alquileres" />
           {tagsLoading ? (
             <span className="text-primary">Cargando tags...</span>
           ) : (

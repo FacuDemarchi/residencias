@@ -61,7 +61,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -34.6037, lng: -58.3816 }); // Ejemplo: Buenos Aires
+  const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
 
   // Función para reintentar la carga si falla
