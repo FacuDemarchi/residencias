@@ -7,6 +7,10 @@ interface GoogleMapsContextType {
   error: string | null;
   google: typeof window.google | undefined;
   retryLoad: () => void;
+  center: { lat: number; lng: number };
+  setCenter: (center: { lat: number; lng: number }) => void;
+  viewport: google.maps.LatLngBounds | null;
+  setViewport: (viewport: google.maps.LatLngBounds | null) => void;
 }
 
 const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(undefined);
@@ -57,6 +61,8 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -34.6037, lng: -58.3816 }); // Ejemplo: Buenos Aires
+  const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
 
   // Función para reintentar la carga si falla
   const retryLoad = () => {
@@ -93,6 +99,10 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     error,
     google: typeof window !== 'undefined' ? window.google : undefined,
     retryLoad,
+    center,
+    setCenter,
+    viewport,
+    setViewport,
   };
 
   return (

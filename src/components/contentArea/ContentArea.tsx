@@ -5,23 +5,16 @@ import { useTags } from '../../context/TagsContext';
 import TagChip from '../common/TagChip';
 
 const ContentArea: React.FC = () => {
-  const { isLoaded, google } = useGoogleMaps();
+  const { isLoaded, google, center, viewport } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
-    console.log('Usuario autenticado:', user);
-  }, [user]);
-
-  useEffect(() => {
-    console.log('Tags cargados:', tags);
-  }, [tags]);
-
-  useEffect(() => {
-    if (isLoaded && google && mapRef.current) {
-      new google.maps.Map(mapRef.current, {
-        center: { lat: -31.4167, lng: -64.1833 },
+    if (isLoaded && google && mapRef.current && !mapInstance.current) {
+      mapInstance.current = new google.maps.Map(mapRef.current, {
+        center: center,
         zoom: 12,
         disableDefaultUI: true,
         zoomControl: true,
@@ -36,6 +29,17 @@ const ContentArea: React.FC = () => {
       });
     }
   }, [isLoaded, google]);
+
+  // Actualizar el centro o el viewport del mapa cuando cambie el contexto
+  useEffect(() => {
+    if (mapInstance.current) {
+      if (viewport) {
+        mapInstance.current.fitBounds(viewport);
+      } else {
+        mapInstance.current.setCenter(center);
+      }
+    }
+  }, [center, viewport]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
