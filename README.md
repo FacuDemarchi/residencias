@@ -93,3 +93,6 @@ src/
   - [ ] El botón debe aparecer primero en el carrusel de tags, con estilo de tag pero color diferenciado
   - [ ] Al hacer clic, ordenar la lista poniendo primero las publicaciones asociadas al cliente
   - [ ] Actualizar el mapa mostrando solo los puntos de los alquileres del cliente
+
+
+⭐ Si te gusta este proyecto, ¡dale una estrella!
