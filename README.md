@@ -93,6 +93,7 @@ src/
   - [ ] El botón debe aparecer primero en el carrusel de tags, con estilo de tag pero color diferenciado
   - [ ] Al hacer clic, ordenar la lista poniendo primero las publicaciones asociadas al cliente
   - [ ] Actualizar el mapa mostrando solo los puntos de los alquileres del cliente
+- [ ] Implementar automatización (GitHub Action o n8n) que monitoree las tareas del README (creadas, modificadas, eliminadas) y envíe reportes a Microsoft Teams u otra plataforma de gestión
 
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
