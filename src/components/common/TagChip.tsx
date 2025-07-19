@@ -16,9 +16,10 @@ const TagChip: React.FC<TagChipProps> = ({ label, onClick, selected }) => {
         border border-gray-200 bg-white text-gray-800
         shadow
         transition-colors
-        hover:bg-gray-100
+        hover:bg-lightblue
         focus:outline-none
         whitespace-nowrap
+        mx-1
         ${selected ? "bg-primary text-white border-primary" : ""}
       `}
     >

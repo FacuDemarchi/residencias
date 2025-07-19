@@ -45,7 +45,7 @@ const ContentArea: React.FC = () => {
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
       {/* Barra superior sobre el mapa */}
       <div className="absolute top-0 left-0 w-full z-10 h-14 flex items-center bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex items-center gap-4 px-4 w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* Botones adicionales al inicio del carrusel */}
           <TagChip label="Mis publicaciones" />
           <TagChip label="Mis alquileres" />
