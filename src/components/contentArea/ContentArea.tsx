@@ -44,8 +44,8 @@ const ContentArea: React.FC = () => {
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
       {/* Barra superior sobre el mapa */}
-      <div className="absolute top-0 left-0 w-full z-10 h-14 grid grid-cols-2 items-center bg-white/80 backdrop-blur-sm">
-        <div className="justify-self-start w-full whitespace-nowrap flex gap-2 items-center h-full px-2">
+      <div className="absolute top-0 left-0 w-full z-10 h-14 flex items-center bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center gap-2 px-4 w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* Botones adicionales al inicio del carrusel */}
           <TagChip label="Mis publicaciones" />
           <TagChip label="Mis alquileres" />
@@ -59,14 +59,14 @@ const ContentArea: React.FC = () => {
         </div>
         {user ? (
           <button
-            className="justify-self-end bg-white px-4 py-2 rounded shadow"
+            className="ml-4 bg-white px-4 py-2 rounded shadow"
             onClick={signOut}
           >
             Cerrar sesión
           </button>
         ) : (
           <button
-            className="justify-self-end bg-white px-4 py-2 rounded shadow"
+            className="ml-4 bg-white px-4 py-2 rounded shadow"
             onClick={signInWithGoogle}
           >
             Google Login
