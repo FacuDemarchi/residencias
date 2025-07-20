@@ -13,7 +13,10 @@ const Sidebar: React.FC = () => {
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
         {[...Array(5)].map((_, i) => (
-          <PublicationCard key={i} />
+          <PublicationCard 
+            key={i} 
+            onClick={() => console.log(`Publication ${i + 1} clicked`)}
+          />
         ))}
       </div>
       <div>
