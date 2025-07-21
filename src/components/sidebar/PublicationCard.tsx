@@ -18,7 +18,7 @@ interface PublicationCardProps {
   imagen: string; // Added imagen to the interface
 }
 
-const PublicationCard: React.FC<PublicationCardProps> = ({ onClick, titulo, precio, direccion, estado, capacidad, metros_cuadrados, amenidades, imagen }) => {
+const PublicationCard: React.FC<PublicationCardProps> = ({ onClick, titulo, precio, direccion, capacidad, metros_cuadrados, imagen }) => {
   return (
     <button
       onClick={onClick}
