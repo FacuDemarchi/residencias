@@ -32,7 +32,7 @@ const Sidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
         {examplePublications
           .filter((pub: Publication) => pub.estado !== 'ocupado' && pub.estado !== 'reservado')
-          .map((pub: Publication, i: number) => (
+          .map((pub: Publication) => (
             <PublicationCard 
               key={pub.id} 
               onClick={() => console.log(`Publication ${pub.id} clicked`)}
