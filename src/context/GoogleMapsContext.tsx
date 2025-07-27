@@ -1,5 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { supabase } from '../services/supabaseClient';
+
+interface MapLocation {
+  id: number;
+  latitud: number;
+  longitud: number;
+  estado: string;
+}
 
 interface GoogleMapsContextType {
   isLoaded: boolean;
@@ -11,6 +19,11 @@ interface GoogleMapsContextType {
   setCenter: (center: { lat: number; lng: number }) => void;
   viewport: google.maps.LatLngBounds | null;
   setViewport: (viewport: google.maps.LatLngBounds | null) => void;
+  // NUEVO: ubicaciones para marcadores
+  mapLocations: MapLocation[];
+  loadingLocations: boolean;
+  errorLocations: string | null;
+  refreshLocations: () => void;
 }
 
 const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(undefined);
@@ -64,6 +77,31 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
 
+  // NUEVO: estado para ubicaciones
+  const [mapLocations, setMapLocations] = useState<MapLocation[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [errorLocations, setErrorLocations] = useState<string | null>(null);
+
+  // Función para cargar ubicaciones desde Supabase
+  const loadMapLocations = async () => {
+    setLoadingLocations(true);
+    setErrorLocations(null);
+    try {
+      const { data, error: supabaseError } = await supabase.rpc('get_locations_for_map', {
+        center_lat: center.lat,
+        center_lng: center.lng,
+        radius_km: 15
+      });
+      if (supabaseError) throw supabaseError;
+      setMapLocations(data || []);
+    } catch (err) {
+      setErrorLocations(err instanceof Error ? err.message : 'Error desconocido');
+      setMapLocations([]);
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
+
   // Función para reintentar la carga si falla
   const retryLoad = () => {
     setError(null);
@@ -93,6 +131,12 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cargar ubicaciones cuando cambie el centro
+  useEffect(() => {
+    loadMapLocations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center]);
+
   const value: GoogleMapsContextType = {
     isLoaded,
     isLoading,
@@ -103,6 +147,10 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     setCenter,
     viewport,
     setViewport,
+    mapLocations,
+    loadingLocations,
+    errorLocations,
+    refreshLocations: loadMapLocations
   };
 
   return (

@@ -1,6 +1,9 @@
 import React from 'react';
+import { usePublications } from '../../context/PublicationsContext';
 
 const OrderManager: React.FC = () => {
+  const { orderBy, setOrderBy } = usePublications();
+
   return (
     <div className="w-full rounded-b-2xl bg-gray-50 shadow-sm px-4 py-3 box-border flex items-center gap-2">
       <span className="text-primary font-semibold text-base flex items-center gap-1">
@@ -10,12 +13,16 @@ const OrderManager: React.FC = () => {
           <path d="M13 6V14M13 6L16 9M13 6L10 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </span>
-      <select className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+      <select 
+        value={orderBy} 
+        onChange={(e) => setOrderBy(e.target.value as any)}
+        className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+      >
         <option value="recomendados">Recomendados</option>
         <option value="menor_precio">Menor precio</option>
         <option value="mayor_precio">Mayor precio</option>
         <option value="recientes">Recientes</option>
-        <option value="mas_vistos">Más vistos</option>
+        <option value="antiguos">Antiguos</option>
       </select>
     </div>
   );

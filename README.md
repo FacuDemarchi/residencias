@@ -17,7 +17,7 @@ src/
 │   ├── common/         # Componentes reutilizables (TagChip)
 │   ├── contentArea/    # Área principal (mapa, tags, login)
 │   └── sidebar/        # Barra lateral (buscador, orden, cards)
-├── context/            # Contextos: Auth, GoogleMaps, Tags
+├── context/            # Contextos: Auth, GoogleMaps, Tags, MapLocations, Publications
 ├── hooks/              # Hooks personalizados (useProvideAuth)
 ├── pages/              # Páginas principales (MainPage)
 ├── services/           # Servicios externos (supabaseClient)
@@ -25,7 +25,7 @@ src/
 ```
 
 ## 🛠️ Tecnologías
-- React 18 + TypeScript
+- React 19 + TypeScript
 - Tailwind CSS
 - Supabase (DB + Auth)
 - Google Maps API
@@ -62,7 +62,7 @@ src/
 ## 🧩 Componentes principales
 - **Sidebar**: Buscador de direcciones, orden, cards de publicaciones, crear nueva publicación
 - **ContentArea**: Mapa de Google, tags, login/logout
-- **Contextos**: Manejo de sesión, tags y Google Maps
+- **Contextos**: Manejo de sesión, tags, Google Maps, ubicaciones del mapa y publicaciones
 
 ## 🗄️ Diagrama y modelos
 - Diagramas UML y de estados en `src/diagrams/` (PNG y PlantUML)
@@ -70,7 +70,28 @@ src/
 
 ## 📋 Tareas por realizar
 
+### ✅ Completadas recientemente
 - [X] Implementar tablas del diagrama entidad-relación
+- [X] Crear funciones SQL en Supabase para consultas de publicaciones
+  - [X] `get_locations_for_map()` - Obtener ubicaciones para marcadores del mapa
+  - [X] `get_publications_for_sidebar()` - Obtener publicaciones con ordenamiento y paginación
+- [X] Implementar contextos separados para datos del mapa y sidebar
+  - [X] `MapLocationsContext` - Manejo de ubicaciones para marcadores
+  - [X] `PublicationsContext` - Manejo de publicaciones con ordenamiento y carga infinita
+- [X] Conectar OrderManager con contexto de publicaciones
+- [X] Actualizar estructura de providers en App.tsx
+
+### 🔄 En progreso
+- [ ] Actualizar Sidebar para usar datos reales de Supabase
+  - [ ] Reemplazar `examplePublications` por datos del contexto
+  - [ ] Implementar carga infinita con Intersection Observer
+  - [ ] Mostrar estados de carga y error
+- [ ] Conectar ContentArea con marcadores del mapa
+  - [ ] Usar `MapLocationsContext` para obtener ubicaciones
+  - [ ] Renderizar marcadores en Google Maps
+  - [ ] Implementar InfoWindows con información básica
+
+### 📋 Pendientes
 - [ ] Crear modal de detalle de publicación
   - [ ] Mostrar información completa de la publicación
   - [ ] Permitir efectuar reserva desde el modal
@@ -95,5 +116,10 @@ src/
   - [ ] Actualizar el mapa mostrando solo los puntos de los alquileres del cliente
 - [ ] Implementar automatización (GitHub Action o n8n) que monitoree las tareas del README (creadas, modificadas, eliminadas) y envíe reportes a Microsoft Teams u otra plataforma de gestión
 
+## 🎯 Próximas prioridades
+1. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
+2. **Implementar marcadores** - Mostrar ubicaciones en el mapa
+3. **Modal de detalle** - Vista completa de publicaciones
+4. **Filtros geográficos** - Búsqueda por zona específica
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!

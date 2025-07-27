@@ -217,8 +217,8 @@ Para no consumir todos los tokens de una vez como solicitas, te propongo trabaja
 ## Prioridades de Desarrollo Recomendadas
 
 ### Fase 1 - Fundación de Datos (Alta Prioridad):
-- Crear esquema de BD en Supabase para publicaciones
-- Migrar examplePublications a Supabase
+[X] Crear esquema de BD en Supabase para publicaciones
+[X] Migrar examplePublications a Supabase
 - Implementar Context para publicaciones
 - Conectar ContentArea con datos reales
 
