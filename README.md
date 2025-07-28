@@ -80,6 +80,8 @@ src/
   - [X] `PublicationsContext` - Manejo de publicaciones con ordenamiento y carga infinita
 - [X] Conectar OrderManager con contexto de publicaciones
 - [X] Actualizar estructura de providers en App.tsx
+- [X] Crear función en Supabase para insertar registro en user_data
+- [X] Crear trigger que se ejecuta al insertar usuario en auth.users
 
 ### 🔄 En progreso
 - [ ] Actualizar Sidebar para usar datos reales de Supabase
