@@ -3,6 +3,7 @@ import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useTags } from '../../context/TagsContext';
 import TagChip from '../common/TagChip';
+import { supabase } from '../../services/supabaseClient';
 
 const ContentArea: React.FC = () => {
   const { isLoaded, google, center, viewport } = useGoogleMaps();
@@ -11,6 +12,9 @@ const ContentArea: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [publications, setPublications] = useState<any[]>([]);
+  const [loadingPublications, setLoadingPublications] = useState(false);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
 
   useEffect(() => {
@@ -46,6 +50,114 @@ const ContentArea: React.FC = () => {
       }
     }
   }, [center, viewport]);
+
+  // Consulta a la tabla publications_test
+  useEffect(() => {
+    const fetchPublications = async () => {
+      setLoadingPublications(true);
+      try {
+        const { data, error } = await supabase
+          .from('publications_test')
+          .select('*, location(*)');
+        
+        if (error) {
+          console.error('Error al obtener publicaciones:', error);
+        } else {
+          setPublications(data || []);
+          console.log('Publicaciones obtenidas:', data);
+        }
+      } catch (error) {
+        console.error('Error en la consulta:', error);
+      } finally {
+        setLoadingPublications(false);
+      }
+    };
+
+    fetchPublications();
+  }, []);
+
+  // Crear marcadores en el mapa cuando cambien las publicaciones
+  useEffect(() => {
+    console.log('useEffect marcadores ejecutado');
+    console.log('mapInstance.current:', !!mapInstance.current);
+    console.log('google:', !!google);
+    console.log('publications.length:', publications.length);
+    console.log('publications:', publications);
+
+    if (!mapInstance.current || !google || publications.length === 0) {
+      console.log('Condiciones no cumplidas para crear marcadores');
+      return;
+    }
+
+    // Limpiar marcadores existentes
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+
+    let marcadoresCreados = 0;
+
+    // Crear nuevos marcadores para publicaciones con ubicación
+    publications.forEach((publication, index) => {
+      console.log(`Publicación ${index}:`, publication);
+      console.log('location:', publication.location);
+      console.log('latitud:', publication.location?.latitud);
+      console.log('longitud:', publication.location?.longitud);
+
+      if (publication.location && publication.location.latitud && publication.location.longitud) {
+        console.log(`Creando marcador para publicación ${index}`);
+        
+        const lat = parseFloat(publication.location.latitud);
+        const lng = parseFloat(publication.location.longitud);
+        
+        console.log('Coordenadas parseadas:', { lat, lng });
+
+        const marker = new google.maps.Marker({
+          position: {
+            lat: lat,
+            lng: lng
+          },
+          map: mapInstance.current,
+          title: publication.titulo,
+          label: {
+            text: `$${publication.price || 'N/A'}`,
+            color: 'white',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          }
+        });
+
+        // Agregar info window con detalles de la publicación
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px; max-width: 200px;">
+              <h3 style="margin: 0 0 8px 0; font-weight: bold;">${publication.titulo}</h3>
+              <p style="margin: 4px 0; color: #666;">${publication.descripcion || 'Sin descripción'}</p>
+              <p style="margin: 4px 0; font-weight: bold; color: #2c5aa0;">$${publication.price || 'N/A'}</p>
+              <p style="margin: 4px 0; font-size: 12px; color: #888;">
+                ${publication.capacidad ? `${publication.capacidad} personas` : ''} 
+                ${publication.metros_cuadrados ? `• ${publication.metros_cuadrados}m²` : ''}
+              </p>
+            </div>
+          `
+        });
+
+        marker.addListener('mouseover', () => {
+          infoWindow.open(mapInstance.current, marker);
+        });
+
+        marker.addListener('mouseout', () => {
+          infoWindow.close();
+        });
+
+        markersRef.current.push(marker);
+        marcadoresCreados++;
+        console.log(`Marcador ${marcadoresCreados} creado exitosamente`);
+      } else {
+        console.log(`Publicación ${index} no tiene ubicación válida`);
+      }
+    });
+
+    console.log(`Total de marcadores creados: ${marcadoresCreados}`);
+  }, [publications, google]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">

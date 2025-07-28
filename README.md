@@ -89,6 +89,20 @@ src/
   - [X] Agregar eventos click a marcadores para futura funcionalidad
   - [X] Resolver problemas de RLS (Row Level Security) en Supabase
   - [X] Corregir tipos de datos (bigint vs integer) para compatibilidad
+- [X] **Sistema de publicaciones con ubicación** (NUEVO)
+  - [X] Crear tabla `publications_test` en Supabase con relación a `location`
+  - [X] Implementar consulta `.from('publications_test').select('*, location(*)')` en ContentArea
+  - [X] Crear marcadores dinámicos para publicaciones con ubicación válida
+  - [X] Implementar InfoWindows con información detallada de publicaciones
+  - [X] Configurar eventos hover (mouseover/mouseout) para mostrar/ocultar InfoWindows
+  - [X] Mostrar precio, título, descripción, capacidad y metros cuadrados en InfoWindows
+  - [X] Filtrar automáticamente publicaciones sin ubicación para evitar errores
+  - [ ] **Mejoras pendientes del sistema de publicaciones**
+    - [ ] Mejorar estilo de los marcadores (iconos personalizados, colores por estado)
+    - [ ] Mejorar diseño de InfoWindows (CSS, layout, información más detallada)
+    - [ ] Implementar consulta de publicaciones desde PublicationsContext en lugar de fetch directo
+    - [ ] Implementar componente de detalle de publicación
+    - [ ] Agregar onClick en marcadores para mostrar detalle completo de publicación
 
 ### 🔄 En progreso
 - [ ] Actualizar Sidebar para usar datos reales de Supabase
@@ -96,14 +110,25 @@ src/
   - [ ] Implementar carga infinita con Intersection Observer
   - [ ] Mostrar estados de carga y error
 - [ ] Conectar ContentArea con marcadores del mapa
-  - [ ] Implementar InfoWindows con información básica
+  - [X] Implementar InfoWindows con información básica ✅
   - [ ] Mostrar detalles de publicaciones al hacer click en marcadores
+- [ ] **Mejoras de UI/UX en mapa y marcadores**
+  - [ ] Diseñar iconos personalizados para marcadores según tipo de publicación
+  - [ ] Implementar colores diferenciados por estado (activo, inactivo, pendiente)
+  - [ ] Rediseñar InfoWindows con mejor layout y CSS
+  - [ ] Crear componente modal de detalle de publicación
+  - [ ] Integrar marcadores con sistema de detalle de publicación
 
 ### 📋 Pendientes
 - [ ] Crear modal de detalle de publicación
   - [ ] Mostrar información completa de la publicación
   - [ ] Permitir efectuar reserva desde el modal
   - [ ] Permitir efectuar alquiler desde el modal
+- [ ] **Refactorización y optimización**
+  - [ ] Migrar consulta de publicaciones de ContentArea a PublicationsContext
+  - [ ] Centralizar lógica de marcadores en un hook personalizado
+  - [ ] Optimizar re-renders de marcadores en el mapa
+  - [ ] Implementar cache de datos de publicaciones
 - [ ] ABM completo de publicaciones
 - [ ] Integrar pagos reales
 - [ ] Mejorar UI/UX en mobile
@@ -125,9 +150,10 @@ src/
 - [ ] Implementar automatización (GitHub Action o n8n) que monitoree las tareas del README (creadas, modificadas, eliminadas) y envíe reportes a Microsoft Teams u otra plataforma de gestión
 
 ## 🎯 Próximas prioridades
-1. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
-2. **InfoWindows** - Mostrar información al hacer click en marcadores
-3. **Modal de detalle** - Vista completa de publicaciones
-4. **Filtros geográficos** - Búsqueda por zona específica
+1. **Mejorar UI/UX de marcadores** - Iconos personalizados y colores por estado
+2. **Rediseñar InfoWindows** - Mejor layout y CSS
+3. **Implementar detalle de publicación** - Modal completo con onClick en marcadores
+4. **Migrar a PublicationsContext** - Centralizar consulta de publicaciones
+5. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
