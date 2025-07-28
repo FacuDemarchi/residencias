@@ -26,7 +26,11 @@ const ContentArea: React.FC = () => {
           { featureType: "poi.business", stylers: [{ visibility: "off" }] },
           { featureType: "poi.park", stylers: [{ visibility: "off" }] },
           { featureType: "transit", stylers: [{ visibility: "off" }] },
-          { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+          { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+          // Ocultar etiquetas de ciudades principales
+          { featureType: "administrative.locality", elementType: "labels", stylers: [{ visibility: "off" }] },
+          // Mantener barrios más pequeños
+          { featureType: "administrative.neighborhood", elementType: "labels", stylers: [{ visibility: "on" }] }
         ]
       });
     }
