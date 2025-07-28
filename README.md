@@ -82,6 +82,13 @@ src/
 - [X] Actualizar estructura de providers en App.tsx
 - [X] Crear función en Supabase para insertar registro en user_data
 - [X] Crear trigger que se ejecuta al insertar usuario en auth.users
+- [X] **Sistema de ubicaciones y marcadores en mapa** (NUEVO)
+  - [X] Generar 100 ubicaciones de prueba alrededor de Nueva Córdoba con SQL
+  - [X] Implementar fetch directo a tabla `location` en ContentArea
+  - [X] Crear marcadores dinámicos en Google Maps con iconos personalizados
+  - [X] Agregar eventos click a marcadores para futura funcionalidad
+  - [X] Resolver problemas de RLS (Row Level Security) en Supabase
+  - [X] Corregir tipos de datos (bigint vs integer) para compatibilidad
 
 ### 🔄 En progreso
 - [ ] Actualizar Sidebar para usar datos reales de Supabase
@@ -89,9 +96,8 @@ src/
   - [ ] Implementar carga infinita con Intersection Observer
   - [ ] Mostrar estados de carga y error
 - [ ] Conectar ContentArea con marcadores del mapa
-  - [ ] Usar `MapLocationsContext` para obtener ubicaciones
-  - [ ] Renderizar marcadores en Google Maps
   - [ ] Implementar InfoWindows con información básica
+  - [ ] Mostrar detalles de publicaciones al hacer click en marcadores
 
 ### 📋 Pendientes
 - [ ] Crear modal de detalle de publicación
@@ -120,7 +126,7 @@ src/
 
 ## 🎯 Próximas prioridades
 1. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
-2. **Implementar marcadores** - Mostrar ubicaciones en el mapa
+2. **InfoWindows** - Mostrar información al hacer click en marcadores
 3. **Modal de detalle** - Vista completa de publicaciones
 4. **Filtros geográficos** - Búsqueda por zona específica
 

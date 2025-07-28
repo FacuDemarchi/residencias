@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 interface MapLocation {
-  id: number;
+  id: bigint; // Cambiar de number a bigint
   latitud: number;
   longitud: number;
   estado: string;
