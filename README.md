@@ -97,7 +97,11 @@ src/
   - [X] Configurar eventos hover (mouseover/mouseout) para mostrar/ocultar InfoWindows
   - [X] Mostrar precio, título, descripción, capacidad y metros cuadrados en InfoWindows
   - [X] Filtrar automáticamente publicaciones sin ubicación para evitar errores
-  - [ ] **Mejoras pendientes del sistema de publicaciones**
+- [X] **Refactorización del componente ContentArea** (NUEVO)
+  - [X] Simplificar la creación de marcadores eliminando el índice en el bucle de ubicaciones
+  - [X] Optimizar la generación de contenido en InfoWindows
+  - [X] Mejorar la legibilidad y el rendimiento del código
+  - [X] **Mejoras pendientes del sistema de publicaciones**
     - [ ] Mejorar estilo de los marcadores (iconos personalizados, colores por estado)
     - [ ] Mejorar diseño de InfoWindows (CSS, layout, información más detallada)
     - [ ] Implementar consulta de publicaciones desde PublicationsContext en lugar de fetch directo
@@ -118,6 +122,11 @@ src/
   - [ ] Rediseñar InfoWindows con mejor layout y CSS
   - [ ] Crear componente modal de detalle de publicación
   - [ ] Integrar marcadores con sistema de detalle de publicación
+- [ ] **Optimización y refactorización**
+  - [ ] Migrar consulta de publicaciones de ContentArea a PublicationsContext
+  - [ ] Centralizar lógica de marcadores en un hook personalizado
+  - [ ] Optimizar re-renders de marcadores en el mapa
+  - [ ] Implementar cache de datos de publicaciones
 
 ### 📋 Pendientes
 - [ ] Crear modal de detalle de publicación
@@ -155,5 +164,6 @@ src/
 3. **Implementar detalle de publicación** - Modal completo con onClick en marcadores
 4. **Migrar a PublicationsContext** - Centralizar consulta de publicaciones
 5. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
+6. **Optimizar rendimiento** - Centralizar lógica de marcadores y implementar cache
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!

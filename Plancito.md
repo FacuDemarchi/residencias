@@ -16,7 +16,7 @@ src/
 │   ├── common/          # TagChip
 │   ├── contentArea/     # ContentArea (mapa principal)
 │   └── sidebar/         # Sidebar, cards, búsqueda
-├── context/             # Context APIs (Auth, GoogleMaps, Tags)
+├── context/             # Context APIs (Auth, GoogleMaps, Tags, MapLocations, Publications)
 ├── hooks/               # useProvideAuth
 ├── pages/               # MainPage
 ├── services/            # supabaseClient
@@ -29,17 +29,22 @@ src/
 - ✅ **Implementado**: Renderizado básico del mapa de Google Maps
 - ✅ **Implementado**: Barra superior con tags y botones de login/logout
 - ✅ **Implementado**: Contenedor para detalle de publicación (vacío)
-- ❌ **Pendiente**: Paso de datos de publicaciones
+- ✅ **Implementado**: Sistema de marcadores dinámicos con publicaciones
+- ✅ **Implementado**: InfoWindows con información detallada de publicaciones
+- ✅ **Implementado**: Eventos hover para mostrar/ocultar InfoWindows
+- ✅ **Implementado**: Refactorización para optimizar rendimiento y legibilidad
 - ❌ **Pendiente**: Modo edición
-- ❌ **Pendiente**: Marcadores en el mapa
-- ❌ **Pendiente**: Funcionalidad del detalle de publicación
+- ❌ **Pendiente**: Funcionalidad completa del detalle de publicación
+- ❌ **Pendiente**: Mejoras de UI/UX en marcadores e InfoWindows
 
 ### Sidebar:
 - ✅ **Implementado**: Estructura básica con scroll personalizado
 - ✅ **Implementado**: Filtrado básico (excluye ocupado/reservado)
 - ✅ **Implementado**: Renderizado de cards de publicaciones
+- ✅ **Implementado**: OrderManager conectado con contexto de publicaciones
 - ❌ **Pendiente**: Funcionalidad real de búsqueda y filtros
-- ❌ **Pendiente**: Ordenamiento funcional
+- ❌ **Pendiente**: Carga infinita con datos reales de Supabase
+- ❌ **Pendiente**: Estados de carga y error
 
 ### NewPublicationCard:
 - ✅ **Implementado**: UI básica
@@ -56,21 +61,29 @@ src/
 - ✅ **Configurado**: Cliente de Supabase básico
 - ✅ **Variables de entorno**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_API_KEY`
 
-### Tablas Identificadas:
+### Tablas Implementadas:
 - **tags** - ✅ Implementada y funcionando
-- **user_data** - ❌ Comentada en el código
+- **user_data** - ✅ Implementada con trigger automático
+- **location** - ✅ Implementada con 100 ubicaciones de prueba
+- **publications_test** - ✅ Implementada con relación a location
 - **publicaciones** - ❌ No implementada (solo datos de ejemplo)
 
+### Funciones SQL Creadas:
+- ✅ `get_locations_for_map()` - Obtener ubicaciones para marcadores
+- ✅ `get_publications_for_sidebar()` - Obtener publicaciones con ordenamiento y paginación
+
 ### Estado Actual:
-- Solo la tabla `tags` está siendo utilizada
-- Los datos de publicaciones están hardcodeados en `examplePublications.ts`
+- Sistema de ubicaciones y publicaciones completamente funcional
+- Marcadores dinámicos en el mapa con InfoWindows
+- Datos de ejemplo migrados a Supabase
+- Problemas de RLS y tipos de datos resueltos
 
 ## 4. Estado Global (Context API)
 
 ### AuthContext:
 - ✅ **Implementado**: Autenticación con Google OAuth
 - ✅ **Implementado**: Persistencia en localStorage
-- ❌ **Pendiente**: Integración con tabla user_data
+- ✅ **Implementado**: Integración con tabla user_data
 - ❌ **Pendiente**: Manejo de tipos de usuario (cliente/residencia)
 
 ### GoogleMapsContext:
@@ -82,6 +95,15 @@ src/
 - ✅ **Implementado**: Conexión con Supabase
 - ✅ **Implementado**: Carga de tags desde BD
 
+### MapLocationsContext:
+- ✅ **Implementado**: Manejo de ubicaciones para marcadores del mapa
+- ✅ **Implementado**: Separación de responsabilidades
+
+### PublicationsContext:
+- ✅ **Implementado**: Manejo de publicaciones con ordenamiento y carga infinita
+- ✅ **Implementado**: Separación de responsabilidades
+- ❌ **Pendiente**: Conectar con ContentArea para consultas centralizadas
+
 ## 5. Integración con Google Maps
 
 ### Estado Actual:
@@ -89,9 +111,13 @@ src/
 - ✅ **Implementado**: Estilos personalizados del mapa
 - ✅ **Implementado**: Autocomplete de direcciones
 - ✅ **Implementado**: Navegación por búsqueda de direcciones
-- ❌ **Pendiente**: Marcadores de publicaciones
-- ❌ **Pendiente**: InfoWindows
+- ✅ **Implementado**: Marcadores dinámicos de publicaciones
+- ✅ **Implementado**: InfoWindows con información detallada
+- ✅ **Implementado**: Eventos hover (mouseover/mouseout)
+- ✅ **Implementado**: Filtrado automático de publicaciones sin ubicación
 - ❌ **Pendiente**: Clustering de marcadores
+- ❌ **Pendiente**: Iconos personalizados y colores por estado
+- ❌ **Pendiente**: Mejor diseño de InfoWindows
 
 ### Configuración:
 - **Variable de entorno**: `VITE_GOOGLE_MAPS_API_KEY`
@@ -99,9 +125,13 @@ src/
 
 ## 6. Datos de Ejemplo
 
-**Ubicación**: `src/components/sidebar/examplePublications.ts`
+### Estado Actual:
+- ✅ **Migrado**: Datos de `examplePublications.ts` a Supabase
+- ✅ **Creado**: 100 ubicaciones de prueba alrededor de Nueva Córdoba
+- ✅ **Implementado**: Tabla `publications_test` con relación a `location`
+- ✅ **Funcional**: Consulta `.from('publications_test').select('*, location(*)')`
 
-### Estructura:
+### Estructura de Publicaciones:
 ```typescript
 {
   id: number;
@@ -117,7 +147,13 @@ src/
   amenidades: string[];
   created_at: string;
   updated_at: string;
-  imagen: string; // URLs de Unsplash
+  imagen: string;
+  location: {
+    id: number;
+    latitud: number;
+    longitud: number;
+    direccion: string;
+  }
 }
 ```
 
@@ -131,17 +167,21 @@ src/
 - Filtrado básico por estado
 - Carga de tags desde Supabase
 - Diseño responsive básico
+- **Sistema completo de marcadores y InfoWindows**
+- **Refactorización optimizada del ContentArea**
+- **Contextos separados para mapa y publicaciones**
+- **Integración completa con Supabase**
 
 ### ❌ Pendientes:
-- Migración de datos a Supabase
-- CRUD de publicaciones
-- Marcadores en el mapa
+- CRUD completo de publicaciones
 - Modo edición en ContentArea
 - Renderizado condicional por user_type
 - Filtros y buscador avanzado
 - Validaciones y permisos
 - Estados de carga/error
 - Funcionalidad de NewPublicationCard
+- **Mejoras de UI/UX en marcadores e InfoWindows**
+- **Centralización de consultas en PublicationsContext**
 
 ## 8. Estructura de Rutas y Navegación
 
@@ -163,81 +203,94 @@ src/
 
 ---
 
-# Plan de Acción para el Proyecto de Residencias
+# Plan de Acción Actualizado para el Proyecto de Residencias
 
-Basándome en mi análisis completo del proyecto, he identificado que tienes una base sólida pero necesitas completar funcionalidades core.
+## 🎯 Estado Actual del Proyecto
 
-## 🎯 Recomendación de Desarrollo Incremental
+El proyecto ha avanzado significativamente desde el análisis inicial. Se han completado las fases fundamentales de integración con Supabase y funcionalidad del mapa, quedando pendientes principalmente mejoras de UX y optimizaciones.
 
-Para no consumir todos los tokens de una vez como solicitas, te propongo trabajar por fases incrementales. Cada fase será una conversación separada donde implementaremos funcionalidades específicas:
+## 📋 FASE 1 - Optimización y Centralización (PRIORIDAD ALTA)
+**Objetivo**: Mejorar rendimiento y arquitectura del código
 
-### 📋 FASE 1 - Fundación de Datos (PRIORIDAD ALTA)
-**Objetivo**: Migrar datos a Supabase y conectar componentes básicos
+- [ ] Migrar consulta de publicaciones de ContentArea a PublicationsContext
+- [ ] Centralizar lógica de marcadores en un hook personalizado
+- [ ] Optimizar re-renders de marcadores en el mapa
+- [ ] Implementar cache de datos de publicaciones
+- [ ] Refactorizar InfoWindows para mejor reutilización
 
-- Crear esquema de tabla publicaciones en Supabase
-- Migrar `examplePublications.ts` a la base de datos
-- Crear Context API para publicaciones
-- Conectar Sidebar con datos reales de Supabase
-- Implementar paso de datos a ContentArea para mostrar detalles
+## 📋 FASE 2 - Mejoras de UI/UX (PRIORIDAD ALTA)
+**Objetivo**: Mejorar experiencia visual y de usuario
 
-### 📋 FASE 2 - Funcionalidad del Mapa (PRIORIDAD ALTA)
-**Objetivo**: Sincronizar mapa con publicaciones
+- [ ] Diseñar iconos personalizados para marcadores según tipo de publicación
+- [ ] Implementar colores diferenciados por estado (activo, inactivo, pendiente)
+- [ ] Rediseñar InfoWindows con mejor layout y CSS
+- [ ] Crear componente modal de detalle de publicación
+- [ ] Implementar onClick en marcadores para mostrar detalle completo
 
-- Implementar marcadores en Google Maps
-- Sincronización bidireccional lista ↔ mapa
-- InfoWindows con información básica
-- Navegación automática del mapa
+## 📋 FASE 3 - Funcionalidad Completa (PRIORIDAD MEDIA)
+**Objetivo**: Completar funcionalidades core faltantes
 
-### 📋 FASE 3 - CRUD y Creación (PRIORIDAD MEDIA)
-**Objetivo**: Permitir crear y editar publicaciones
+- [ ] Actualizar Sidebar para usar datos reales de Supabase
+- [ ] Implementar carga infinita con Intersection Observer
+- [ ] Mostrar estados de carga y error
+- [ ] Implementar funcionalidad de NewPublicationCard
+- [ ] Crear modal de detalle de publicación con reserva/alquiler
 
-- Modo edición en ContentArea
-- Formulario completo de creación/edición
-- Manejo de imágenes
-- Validaciones de formulario
+## 📋 FASE 4 - Permisos y User Types (PRIORIDAD MEDIA)
+**Objetivo**: Implementar lógica de permisos y tipos de usuario
 
-### 📋 FASE 4 - Permisos y User Types (PRIORIDAD MEDIA)
-**Objetivo**: Implementar lógica de permisos
+- [ ] Manejo de tipos de usuario (cliente/residencia)
+- [ ] Renderizado condicional por user_type
+- [ ] Funcionalidad "Mis publicaciones"
+- [ ] Validaciones de permisos de edición
+- [ ] Botones para filtrar publicaciones propias y alquileres activos
 
-- Tabla user_data y conexión con AuthContext
-- Renderizado condicional por user_type
-- Funcionalidad "Mis publicaciones"
-- Validaciones de permisos de edición
+## 📋 FASE 5 - UX Avanzada y Optimización (PRIORIDAD BAJA)
+**Objetivo**: Mejorar experiencia de usuario y rendimiento
 
-### 📋 FASE 5 - UX y Filtros (PRIORIDAD BAJA)
-**Objetivo**: Mejorar experiencia de usuario
-
-- Filtros avanzados
-- Búsqueda geográfica mejorada
-- Optimización responsive
-- Estados de carga/error
-
----
-
-## Prioridades de Desarrollo Recomendadas
-
-### Fase 1 - Fundación de Datos (Alta Prioridad):
-[X] Crear esquema de BD en Supabase para publicaciones
-[X] Migrar examplePublications a Supabase
-- Implementar Context para publicaciones
-- Conectar ContentArea con datos reales
-
-### Fase 2 - Funcionalidad del Mapa (Alta Prioridad):
-- Implementar marcadores de publicaciones
-- Conectar clicks de cards con marcadores
-- Implementar detalle de publicación
-
-### Fase 3 - CRUD y Permisos (Media Prioridad):
-- Implementar creación de publicaciones
-- Sistema de permisos por user_type
-- Validaciones de formularios
-
-### Fase 4 - UX y Optimización (Baja Prioridad):
-- Mejorar responsive design
-- Estados de carga/error
-- Filtros avanzados
-- Optimizaciones de rendimiento
+- [ ] Filtros avanzados por tags y ubicación
+- [ ] Búsqueda geográfica mejorada
+- [ ] Optimización responsive para mobile
+- [ ] Clustering de marcadores
+- [ ] Tests automatizados
 
 ---
 
-**El proyecto tiene una base sólida con buena arquitectura, pero necesita completar la integración con la base de datos y la funcionalidad del mapa para ser completamente funcional.**
+## Prioridades de Desarrollo Actualizadas
+
+### Fase 1 - Optimización y Centralización (Alta Prioridad):
+- [ ] Migrar consulta de publicaciones a PublicationsContext
+- [ ] Centralizar lógica de marcadores en hook personalizado
+- [ ] Optimizar re-renders y implementar cache
+
+### Fase 2 - Mejoras de UI/UX (Alta Prioridad):
+- [ ] Iconos personalizados y colores por estado
+- [ ] Rediseñar InfoWindows con mejor CSS
+- [ ] Crear modal de detalle de publicación
+
+### Fase 3 - Funcionalidad Completa (Media Prioridad):
+- [ ] Conectar Sidebar con datos reales
+- [ ] Implementar carga infinita
+- [ ] Funcionalidad de NewPublicationCard
+
+### Fase 4 - Permisos y User Types (Media Prioridad):
+- [ ] Sistema de tipos de usuario
+- [ ] Funcionalidad "Mis publicaciones"
+- [ ] Botones de filtrado personalizado
+
+### Fase 5 - UX Avanzada (Baja Prioridad):
+- [ ] Filtros avanzados
+- [ ] Optimización mobile
+- [ ] Clustering de marcadores
+
+---
+
+## 🎯 Próximas Acciones Inmediatas
+
+1. **Optimizar ContentArea** - Migrar consultas a PublicationsContext
+2. **Mejorar marcadores** - Iconos personalizados y colores por estado
+3. **Rediseñar InfoWindows** - Mejor layout y CSS
+4. **Implementar detalle de publicación** - Modal completo con onClick
+5. **Conectar Sidebar** - Datos reales y carga infinita
+
+**El proyecto tiene una base sólida y funcional, con integración completa de mapa y publicaciones. Las próximas mejoras se enfocan en optimización, UX y funcionalidades avanzadas.**
