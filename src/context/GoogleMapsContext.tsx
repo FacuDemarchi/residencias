@@ -21,7 +21,7 @@ interface GoogleMapsContextType {
   google: typeof window.google | undefined;
   retryLoad: () => void;
   center: { lat: number; lng: number };
-  setCenter: (center: { lat: number; lng: number }) => void;
+  setCenter: (center: { lat: number; lng: number }, searchType?: string) => void;
   viewport: google.maps.LatLngBounds | null;
   setViewport: (viewport: google.maps.LatLngBounds | null) => void;
   // NUEVO: ubicaciones para marcadores
@@ -29,6 +29,8 @@ interface GoogleMapsContextType {
   loadingLocations: boolean;
   errorLocations: string | null;
   refreshLocations: () => void;
+  // NUEVO: tipo de búsqueda actual
+  currentSearchType: string | null;
 }
 
 const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(undefined);
@@ -79,24 +81,56 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
+  const [center, setCenterState] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
 
-  // NUEVO: estado para ubicaciones
+  // NUEVO: estado para ubicaciones y tipo de búsqueda
   const [mapLocations, setMapLocations] = useState<MapLocation[]>([]);
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [errorLocations, setErrorLocations] = useState<string | null>(null);
+  const [currentSearchType, setCurrentSearchType] = useState<string | null>(null);
+
+  // NUEVO: función para determinar la distancia según el tipo de búsqueda
+  const getSearchDistance = (searchType: string | null): { latOffset: number; lngOffset: number } => {
+    switch (searchType) {
+      case 'street_address':
+        return { latOffset: 0.015, lngOffset: 0.015 }; // ~1km para direcciones específicas
+      case 'route':
+        return { latOffset: 0.025, lngOffset: 0.025 }; // ~2km para calles
+      case 'sublocality':
+      case 'sublocality_level_1':
+        return { latOffset: 0.05, lngOffset: 0.05 }; // ~5km para barrios
+      case 'locality':
+        return { latOffset: 0.1, lngOffset: 0.1 }; // ~10km para ciudades
+      case 'administrative_area_level_2':
+        return { latOffset: 0.3, lngOffset: 0.3 }; // ~30km para partidos/departamentos
+      case 'administrative_area_level_1':
+        return { latOffset: 1.0, lngOffset: 1.0 }; // ~100km para provincias
+      case 'country':
+        return { latOffset: 5.0, lngOffset: 5.0 }; // ~500km para países
+      default:
+        return { latOffset: 0.09, lngOffset: 0.09 }; // ~10km por defecto
+    }
+  };
+
+  // NUEVO: función setCenter mejorada que acepta tipo de búsqueda
+  const setCenter = (newCenter: { lat: number; lng: number }, searchType?: string) => {
+    setCenterState(newCenter);
+    if (searchType) {
+      setCurrentSearchType(searchType);
+    }
+  };
 
   // Función para cargar ubicaciones desde Supabase
   const loadMapLocations = async () => {
     setLoadingLocations(true);
     setErrorLocations(null);
     try {
-      const latOffset = 0.09; // ~10km
-      const lngOffset = 0.09; // ~10km
+      const { latOffset, lngOffset } = getSearchDistance(currentSearchType);
       
       console.log('Consultando ubicaciones con parámetros:', {
         center: center,
+        searchType: currentSearchType,
         latOffset,
         lngOffset,
         latRange: [center.lat - latOffset, center.lat + latOffset],
@@ -177,7 +211,8 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     mapLocations,
     loadingLocations,
     errorLocations,
-    refreshLocations: loadMapLocations
+    refreshLocations: loadMapLocations,
+    currentSearchType
   };
 
   return (

@@ -9,14 +9,40 @@ const AddressSearchBar: React.FC = () => {
     if (!isLoaded || !google || !inputRef.current) return;
     const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
       // Sin filtro 'types' para permitir más resultados
-      fields: ['geometry']
+      fields: ['geometry', 'types']
     });
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
       if (place.geometry && place.geometry.location) {
         const lat = place.geometry.location.lat();
         const lng = place.geometry.location.lng();
-        setCenter({ lat, lng });
+        
+        // NUEVO: determinar el tipo de lugar para ajustar la distancia
+        let searchType: string | undefined = undefined;
+        if (place.types && place.types.length > 0) {
+          // Priorizar tipos más específicos
+          const typePriority = [
+            'street_address',
+            'route', 
+            'sublocality_level_1',
+            'sublocality',
+            'locality',
+            'administrative_area_level_2',
+            'administrative_area_level_1',
+            'country'
+          ];
+          
+          searchType = typePriority.find(type => place.types?.includes(type)) || place.types[0];
+        }
+        
+        console.log('Lugar seleccionado:', {
+          name: inputRef.current?.value,
+          types: place.types,
+          selectedType: searchType,
+          coordinates: { lat, lng }
+        });
+        
+        setCenter({ lat, lng }, searchType);
         if (place.geometry.viewport) {
           setViewport(place.geometry.viewport);
         } else {
