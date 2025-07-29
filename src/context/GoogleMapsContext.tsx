@@ -20,7 +20,7 @@ interface Publication {
   estado: 'disponible' | 'reservado' | 'ocupado';
   titulo: string;
   descripcion: string;
-  precio: number;
+  price: number;
   direccion: string;
   capacidad: number;
   metros_cuadrados: number;

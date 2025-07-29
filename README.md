@@ -101,14 +101,17 @@ src/
   - [X] Simplificar la creación de marcadores eliminando el índice en el bucle de ubicaciones
   - [X] Optimizar la generación de contenido en InfoWindows
   - [X] Mejorar la legibilidad y el rendimiento del código
-  - [X] **Mejoras pendientes del sistema de publicaciones**
-    - [ ] Mejorar estilo de los marcadores (iconos personalizados, colores por estado)
-    - [ ] Mejorar diseño de InfoWindows (CSS, layout, información más detallada)
-    - [ ] Implementar consulta de publicaciones desde PublicationsContext en lugar de fetch directo
-    - [ ] Implementar componente de detalle de publicación
-    - [ ] Agregar onClick en marcadores para mostrar detalle completo de publicación
+- [X] **Optimización de consultas en GoogleMapsContext** (NUEVO)
+  - [X] Mantener GoogleMapsContext enfocado solo en residencias activas
+  - [X] Simplificar consulta para traer solo publicaciones en estado 'disponible'
+  - [X] Eliminar filtros complejos del contexto principal
 
 ### 🔄 En progreso
+- [ ] **Implementar consultas específicas en ContentArea** (NUEVO)
+  - [ ] Función `misPublicaciones`: consultar todas las publicaciones del usuario (sin importar estado)
+  - [ ] Función `misAlquileres`: consultar publicaciones desde tabla alquileres para el usuario
+  - [ ] Integrar estas funciones con los botones existentes en la barra superior
+  - [ ] Actualizar el mapa mostrando solo las publicaciones correspondientes
 - [ ] Actualizar Sidebar para usar datos reales de Supabase
   - [ ] Reemplazar `examplePublications` por datos del contexto
   - [ ] Implementar carga infinita con Intersection Observer
@@ -129,6 +132,12 @@ src/
   - [ ] Implementar cache de datos de publicaciones
 
 ### 📋 Pendientes
+- [ ] **Mejoras pendientes del sistema de publicaciones**
+  - [ ] Mejorar estilo de los marcadores (iconos personalizados, colores por estado)
+  - [ ] Mejorar diseño de InfoWindows (CSS, layout, información más detallada)
+  - [ ] Implementar consulta de publicaciones desde PublicationsContext en lugar de fetch directo
+  - [ ] Implementar componente de detalle de publicación
+  - [ ] Agregar onClick en marcadores para mostrar detalle completo de publicación
 - [ ] Crear modal de detalle de publicación
   - [ ] Mostrar información completa de la publicación
   - [ ] Permitir efectuar reserva desde el modal
@@ -146,12 +155,12 @@ src/
 - [ ] Expiración automática de reservas
 - [ ] Tests automatizados
 - [ ] Documentar endpoints y modelos
-- [ ] Botón para ordenar primero las publicaciones propias y mostrar solo sus puntos en el mapa
+- [ ] **Botón para ordenar primero las publicaciones propias** (NUEVO)
   - [ ] Mostrar el botón solo a usuarios de residencia
   - [ ] El botón debe aparecer primero en el carrusel de tags, con estilo de tag pero color diferenciado
   - [ ] Al hacer clic, ordenar la lista poniendo primero las publicaciones propias
   - [ ] Actualizar el mapa mostrando solo los puntos de las publicaciones propias
-- [ ] Botón (solo para clientes con alquiler activo) para ordenar y mostrar solo sus alquileres en la lista y el mapa
+- [ ] **Botón para mostrar solo alquileres del cliente** (NUEVO)
   - [ ] Mostrar el botón solo a clientes con alquiler activo
   - [ ] El botón debe aparecer primero en el carrusel de tags, con estilo de tag pero color diferenciado
   - [ ] Al hacer clic, ordenar la lista poniendo primero las publicaciones asociadas al cliente
@@ -159,11 +168,12 @@ src/
 - [ ] Implementar automatización (GitHub Action o n8n) que monitoree las tareas del README (creadas, modificadas, eliminadas) y envíe reportes a Microsoft Teams u otra plataforma de gestión
 
 ## 🎯 Próximas prioridades
-1. **Mejorar UI/UX de marcadores** - Iconos personalizados y colores por estado
-2. **Rediseñar InfoWindows** - Mejor layout y CSS
-3. **Implementar detalle de publicación** - Modal completo con onClick en marcadores
-4. **Migrar a PublicationsContext** - Centralizar consulta de publicaciones
-5. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
-6. **Optimizar rendimiento** - Centralizar lógica de marcadores y implementar cache
+1. **Implementar consultas específicas en ContentArea** - Funciones misPublicaciones y misAlquileres
+2. **Mejorar UI/UX de marcadores** - Iconos personalizados y colores por estado
+3. **Rediseñar InfoWindows** - Mejor layout y CSS
+4. **Implementar detalle de publicación** - Modal completo con onClick en marcadores
+5. **Migrar a PublicationsContext** - Centralizar consulta de publicaciones
+6. **Actualizar Sidebar** - Conectar con datos reales y carga infinita
+7. **Optimizar rendimiento** - Centralizar lógica de marcadores y implementar cache
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
