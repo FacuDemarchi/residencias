@@ -67,6 +67,35 @@ const ContentArea: React.FC = () => {
         const lat = parseFloat(location.latitud.toString());
         const lng = parseFloat(location.longitud.toString());
 
+        // Determinar el texto del label y color según las publicaciones
+        let labelText = '';
+        let markerColor = '#2c5aa0'; // Color por defecto
+        let markerWidth = 24; // Ancho base del marcador
+        let markerHeight = 24; // Alto base del marcador
+        
+        if (location.publications_test && location.publications_test.length > 0) {
+          if (location.publications_test.length === 1) {
+            // Si tiene una sola publicación, mostrar el precio en verde
+            labelText = `$${location.publications_test[0].price}`;
+            markerColor = '#27ae60'; // Verde para precio
+            
+            // Ajustar el ancho del marcador según la longitud del precio
+            const priceLength = labelText.length;
+            if (priceLength > 6) {
+              markerWidth = 48; // Más espacio para precios largos
+            } else if (priceLength > 4) {
+              markerWidth = 44; // Más espacio para precios medianos
+            } else {
+              markerWidth = 40; // Más espacio para precios cortos
+            }
+          } else {
+            // Si tiene múltiples publicaciones, mostrar la cantidad en azul
+            labelText = `${location.publications_test.length}`;
+            markerColor = '#2c5aa0'; // Azul para cantidad
+            markerWidth = 36; // Más grande para números
+          }
+        }
+
         const marker = new google.maps.Marker({
           position: {
             lat: lat,
@@ -75,36 +104,46 @@ const ContentArea: React.FC = () => {
           map: mapInstance.current,
           title: `Ubicación ${location.id}`,
           label: {
-            text: location.estado === 'disponible' ? '✓' : '✗',
+            text: labelText,
             color: 'white',
-            fontSize: '10px',
+            fontSize: '12px',
             fontWeight: 'bold'
           },
           icon: {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="8" cy="8" r="6" fill="${location.estado === 'disponible' ? '#2c5aa0' : '#e74c3c'}" stroke="white" stroke-width="1"/>
+              <svg width="${markerWidth}" height="${markerHeight}" viewBox="0 0 ${markerWidth} ${markerHeight}" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="${markerWidth - 4}" height="${markerHeight - 4}" rx="3" fill="${markerColor}" stroke="white" stroke-width="2"/>
               </svg>
             `),
-            scaledSize: new google.maps.Size(16, 16),
-            anchor: new google.maps.Point(8, 8)
+            scaledSize: new google.maps.Size(markerWidth, markerHeight),
+            anchor: new google.maps.Point(markerWidth / 2, markerHeight / 2)
           }
         });
 
-        // Agregar info window con detalles de la ubicación
+        // Crear contenido del infoWindow con información de publicaciones
+        let infoContent = '<div style="padding: 10px; max-width: 250px;">';
+        
+        if (location.publications_test && location.publications_test.length > 0) {
+          location.publications_test.forEach((publication: any, pubIndex: number) => {
+            infoContent += `
+              <p style="margin: 4px 0; font-size: 12px; color: #333;">
+                $${publication.price} | ${publication.capacidad} personas | ${publication.metros_cuadrados}m²
+              </p>
+            `;
+          });
+        } else {
+          infoContent += '<p style="margin: 4px 0; font-size: 12px; color: #888;">Sin publicaciones</p>';
+        }
+        
+        infoContent += '</div>';
+
+        // Agregar info window con detalles de las publicaciones
         const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="padding: 10px; max-width: 200px;">
-              <h3 style="margin: 0 0 8px 0; font-weight: bold;">Ubicación ${location.id}</h3>
-              <p style="margin: 4px 0; font-weight: bold; color: ${location.estado === 'disponible' ? '#2c5aa0' : '#e74c3c'};">
-                Estado: ${location.estado}
-              </p>
-              <p style="margin: 4px 0; font-size: 12px; color: #888;">
-                Lat: ${lat.toFixed(6)}<br>
-                Lng: ${lng.toFixed(6)}
-              </p>
-            </div>
-          `
+          content: infoContent,
+          disableAutoPan: false,
+          pixelOffset: new google.maps.Size(0, -10),
+          // closeBoxURL: '',
+          // closeBoxMargin: '0px'
         });
 
         marker.addListener('mouseover', () => {

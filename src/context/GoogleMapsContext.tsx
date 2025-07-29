@@ -7,7 +7,7 @@ interface MapLocation {
   latitud: number;
   longitud: number;
   estado: string;
-  publicaciones_test: {
+  publications_test: {
     price: number;
     capacidad: number;
     metros_cuadrados: number;
