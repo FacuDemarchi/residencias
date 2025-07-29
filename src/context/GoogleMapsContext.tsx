@@ -2,16 +2,43 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from '../services/supabaseClient';
 
+// Tipos para las imágenes
+interface Image {
+  id: number;
+  publication_id: number;
+  url: string;
+  alt_text?: string;
+  is_primary?: boolean;
+  created_at: string;
+}
+
+// Tipos para las publicaciones
+interface Publication {
+  id: number;
+  user_id: number;
+  location_id: number;
+  estado: 'disponible' | 'reservado' | 'ocupado';
+  titulo: string;
+  descripcion: string;
+  precio: number;
+  direccion: string;
+  capacidad: number;
+  metros_cuadrados: number;
+  amenidades: string[];
+  created_at: string;
+  updated_at: string;
+  imagen?: string; // Campo legacy, ahora usamos la tabla images
+  images?: Image[];
+}
+
+// Tipo para las ubicaciones del mapa con publicaciones completas
 interface MapLocation {
   id: bigint;
   latitud: number;
   longitud: number;
   estado: string;
-  publications_test: {
-    price: number;
-    capacidad: number;
-    metros_cuadrados: number;
-  }[];
+  direccion: string;
+  publications_test: Publication[];
 }
 
 interface GoogleMapsContextType {
@@ -139,7 +166,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
       
       const { data, error } = await supabase
         .from('location')
-        .select(`*, publications_test(price, capacidad, metros_cuadrados)`)
+        .select(`*, publications_test(*, images(*))`)
         .gte('latitud', center.lat - latOffset)
         .lte('latitud', center.lat + latOffset)
         .gte('longitud', center.lng - lngOffset)
