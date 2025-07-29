@@ -62,7 +62,7 @@ const ContentArea: React.FC = () => {
     markersRef.current = [];
 
     // Crear nuevos marcadores para ubicaciones
-    mapLocations.forEach((location, index) => {
+    mapLocations.forEach((location) => {
       if (location.latitud && location.longitud) {
         const lat = parseFloat(location.latitud.toString());
         const lng = parseFloat(location.longitud.toString());
@@ -124,7 +124,7 @@ const ContentArea: React.FC = () => {
         let infoContent = '<div style="padding: 10px; max-width: 250px;">';
         
         if (location.publications_test && location.publications_test.length > 0) {
-          location.publications_test.forEach((publication: any, pubIndex: number) => {
+          location.publications_test.forEach((publication: any) => {
             infoContent += `
               <p style="margin: 4px 0; font-size: 12px; color: #333;">
                 $${publication.price} | ${publication.capacidad} personas | ${publication.metros_cuadrados}m²
