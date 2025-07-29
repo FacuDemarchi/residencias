@@ -3,19 +3,17 @@ import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useTags } from '../../context/TagsContext';
 import TagChip from '../common/TagChip';
-import { supabase } from '../../services/supabaseClient';
 
 const ContentArea: React.FC = () => {
-  const { isLoaded, google, center, viewport } = useGoogleMaps();
+  const { isLoaded, google, center, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [publications, setPublications] = useState<any[]>([]);
-  const [loadingPublications, setLoadingPublications] = useState(false);
   const markersRef = useRef<google.maps.Marker[]>([]);
 
+  console.log('mapLocations: ', mapLocations);
 
   useEffect(() => {
     if (isLoaded && google && mapRef.current && !mapInstance.current) {
@@ -51,41 +49,11 @@ const ContentArea: React.FC = () => {
     }
   }, [center, viewport]);
 
-  // Consulta a la tabla publications_test
+
+
+  // Crear marcadores en el mapa cuando cambien las ubicaciones
   useEffect(() => {
-    const fetchPublications = async () => {
-      setLoadingPublications(true);
-      try {
-        const { data, error } = await supabase
-          .from('publications_test')
-          .select('*, location(*)');
-        
-        if (error) {
-          console.error('Error al obtener publicaciones:', error);
-        } else {
-          setPublications(data || []);
-          console.log('Publicaciones obtenidas:', data);
-        }
-      } catch (error) {
-        console.error('Error en la consulta:', error);
-      } finally {
-        setLoadingPublications(false);
-      }
-    };
-
-    fetchPublications();
-  }, []);
-
-  // Crear marcadores en el mapa cuando cambien las publicaciones
-  useEffect(() => {
-    console.log('useEffect marcadores ejecutado');
-    console.log('mapInstance.current:', !!mapInstance.current);
-    console.log('google:', !!google);
-    console.log('publications.length:', publications.length);
-    console.log('publications:', publications);
-
-    if (!mapInstance.current || !google || publications.length === 0) {
-      console.log('Condiciones no cumplidas para crear marcadores');
+    if (!mapInstance.current || !google || mapLocations.length === 0) {
       return;
     }
 
@@ -93,22 +61,11 @@ const ContentArea: React.FC = () => {
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    let marcadoresCreados = 0;
-
-    // Crear nuevos marcadores para publicaciones con ubicación
-    publications.forEach((publication, index) => {
-      console.log(`Publicación ${index}:`, publication);
-      console.log('location:', publication.location);
-      console.log('latitud:', publication.location?.latitud);
-      console.log('longitud:', publication.location?.longitud);
-
-      if (publication.location && publication.location.latitud && publication.location.longitud) {
-        console.log(`Creando marcador para publicación ${index}`);
-        
-        const lat = parseFloat(publication.location.latitud);
-        const lng = parseFloat(publication.location.longitud);
-        
-        console.log('Coordenadas parseadas:', { lat, lng });
+    // Crear nuevos marcadores para ubicaciones
+    mapLocations.forEach((location, index) => {
+      if (location.latitud && location.longitud) {
+        const lat = parseFloat(location.latitud.toString());
+        const lng = parseFloat(location.longitud.toString());
 
         const marker = new google.maps.Marker({
           position: {
@@ -116,25 +73,35 @@ const ContentArea: React.FC = () => {
             lng: lng
           },
           map: mapInstance.current,
-          title: publication.titulo,
+          title: `Ubicación ${location.id}`,
           label: {
-            text: `$${publication.price || 'N/A'}`,
+            text: location.estado === 'disponible' ? '✓' : '✗',
             color: 'white',
-            fontSize: '12px',
+            fontSize: '10px',
             fontWeight: 'bold'
+          },
+          icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+              <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="8" r="6" fill="${location.estado === 'disponible' ? '#2c5aa0' : '#e74c3c'}" stroke="white" stroke-width="1"/>
+              </svg>
+            `),
+            scaledSize: new google.maps.Size(16, 16),
+            anchor: new google.maps.Point(8, 8)
           }
         });
 
-        // Agregar info window con detalles de la publicación
+        // Agregar info window con detalles de la ubicación
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="padding: 10px; max-width: 200px;">
-              <h3 style="margin: 0 0 8px 0; font-weight: bold;">${publication.titulo}</h3>
-              <p style="margin: 4px 0; color: #666;">${publication.descripcion || 'Sin descripción'}</p>
-              <p style="margin: 4px 0; font-weight: bold; color: #2c5aa0;">$${publication.price || 'N/A'}</p>
+              <h3 style="margin: 0 0 8px 0; font-weight: bold;">Ubicación ${location.id}</h3>
+              <p style="margin: 4px 0; font-weight: bold; color: ${location.estado === 'disponible' ? '#2c5aa0' : '#e74c3c'};">
+                Estado: ${location.estado}
+              </p>
               <p style="margin: 4px 0; font-size: 12px; color: #888;">
-                ${publication.capacidad ? `${publication.capacidad} personas` : ''} 
-                ${publication.metros_cuadrados ? `• ${publication.metros_cuadrados}m²` : ''}
+                Lat: ${lat.toFixed(6)}<br>
+                Lng: ${lng.toFixed(6)}
               </p>
             </div>
           `
@@ -148,16 +115,17 @@ const ContentArea: React.FC = () => {
           infoWindow.close();
         });
 
+        marker.addListener('click', () => {
+          console.log('Marcador clickeado:', location);
+          // Aquí puedes agregar lógica para mostrar detalles o navegar
+        });
+
         markersRef.current.push(marker);
-        marcadoresCreados++;
-        console.log(`Marcador ${marcadoresCreados} creado exitosamente`);
       } else {
-        console.log(`Publicación ${index} no tiene ubicación válida`);
+        // Ubicación sin coordenadas válidas
       }
     });
-
-    console.log(`Total de marcadores creados: ${marcadoresCreados}`);
-  }, [publications, google]);
+  }, [mapLocations, google]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
@@ -178,6 +146,9 @@ const ContentArea: React.FC = () => {
         <button onClick={() => setShowDetail(v => !v)} className='ml-4 bg-white px-4 py-2 rounded shadow'>
           {showDetail ? "Ocultar" : "Mostrar"} detalle
         </button>
+        {loadingLocations && (
+          <span className="ml-4 text-sm text-gray-600">Cargando ubicaciones...</span>
+        )}
         {user ? (
           <button
             className="ml-4 bg-white px-4 py-2 rounded shadow"

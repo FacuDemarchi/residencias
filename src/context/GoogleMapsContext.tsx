@@ -3,10 +3,15 @@ import type { ReactNode } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 interface MapLocation {
-  id: bigint; // Cambiar de number a bigint
+  id: bigint;
   latitud: number;
   longitud: number;
   estado: string;
+  publicaciones_test: {
+    price: number;
+    capacidad: number;
+    metros_cuadrados: number;
+  }[];
 }
 
 interface GoogleMapsContextType {
@@ -87,14 +92,36 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     setLoadingLocations(true);
     setErrorLocations(null);
     try {
-      const { data, error: supabaseError } = await supabase.rpc('get_locations_for_map', {
-        center_lat: center.lat,
-        center_lng: center.lng,
-        radius_km: 15
+      const latOffset = 0.09; // ~10km
+      const lngOffset = 0.09; // ~10km
+      
+      console.log('Consultando ubicaciones con parámetros:', {
+        center: center,
+        latOffset,
+        lngOffset,
+        latRange: [center.lat - latOffset, center.lat + latOffset],
+        lngRange: [center.lng - lngOffset, center.lng + lngOffset]
       });
-      if (supabaseError) throw supabaseError;
+      
+      const { data, error } = await supabase
+        .from('location')
+        .select(`*, publications_test(price, capacidad, metros_cuadrados)`)
+        .gte('latitud', center.lat - latOffset)
+        .lte('latitud', center.lat + latOffset)
+        .gte('longitud', center.lng - lngOffset)
+        .lte('longitud', center.lng + lngOffset);
+      
+      console.log('Respuesta de Supabase (ubicaciones):', { data, error });
+      
+      if (error) {
+        console.error('Error en consulta de ubicaciones:', error);
+        throw error;
+      }
+      
+      console.log('Ubicaciones cargadas:', data?.length || 0);
       setMapLocations(data || []);
     } catch (err) {
+      console.error('Error completo:', err);
       setErrorLocations(err instanceof Error ? err.message : 'Error desconocido');
       setMapLocations([]);
     } finally {
