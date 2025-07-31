@@ -4,7 +4,29 @@ import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useTags } from '../../context/TagsContext';
 import TagChip from '../common/TagChip';
 
-const ContentArea: React.FC = () => {
+interface Publication {
+  id: number;
+  user_id: number;
+  location_id: number;
+  estado: string;
+  titulo: string;
+  descripcion: string;
+  price: number;
+  direccion: string;
+  capacidad: number;
+  metros_cuadrados: number;
+  amenidades: string[];
+  created_at: string;
+  updated_at: string;
+  imagen?: string;
+}
+
+interface ContentAreaProps {
+  selectedPublication: Publication | null;
+  onHighlightPublications: (publications: Publication[]) => void;
+}
+
+const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications }) => {
   const { isLoaded, google, center, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
@@ -48,8 +70,6 @@ const ContentArea: React.FC = () => {
       }
     }
   }, [center, viewport]);
-
-
 
   // Crear marcadores en el mapa cuando cambien las ubicaciones
   useEffect(() => {
@@ -142,8 +162,6 @@ const ContentArea: React.FC = () => {
           content: infoContent,
           disableAutoPan: false,
           pixelOffset: new google.maps.Size(0, -10),
-          // closeBoxURL: '',
-          // closeBoxMargin: '0px'
         });
 
         marker.addListener('mouseover', () => {
@@ -155,8 +173,12 @@ const ContentArea: React.FC = () => {
         });
 
         marker.addListener('click', () => {
-          console.log('Marcador clickeado:', location);
-          // Aquí puedes agregar lógica para mostrar detalles o navegar
+          console.log('🗺️ Click en marcador del mapa:', location);
+          // Remarcar las publicaciones de esta ubicación en el sidebar
+          if (location.publications_test && location.publications_test.length > 0) {
+            console.log('📍 Publicaciones a remarcar:', location.publications_test);
+            onHighlightPublications(location.publications_test);
+          }
         });
 
         markersRef.current.push(marker);
@@ -164,7 +186,7 @@ const ContentArea: React.FC = () => {
         // Ubicación sin coordenadas válidas
       }
     });
-  }, [mapLocations, google]);
+  }, [mapLocations, google, onHighlightPublications]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
@@ -204,9 +226,21 @@ const ContentArea: React.FC = () => {
           </button>
         )}
       </div>
-      {/* Detalle de publicación (solo contenedor) */}
+      
+      {/* Detalle de publicación */}
       <div id="publication-detail" style={{ backgroundColor: '#fafafa' }} className={`absolute top-16 right-6 w-[clamp(280px,28vw,480px)] min-h-[200px] max-h-[82vh] bg-white/90 border border-neutral-300 rounded-2xl shadow-xl overflow-y-auto ${showDetail ? "z-50 opacity-100" : "z-1[-1] opacity-0 pointer-events-none"}`}>
-
+        {selectedPublication && (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">{selectedPublication.titulo}</h2>
+            <img src={selectedPublication.imagen} alt={selectedPublication.titulo} className="w-full h-48 object-cover rounded-lg mb-4" />
+            <p className="text-gray-600 mb-4">{selectedPublication.descripcion}</p>
+            <div className="flex justify-between items-center">
+              <span className="text-2xl font-bold text-blue-600">${selectedPublication.price}</span>
+              <span className="text-sm text-gray-500">{selectedPublication.capacidad} personas · {selectedPublication.metros_cuadrados}m²</span>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">{selectedPublication.direccion}</p>
+          </div>
+        )}
       </div>
 
       {/* Mapa ocupa todo el espacio */}
