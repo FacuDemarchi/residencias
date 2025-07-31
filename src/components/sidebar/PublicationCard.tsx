@@ -19,26 +19,68 @@ interface PublicationCardProps {
 }
 
 const PublicationCard: React.FC<PublicationCardProps> = ({ onClick, titulo, precio, direccion, capacidad, metros_cuadrados, imagen }) => {
+  const hasValidImage = imagen && imagen.trim() !== '';
+  
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-2xl bg-white shadow-md box-border p-0 grid grid-cols-5 grid-rows-4 gap-0 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+      className="group w-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer overflow-hidden border border-gray-100"
     >
-      {/* Imagen ocupa todas las columnas y filas 1-3 */}
-      <div className="relative col-start-1 col-end-6 row-start-1 row-end-4 w-full h-48">
-        {/* Precio sobre la imagen, arriba a la izquierda */}
-        <div className="absolute top-0 left-0 w-full z-20 flex items-start justify-end p-2">
-          <span className="bg-white/80 text-blue-700 font-bold text-base px-2 py-1 rounded">${precio}</span>
+      {/* Header con imagen y overlay */}
+      <div className="relative h-40 overflow-hidden">
+        {hasValidImage ? (
+          <img 
+            src={imagen} 
+            alt={titulo} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <div className={`absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center ${hasValidImage ? 'hidden' : ''}`}>
+          <svg className="w-12 h-12 text-white/80" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+          </svg>
         </div>
-        {/* Imagen con z-10 */}
-        <img src={imagen} alt={titulo} className="w-full h-full object-cover z-10" />
+
+        {/* Badge de precio flotante */}
+        <div className="absolute top-3 right-3">
+          <div className="bg-white/95 backdrop-blur-sm text-blue-600 font-bold text-lg px-3 py-2 rounded-full shadow-lg">
+            ${precio}
+          </div>
+        </div>
+
+        {/* Overlay de estado */}
+        <div className="absolute top-3 left-3">
+          <div className="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            Disponible
+          </div>
+        </div>
       </div>
 
-      {/* Dirección, título, capacidad y metros cuadrados en la última fila, columnas 1-6 */}
-      <div className="col-start-1 col-end-6 row-start-4 text-xs text-gray-700 font-semibold px-4 py-2 truncate flex flex-col gap-1 bg-white/80">
-        <span className="text-base text-black font-bold truncate">{titulo}</span>
-        <span>{direccion}</span>
-        <span className="text-xs text-gray-600">Cap: {capacidad} · {metros_cuadrados} m²</span>
+      {/* Contenido */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-lg font-bold text-gray-900 truncate">{titulo}</h3>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{direccion}</p>
+        
+        {/* Características */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            <span>{capacidad} personas</span>
+            <span className="mx-1"> • </span>
+            <span>{metros_cuadrados} m²</span>
+          </div>
+          
+          {/* Botón de acción */}
+          <div className="text-blue-600 font-semibold text-sm group-hover:text-blue-700 transition-colors">
+            Ver detalles →
+          </div>
+        </div>
       </div>
     </button>
   );
