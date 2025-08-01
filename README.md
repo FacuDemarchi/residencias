@@ -34,7 +34,7 @@ src/
 ## ⚡ Instalación rápida
 1. Clona el repo y entra a la carpeta:
    ```bash
-   git clone https://github.com/tu-usuario/residencias.git
+   git clone https://github.com/FacuDemarchi/residencias.git
    cd residencias
    ```
 2. Instala dependencias:
@@ -46,7 +46,6 @@ src/
    VITE_SUPABASE_URL=tu_url_de_supabase
    VITE_SUPABASE_API_KEY=tu_api_key_de_supabase
    VITE_GOOGLE_MAPS_API_KEY=tu_api_key_de_google
-   VITE_REDIRECT_URL=http://localhost:5173
    ```
 4. Ejecuta en modo desarrollo:
    ```bash

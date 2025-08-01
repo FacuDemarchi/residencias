@@ -173,11 +173,25 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
         });
 
         marker.addListener('click', () => {
-          console.log('🗺️ Click en marcador del mapa:', location);
-          // Remarcar las publicaciones de esta ubicación en el sidebar
+          console.log('️ Click en marcador del mapa:', location);
+          
           if (location.publications_test && location.publications_test.length > 0) {
             console.log('📍 Publicaciones a remarcar:', location.publications_test);
             onHighlightPublications(location.publications_test);
+            
+            // Mover el marcador al centro del mapa
+            if (mapInstance.current) {
+              const position = {
+                lat: lat,
+                lng: lng
+              };
+              
+              // panTo mueve el mapa visualmente sin afectar el center del contexto
+              mapInstance.current.panTo(position);
+              
+              // Zoom fijo en 15
+              mapInstance.current.setZoom(15);
+            }
           }
         });
 
