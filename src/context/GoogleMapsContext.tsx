@@ -166,11 +166,12 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
       
       const { data, error } = await supabase
         .from('location')
-        .select(`*, publications_test(*, images(*))`)
+        .select(`*, publications_test!inner(*, images(*))`)
         .gte('latitud', center.lat - latOffset)
         .lte('latitud', center.lat + latOffset)
         .gte('longitud', center.lng - lngOffset)
-        .lte('longitud', center.lng + lngOffset);
+        .lte('longitud', center.lng + lngOffset)
+        .eq('publications_test.estado', 'activo');
       
       console.log('Respuesta de Supabase (ubicaciones):', { data, error });
       
