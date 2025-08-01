@@ -24,9 +24,10 @@ interface Publication {
 interface ContentAreaProps {
   selectedPublication: Publication | null;
   onHighlightPublications: (publications: Publication[]) => void;
+  onSelectPublication: (publication: Publication) => void; // Nueva prop
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications }) => {
+const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications, onSelectPublication }) => {
   const { isLoaded, google, center, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
@@ -160,7 +161,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
         // Agregar info window con detalles de las publicaciones
         const infoWindow = new google.maps.InfoWindow({
           content: infoContent,
-          disableAutoPan: false,
+          disableAutoPan: true, // ← Cambiar a true
           pixelOffset: new google.maps.Size(0, -10),
         });
 
@@ -176,8 +177,15 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
           console.log('️ Click en marcador del mapa:', location);
           
           if (location.publications_test && location.publications_test.length > 0) {
-            console.log('📍 Publicaciones a remarcar:', location.publications_test);
-            onHighlightPublications(location.publications_test);
+            if (location.publications_test.length === 1) {
+              // Marcador verde: seleccionar la publicación
+              console.log('🟢 Marcador verde - seleccionando publicación:', location.publications_test[0]);
+              onSelectPublication(location.publications_test[0]);
+            } else {
+              // Marcador azul: resaltar publicaciones
+              console.log('🔵 Marcador azul - resaltando publicaciones:', location.publications_test);
+              onHighlightPublications(location.publications_test);
+            }
             
             // Mover el marcador al centro del mapa
             if (mapInstance.current) {
@@ -200,7 +208,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
         // Ubicación sin coordenadas válidas
       }
     });
-  }, [mapLocations, google, onHighlightPublications]);
+  }, [mapLocations, google, onHighlightPublications, onSelectPublication]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">

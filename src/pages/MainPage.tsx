@@ -28,7 +28,7 @@ const MainPage: React.FC = () => {
 
   // Función para manejar el click en una publicación del sidebar
   const handlePublicationClick = (publication: Publication) => {
-    console.log('📋 Publicación seleccionada en MainPage:', publication);
+    console.log('📋 Publicación seleccionada en Sidebar:', publication);
     setSelectedPublication(publication);
   };
 
@@ -36,6 +36,12 @@ const MainPage: React.FC = () => {
   const handleHighlightPublications = (publications: Publication[]) => {
     console.log('🎯 Publicaciones a remarcar en MainPage:', publications);
     setHighlightedPublications(publications);
+  };
+
+  // Nueva función para seleccionar publicación desde el mapa
+  const handleSelectPublication = (publication: Publication) => {
+    console.log('🗺️ Publicación seleccionada desde el mapa:', publication);
+    setSelectedPublication(publication);
   };
 
   return (
@@ -52,6 +58,7 @@ const MainPage: React.FC = () => {
         <ContentArea 
           selectedPublication={selectedPublication}
           onHighlightPublications={handleHighlightPublications}
+          onSelectPublication={handleSelectPublication}
         />
       </div>
     </div>
