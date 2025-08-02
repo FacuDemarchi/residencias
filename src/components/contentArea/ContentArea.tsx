@@ -4,6 +4,15 @@ import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useTags } from '../../context/TagsContext';
 import TagChip from '../common/TagChip';
 
+interface Image {
+  id: number;
+  publication_id: number;
+  url: string;
+  alt_text?: string;
+  is_primary?: boolean;
+  created_at: string;
+}
+
 interface Publication {
   id: number;
   user_id: number;
@@ -19,22 +28,45 @@ interface Publication {
   created_at: string;
   updated_at: string;
   imagen?: string;
+  images?: Image[];
 }
 
 interface ContentAreaProps {
   selectedPublication: Publication | null;
   onHighlightPublications: (publications: Publication[]) => void;
   onSelectPublication: (publication: Publication) => void; // Nueva prop
+  onClearSelectedPublication?: () => void; // Nueva prop para limpiar la selección
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications, onSelectPublication }) => {
+const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications, onSelectPublication, onClearSelectedPublication }) => {
   const { isLoaded, google, center, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const markersRef = useRef<google.maps.Marker[]>([]);
+
+  // Función para restaurar el mapa a su estado original
+  const restoreMapToOriginal = () => {
+    if (mapInstance.current) {
+      if (viewport) {
+        mapInstance.current.fitBounds(viewport);
+      } else {
+        mapInstance.current.panTo(center);
+        mapInstance.current.setZoom(12);
+      }
+    }
+  };
+
+  // Mostrar automáticamente el detalle cuando se selecciona una publicación
+  useEffect(() => {
+    if (selectedPublication) {
+      setShowDetail(true);
+      setCurrentImageIndex(0); // Resetear al primer índice de imagen
+    }
+  }, [selectedPublication]);
 
   console.log('mapLocations: ', mapLocations);
 
@@ -226,9 +258,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
             ))
           )}
         </div>
-        <button onClick={() => setShowDetail(v => !v)} className='ml-4 bg-white px-4 py-2 rounded shadow'>
-          {showDetail ? "Ocultar" : "Mostrar"} detalle
-        </button>
+        
         {loadingLocations && (
           <span className="ml-4 text-sm text-gray-600">Cargando ubicaciones...</span>
         )}
@@ -252,15 +282,105 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
       {/* Detalle de publicación */}
       <div id="publication-detail" style={{ backgroundColor: '#fafafa' }} className={`absolute top-16 right-6 w-[clamp(280px,28vw,480px)] min-h-[200px] max-h-[82vh] bg-white/90 border border-neutral-300 rounded-2xl shadow-xl overflow-y-auto ${showDetail ? "z-50 opacity-100" : "z-1[-1] opacity-0 pointer-events-none"}`}>
         {selectedPublication && (
-          <div className="p-6">
+          <div className="p-6 relative">
+            {/* Botón X para cerrar */}
+            <button 
+              onClick={() => {
+                setShowDetail(false);
+                restoreMapToOriginal();
+                if (onClearSelectedPublication) {
+                  onClearSelectedPublication();
+                }
+              }}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              ✕
+            </button>
             <h2 className="text-2xl font-bold mb-4">{selectedPublication.titulo}</h2>
-            <img src={selectedPublication.imagen} alt={selectedPublication.titulo} className="w-full h-48 object-cover rounded-lg mb-4" />
+            
+            {/* Carrusel de imágenes */}
+            <div className="relative mb-4">
+              {/* Imagen principal */}
+              <img 
+                src={selectedPublication.images && selectedPublication.images.length > 0 
+                  ? selectedPublication.images[currentImageIndex].url 
+                  : selectedPublication.imagen} 
+                alt={selectedPublication.titulo} 
+                className="w-full h-48 object-cover rounded-lg"
+              />
+              
+              {/* Controles del carrusel - solo mostrar si hay múltiples imágenes */}
+              {selectedPublication.images && selectedPublication.images.length > 1 && (
+                <>
+                  {/* Botón anterior */}
+                  <button
+                    onClick={() => setCurrentImageIndex(prev => 
+                      prev === 0 ? selectedPublication.images!.length - 1 : prev - 1
+                    )}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    ‹
+                  </button>
+                  
+                  {/* Botón siguiente */}
+                  <button
+                    onClick={() => setCurrentImageIndex(prev => 
+                      prev === selectedPublication.images!.length - 1 ? 0 : prev + 1
+                    )}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    ›
+                  </button>
+                  
+                  {/* Indicadores de puntos */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                    {selectedPublication.images.map((_, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Contador de imágenes */}
+                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    {currentImageIndex + 1} / {selectedPublication.images.length}
+                  </div>
+                </>
+              )}
+            </div>
+            
             <p className="text-gray-600 mb-4">{selectedPublication.descripcion}</p>
             <div className="flex justify-between items-center">
               <span className="text-2xl font-bold text-blue-600">${selectedPublication.price}</span>
               <span className="text-sm text-gray-500">{selectedPublication.capacidad} personas · {selectedPublication.metros_cuadrados}m²</span>
             </div>
             <p className="text-sm text-gray-500 mt-2">{selectedPublication.direccion}</p>
+            
+            {/* Botones de acción */}
+            <div className="flex gap-3 mt-6">
+              <button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                onClick={() => {
+                  // TODO: Implementar lógica de reserva
+                  console.log('Reservar publicación:', selectedPublication.id);
+                }}
+              >
+                Reservar
+              </button>
+              <button 
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                onClick={() => {
+                  // TODO: Implementar lógica de contacto
+                  console.log('Contactar sobre publicación:', selectedPublication.id);
+                }}
+              >
+                Contactar
+              </button>
+            </div>
           </div>
         )}
       </div>
