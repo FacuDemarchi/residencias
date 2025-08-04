@@ -3,7 +3,7 @@ import AddressSearchBar from './AddressSearchBar';
 import OrderManager from './OrderManager';
 import PublicationCard from './PublicationCard';
 import NewPublicationCard from './NewPublicationCard';
-import examplePublications from './examplePublications';
+import { useGoogleMaps } from '../../context/GoogleMapsContext';
 
 interface Publication {
   id: number;
@@ -23,11 +23,24 @@ interface Publication {
 }
 
 interface SidebarProps {
-  onPublicationClick: (publication: Publication) => void;
+  setSelectedPublication: (publication: Publication | null) => void;
   highlightedPublications: Publication[];
+  selectedPublication: Publication | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onPublicationClick, highlightedPublications }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication }) => {
+  const { mapLocations, loadingLocations } = useGoogleMaps();
+
+  // Extraer todas las publicaciones de las ubicaciones del mapa
+  const allPublications = mapLocations.flatMap(location => 
+    location.publications_test.map(pub => ({
+      ...pub,
+      price: pub.price || 0
+    }))
+  );
+
+  const publicationsToShow = allPublications;
+
   return (
     <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
       <div className="flex flex-col gap-2">
@@ -35,27 +48,46 @@ const Sidebar: React.FC<SidebarProps> = ({ onPublicationClick, highlightedPublic
         <OrderManager />
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
-        {examplePublications
-          .filter((pub: any) => pub.estado !== 'ocupado' && pub.estado !== 'reservado')
-          .map((pub: any) => {
-            const isHighlighted = highlightedPublications.some(hp => hp.id === pub.id);
-                          const mappedPub = {
+        {loadingLocations ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">Cargando publicaciones...</div>
+          </div>
+        ) : publicationsToShow.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">No hay publicaciones disponibles</div>
+          </div>
+        ) : (
+          publicationsToShow
+            .map((pub: Publication) => {
+              const isHighlighted = highlightedPublications.some(hp => hp.id === pub.id);
+              const isSelected = selectedPublication ? selectedPublication.id === pub.id : false;
+              return {
                 ...pub,
-                price: pub.precio, // Convertir precio a price
-                precio: pub.precio // Mantener precio para PublicationCard
+                isHighlighted,
+                isSelected
               };
+            })
+            .map((pub) => {
+              const { isHighlighted, isSelected, ...publicationData } = pub;
               return (
                 <PublicationCard 
                   key={pub.id} 
                   onClick={() => {
-                    console.log('🖱️ Click en publicación del sidebar:', mappedPub);
-                    onPublicationClick(mappedPub);
+                    // Si la publicación ya está seleccionada, la deseleccionamos
+                    if (isSelected) {
+                      setSelectedPublication(null);
+                    } else {
+                      // Si no está seleccionada, la seleccionamos
+                      setSelectedPublication(pub);
+                    }
                   }}
                   isHighlighted={isHighlighted}
-                  {...mappedPub}
+                  isSelected={isSelected}
+                  {...publicationData}
                 />
               );
-          })}
+            })
+        )}
       </div>
       <div>
         <NewPublicationCard />

@@ -33,13 +33,14 @@ interface Publication {
 
 interface ContentAreaProps {
   selectedPublication: Publication | null;
+  highlightedPublications: Publication[]; // Nueva prop para las publicaciones resaltadas
   onHighlightPublications: (publications: Publication[]) => void;
   onSelectPublication: (publication: Publication) => void; // Nueva prop
   onClearSelectedPublication?: () => void; // Nueva prop para limpiar la selección
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighlightPublications, onSelectPublication, onClearSelectedPublication }) => {
-  const { isLoaded, google, center, viewport, mapLocations, loadingLocations } = useGoogleMaps();
+const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highlightedPublications, onHighlightPublications, onSelectPublication, onClearSelectedPublication }) => {
+  const { isLoaded, google, center, zoom, setZoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { tags, loading: tagsLoading } = useTags();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -55,18 +56,85 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
         mapInstance.current.fitBounds(viewport);
       } else {
         mapInstance.current.panTo(center);
-        mapInstance.current.setZoom(12);
+        mapInstance.current.setZoom(zoom);
       }
     }
   };
 
-  // Mostrar automáticamente el detalle cuando se selecciona una publicación
+  // Mostrar automáticamente el detalle solo cuando se selecciona una publicación específica
   useEffect(() => {
     if (selectedPublication) {
       setShowDetail(true);
       setCurrentImageIndex(0); // Resetear al primer índice de imagen
+    } else {
+      setShowDetail(false);
     }
   }, [selectedPublication]);
+
+  // useEffect para manejar el panto cuando cambie selectedPublication o highlightedPublications
+  useEffect(() => {
+    if (!mapInstance.current || !google) return;
+
+    if (selectedPublication) {
+      // Buscar la publicación seleccionada en mapLocations.publications_test
+      const locationWithPublication = mapLocations.find(location => 
+        location.publications_test?.some(pub => pub.id === selectedPublication.id)
+      );
+
+      if (locationWithPublication && locationWithPublication.latitud && locationWithPublication.longitud) {
+        // Hacer panto a la ubicación de la publicación seleccionada
+        const position = {
+          lat: parseFloat(locationWithPublication.latitud.toString()),
+          lng: parseFloat(locationWithPublication.longitud.toString())
+        };
+        mapInstance.current.panTo(position);
+        mapInstance.current.setZoom(15);
+      }
+    } else if (highlightedPublications.length > 0) {
+      // Si hay publicaciones resaltadas, hacer panto a la primera ubicación
+      const firstPublication = highlightedPublications[0];
+      const locationWithPublication = mapLocations.find(location => 
+        location.publications_test?.some(pub => pub.id === firstPublication.id)
+      );
+
+      if (locationWithPublication && locationWithPublication.latitud && locationWithPublication.longitud) {
+        // Hacer panto a la ubicación de la primera publicación resaltada
+        const position = {
+          lat: parseFloat(locationWithPublication.latitud.toString()),
+          lng: parseFloat(locationWithPublication.longitud.toString())
+        };
+        mapInstance.current.panTo(position);
+        mapInstance.current.setZoom(15);
+      }
+    } else {
+      // Si no hay publicación seleccionada ni resaltada, hacer panto al center original con zoom original
+      mapInstance.current.panTo(center);
+      if (viewport) {
+        mapInstance.current.fitBounds(viewport);
+      } else {
+        mapInstance.current.setZoom(zoom);
+      }
+    }
+  }, [selectedPublication, highlightedPublications, mapLocations, center, viewport, google]);
+
+  // Listener para la tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedPublication) {
+        console.log('⌨️ Tecla Escape presionada - deseleccionando publicación');
+        setShowDetail(false);
+        restoreMapToOriginal();
+        if (onClearSelectedPublication) {
+          onClearSelectedPublication();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedPublication, onClearSelectedPublication]);
 
   console.log('mapLocations: ', mapLocations);
 
@@ -74,7 +142,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
     if (isLoaded && google && mapRef.current && !mapInstance.current) {
       mapInstance.current = new google.maps.Map(mapRef.current, {
         center: center,
-        zoom: 12,
+        zoom: zoom,
         disableDefaultUI: true,
         zoomControl: true,
         gestureHandling: "greedy",
@@ -109,6 +177,16 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
     if (!mapInstance.current || !google || mapLocations.length === 0) {
       return;
     }
+
+    // Agregar listener para clic en el mapa (fuera de marcadores)
+    const mapClickListener = mapInstance.current.addListener('click', () => {
+      console.log('🗺️ Click en el mapa (fuera de marcadores)');
+      setShowDetail(false);
+      restoreMapToOriginal();
+      if (onClearSelectedPublication) {
+        onClearSelectedPublication();
+      }
+    });
 
     // Limpiar marcadores existentes
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -218,20 +296,6 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
               console.log('🔵 Marcador azul - resaltando publicaciones:', location.publications_test);
               onHighlightPublications(location.publications_test);
             }
-            
-            // Mover el marcador al centro del mapa
-            if (mapInstance.current) {
-              const position = {
-                lat: lat,
-                lng: lng
-              };
-              
-              // panTo mueve el mapa visualmente sin afectar el center del contexto
-              mapInstance.current.panTo(position);
-              
-              // Zoom fijo en 15
-              mapInstance.current.setZoom(15);
-            }
           }
         });
 
@@ -240,7 +304,14 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, onHighli
         // Ubicación sin coordenadas válidas
       }
     });
-  }, [mapLocations, google, onHighlightPublications, onSelectPublication]);
+
+    // Cleanup function para remover el listener
+    return () => {
+      if (mapClickListener) {
+        google.maps.event.removeListener(mapClickListener);
+      }
+    };
+  }, [mapLocations, google, onHighlightPublications, onSelectPublication, onClearSelectedPublication]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">

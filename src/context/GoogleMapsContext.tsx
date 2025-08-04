@@ -49,6 +49,8 @@ interface GoogleMapsContextType {
   retryLoad: () => void;
   center: { lat: number; lng: number };
   setCenter: (center: { lat: number; lng: number }, searchType?: string) => void;
+  zoom: number;
+  setZoom: (zoom: number) => void;
   viewport: google.maps.LatLngBounds | null;
   setViewport: (viewport: google.maps.LatLngBounds | null) => void;
   // NUEVO: ubicaciones para marcadores
@@ -109,6 +111,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [center, setCenterState] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
+  const [zoom, setZoomState] = useState<number>(12); // Zoom inicial
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
 
   // NUEVO: estado para ubicaciones y tipo de búsqueda
@@ -146,6 +149,11 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     if (searchType) {
       setCurrentSearchType(searchType);
     }
+  };
+
+  // Función para establecer el zoom
+  const setZoom = (newZoom: number) => {
+    setZoomState(newZoom);
   };
 
   // Función para cargar ubicaciones desde Supabase
@@ -234,6 +242,8 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     retryLoad,
     center,
     setCenter,
+    zoom,
+    setZoom,
     viewport,
     setViewport,
     mapLocations,
