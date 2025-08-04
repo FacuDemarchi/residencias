@@ -4,6 +4,7 @@ import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useAuth } from '../../context/AuthContext';
 import { useTags } from '../../context/TagsContext';
 import { useUserPublications } from '../../hooks/useUserPublications';
+import { useImageUpload } from '../../hooks/useImageUpload';
 import TagChip from '../common/TagChip';
 
 interface Image {
@@ -41,19 +42,96 @@ interface ContentAreaProps {
   onClearSelectedPublication?: () => void; // Nueva prop para limpiar la selección
   onMyPublicationsClick: () => void; // Nueva prop para manejar clic en "Mis publicaciones"
   showUserPublications: boolean; // Nueva prop para controlar el modo de visualización
+  isEditMode: boolean; // Nueva prop para controlar el modo de edición
+  editingImages: Image[]; // Nueva prop para las imágenes en modo de edición
+  onUpdatePublication: (publication: Publication) => void; // Nueva prop para actualizar publicación
+  onAddImage: (image: Image) => void; // Nueva prop para agregar imagen
+  onRemoveImage: (imageId: number) => void; // Nueva prop para eliminar imagen
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highlightedPublications, onHighlightPublications, onSelectPublication, onClearSelectedPublication, onMyPublicationsClick, showUserPublications }) => {
+const ContentArea: React.FC<ContentAreaProps> = ({ 
+  selectedPublication, 
+  highlightedPublications, 
+  onHighlightPublications, 
+  onSelectPublication, 
+  onClearSelectedPublication, 
+  onMyPublicationsClick, 
+  showUserPublications, 
+  isEditMode,
+  editingImages,
+  onUpdatePublication,
+  onAddImage,
+  onRemoveImage
+}) => {
   const { isLoaded, google, center, zoom, setZoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { userData } = useAuth();
   const { tags, loading: tagsLoading } = useTags();
   const { publications: userPublications } = useUserPublications();
+  const { uploadImage, deleteImage, uploading: imageUploading, error: imageError } = useImageUpload();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Función para manejar la carga de imágenes
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Solo se permiten archivos de imagen');
+        continue;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen debe ser menor a 5MB');
+        continue;
+      }
+
+      const result = await uploadImage(file);
+      if (result) {
+        const newImage: Image = {
+          id: result.id,
+          publication_id: selectedPublication?.id || 0,
+          url: result.url,
+          created_at: new Date().toISOString()
+        };
+        onAddImage(newImage);
+      }
+    }
+
+    // Limpiar el input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Función para eliminar imagen
+  const handleRemoveImage = async (imageId: number, imageUrl: string) => {
+    const success = await deleteImage(imageId, imageUrl);
+    if (success) {
+      onRemoveImage(imageId);
+    }
+  };
+
+  // Función para actualizar campos de la publicación
+  const handleFieldChange = (field: keyof Publication, value: any) => {
+    if (!selectedPublication) return;
+    
+    const updatedPublication = {
+      ...selectedPublication,
+      [field]: value
+    };
+    onUpdatePublication(updatedPublication);
+  };
 
   // Función para restaurar el mapa a su estado original
   const restoreMapToOriginal = () => {
@@ -397,91 +475,262 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold mb-4">{selectedPublication.titulo}</h2>
             
-            {/* Carrusel de imágenes */}
-            <div className="relative mb-4">
-              {/* Imagen principal */}
-              <img 
-                src={selectedPublication.images && selectedPublication.images.length > 0 
-                  ? selectedPublication.images[currentImageIndex].url 
-                  : selectedPublication.imagen} 
-                alt={selectedPublication.titulo} 
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              
-              {/* Controles del carrusel - solo mostrar si hay múltiples imágenes */}
-              {selectedPublication.images && selectedPublication.images.length > 1 && (
-                <>
-                  {/* Botón anterior */}
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => 
-                      prev === 0 ? selectedPublication.images!.length - 1 : prev - 1
-                    )}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    ‹
-                  </button>
-                  
-                  {/* Botón siguiente */}
-                  <button
-                    onClick={() => setCurrentImageIndex(prev => 
-                      prev === selectedPublication.images!.length - 1 ? 0 : prev + 1
-                    )}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    ›
-                  </button>
-                  
-                  {/* Indicadores de puntos */}
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-                    {selectedPublication.images.map((_, index: number) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Contador de imágenes */}
-                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                    {currentImageIndex + 1} / {selectedPublication.images.length}
-                  </div>
-                </>
+            {/* Título del modo */}
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold">
+                {isEditMode ? 'Crear nueva publicación' : selectedPublication.titulo}
+              </h2>
+              {isEditMode && (
+                <p className="text-sm text-gray-500 mt-1">Completa los datos de tu nueva publicación</p>
               )}
             </div>
             
-            <p className="text-gray-600 mb-4">{selectedPublication.descripcion}</p>
-            <div className="flex justify-between items-center">
-              <span className="text-2xl font-bold text-blue-600">${selectedPublication.price}</span>
-              <span className="text-sm text-gray-500">{selectedPublication.capacidad} personas · {selectedPublication.metros_cuadrados}m²</span>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">{selectedPublication.direccion}</p>
-            
-            {/* Botones de acción */}
-            <div className="flex gap-3 mt-6">
-              <button 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-                onClick={() => {
-                  // TODO: Implementar lógica de reserva
-                  console.log('Reservar publicación:', selectedPublication.id);
-                }}
-              >
-                Reservar
-              </button>
-              <button 
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-                onClick={() => {
-                  // TODO: Implementar lógica de contacto
-                  console.log('Contactar sobre publicación:', selectedPublication.id);
-                }}
-              >
-                Contactar
-              </button>
-            </div>
+            {isEditMode && userData?.user_type === 'residencia' ? (
+              /* Formulario de edición - solo para usuarios residencia */
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ingresa el título de la publicación"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedPublication.titulo}
+                    onChange={(e) => handleFieldChange('titulo', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                  <textarea 
+                    placeholder="Describe tu espacio..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedPublication.descripcion}
+                    onChange={(e) => handleFieldChange('descripcion', e.target.value)}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={selectedPublication.price}
+                      onChange={(e) => handleFieldChange('price', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Capacidad</label>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={selectedPublication.capacidad}
+                      onChange={(e) => handleFieldChange('capacidad', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ingresa la dirección"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedPublication.direccion}
+                    onChange={(e) => handleFieldChange('direccion', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Metros cuadrados</label>
+                  <input 
+                    type="number" 
+                    placeholder="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedPublication.metros_cuadrados}
+                    onChange={(e) => handleFieldChange('metros_cuadrados', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                
+                {/* Sección de imágenes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+                  
+                  {/* Input para cargar imágenes */}
+                  <div className="mb-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {imageUploading ? 'Subiendo...' : '📷 Agregar imágenes'}
+                    </label>
+                    {imageError && (
+                      <p className="text-red-500 text-xs mt-1">{imageError}</p>
+                    )}
+                  </div>
+                  
+                  {/* Vista previa de imágenes */}
+                  {editingImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {editingImages.map((image, index) => (
+                        <div key={image.id} className="relative group">
+                          <img
+                            src={image.url}
+                            alt={`Imagen ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg"
+                          />
+                          <button
+                            onClick={() => handleRemoveImage(image.id, image.url)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Botones de acción */}
+                <div className="flex gap-3 pt-4">
+                  <button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    onClick={() => {
+                      // TODO: Implementar guardado de publicación
+                      console.log('Guardando nueva publicación:', selectedPublication);
+                    }}
+                  >
+                    Guardar publicación
+                  </button>
+                  <button 
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    onClick={() => {
+                      if (onClearSelectedPublication) {
+                        onClearSelectedPublication();
+                      }
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : isEditMode && userData?.user_type !== 'residencia' ? (
+              /* Mensaje de acceso denegado para usuarios que no son residencia */
+              <div className="text-center py-8">
+                <div className="text-red-500 text-lg font-semibold mb-2">Acceso denegado</div>
+                <p className="text-gray-600">Solo los usuarios de tipo "residencia" pueden crear publicaciones.</p>
+                <button 
+                  className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  onClick={() => {
+                    if (onClearSelectedPublication) {
+                      onClearSelectedPublication();
+                    }
+                  }}
+                >
+                  Cerrar
+                </button>
+              </div>
+            ) : (
+              /* Vista normal de publicación */
+              <>
+                {/* Carrusel de imágenes */}
+                <div className="relative mb-4">
+                  {/* Imagen principal */}
+                  <img 
+                    src={selectedPublication.images && selectedPublication.images.length > 0 
+                      ? selectedPublication.images[currentImageIndex].url 
+                      : selectedPublication.imagen} 
+                    alt={selectedPublication.titulo} 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  
+                  {/* Controles del carrusel - solo mostrar si hay múltiples imágenes */}
+                  {selectedPublication.images && selectedPublication.images.length > 1 && (
+                    <>
+                      {/* Botón anterior */}
+                      <button
+                        onClick={() => setCurrentImageIndex(prev => 
+                          prev === 0 ? selectedPublication.images!.length - 1 : prev - 1
+                        )}
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                      >
+                        ‹
+                      </button>
+                      
+                      {/* Botón siguiente */}
+                      <button
+                        onClick={() => setCurrentImageIndex(prev => 
+                          prev === selectedPublication.images!.length - 1 ? 0 : prev + 1
+                        )}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                      >
+                        ›
+                      </button>
+                      
+                      {/* Indicadores de puntos */}
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+                        {selectedPublication.images.map((_, index: number) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-colors ${
+                              index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Contador de imágenes */}
+                      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        {currentImageIndex + 1} / {selectedPublication.images.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                <p className="text-gray-600 mb-4">{selectedPublication.descripcion}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-2xl font-bold text-blue-600">${selectedPublication.price}</span>
+                  <span className="text-sm text-gray-500">{selectedPublication.capacidad} personas · {selectedPublication.metros_cuadrados}m²</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">{selectedPublication.direccion}</p>
+                
+                {/* Botones de acción */}
+                <div className="flex gap-3 mt-6">
+                  <button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    onClick={() => {
+                      // TODO: Implementar lógica de reserva
+                      console.log('Reservar publicación:', selectedPublication.id);
+                    }}
+                  >
+                    Reservar
+                  </button>
+                  <button 
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                    onClick={() => {
+                      // TODO: Implementar lógica de contacto
+                      console.log('Contactar sobre publicación:', selectedPublication.id);
+                    }}
+                  >
+                    Contactar
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

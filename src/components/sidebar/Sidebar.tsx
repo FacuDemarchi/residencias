@@ -29,9 +29,11 @@ interface SidebarProps {
   highlightedPublications: Publication[];
   selectedPublication: Publication | null;
   showUserPublications: boolean;
+  onNewPublicationClick: () => void;
+  onSelectPublication: (publication: Publication) => void; // Nueva prop para manejar selección con lógica de edición
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications, onNewPublicationClick, onSelectPublication }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
   const { userData } = useAuth();
   const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = useUserPublications();
@@ -113,8 +115,8 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
                     if (isSelected) {
                       setSelectedPublication(null);
                     } else {
-                      // Si no está seleccionada, la seleccionamos
-                      setSelectedPublication(pub);
+                      // Si no está seleccionada, la seleccionamos usando la función que maneja el modo de edición
+                      onSelectPublication(pub);
                     }
                   }}
                   isHighlighted={isHighlighted}
@@ -128,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
       {/* Mostrar el botón "+ crear nueva publicación" solo para usuarios con user_type "residencia" */}
       {userData?.user_type === 'residencia' && (
         <div>
-          <NewPublicationCard />
+          <NewPublicationCard onClick={onNewPublicationClick} />
         </div>
       )}
     </div>
