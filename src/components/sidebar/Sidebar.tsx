@@ -4,6 +4,8 @@ import OrderManager from './OrderManager';
 import PublicationCard from './PublicationCard';
 import NewPublicationCard from './NewPublicationCard';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
+import { useAuth } from '../../context/AuthContext';
+import { useUserPublications } from '../../hooks/useUserPublications';
 
 interface Publication {
   id: number;
@@ -26,10 +28,13 @@ interface SidebarProps {
   setSelectedPublication: (publication: Publication | null) => void;
   highlightedPublications: Publication[];
   selectedPublication: Publication | null;
+  showUserPublications: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
+  const { userData } = useAuth();
+  const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = useUserPublications();
   const [sortedPublications, setSortedPublications] = useState<Publication[]>([]);
 
   // Extraer todas las publicaciones de las ubicaciones del mapa
@@ -42,30 +47,50 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
     ), [mapLocations]
   );
 
+  // Determinar qué publicaciones mostrar
+  const publicationsToShow = showUserPublications ? userPublications : sortedPublications;
+  const isLoading = showUserPublications ? userPublicationsLoading : loadingLocations;
+  const hasError = showUserPublications ? userPublicationsError : null;
+
   // Actualizar las publicaciones ordenadas cuando cambien las publicaciones originales
   React.useEffect(() => {
-    setSortedPublications(allPublications);
-  }, [allPublications]);
-
-  const publicationsToShow = sortedPublications;
+    if (!showUserPublications) {
+      setSortedPublications(allPublications);
+    }
+  }, [allPublications, showUserPublications]);
 
   return (
     <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
       <div className="flex flex-col gap-2">
         <AddressSearchBar />
-        <OrderManager 
-          publications={allPublications}
-          onPublicationsChange={setSortedPublications}
-        />
+        {!showUserPublications && (
+          <OrderManager 
+            publications={allPublications}
+            onPublicationsChange={setSortedPublications}
+          />
+        )}
+        {showUserPublications && (
+          <div className="text-sm text-gray-600 font-medium">
+            Mis publicaciones ({userPublications.length})
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
-        {loadingLocations ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-500">Cargando publicaciones...</div>
+            <div className="text-gray-500">
+              {showUserPublications ? 'Cargando mis publicaciones...' : 'Cargando publicaciones...'}
+            </div>
+          </div>
+        ) : hasError ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-red-500">Error: {hasError}</div>
           </div>
         ) : publicationsToShow.length === 0 ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-500">No hay publicaciones disponibles</div>
+            <div className="text-gray-500">
+              {showUserPublications ? 'No tienes publicaciones creadas' : 'No hay publicaciones disponibles'}
+            </div>
           </div>
         ) : (
           publicationsToShow
@@ -100,9 +125,12 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
             })
         )}
       </div>
-      <div>
-        <NewPublicationCard />
-      </div>
+      {/* Mostrar el botón "+ crear nueva publicación" solo para usuarios con user_type "residencia" */}
+      {userData?.user_type === 'residencia' && (
+        <div>
+          <NewPublicationCard />
+        </div>
+      )}
     </div>
   );
 };

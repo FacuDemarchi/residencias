@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 
-// Puedes tipar userData si lo usas
-// type UserData = { ... };
+// Tipo para los datos adicionales del usuario
+interface UserData {
+  id: number;
+  user_id: string;
+  user_type: 'cliente' | 'residencia';
+  created_at: string;
+  updated_at: string;
+}
 
 export function useProvideAuth() {
   const [user, setUser] = useState<User | null>(() => {
@@ -12,12 +18,27 @@ export function useProvideAuth() {
   });
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  // const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
-  // async function fetchUserData(user: User) {
-  //   // const { data, error } = await supabase.from('user_data').select('*').eq('user_id', user.id);
-  //   // setUserData(data?.[0] ?? null);
-  // }
+  async function fetchUserData(user: User) {
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user data:', error);
+        setUserData(null);
+      } else {
+        setUserData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setUserData(null);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -25,10 +46,10 @@ export function useProvideAuth() {
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
         localStorage.setItem('user', JSON.stringify(data.session.user));
-        // fetchUserData(data.session.user);
+        fetchUserData(data.session.user);
       } else {
         localStorage.removeItem('user');
-        // setUserData(null);
+        setUserData(null);
       }
       setLoading(false);
     });
@@ -38,10 +59,10 @@ export function useProvideAuth() {
       setUser(session?.user ?? null);
       if (session?.user) {
         localStorage.setItem('user', JSON.stringify(session.user));
-        // fetchUserData(session.user);
+        fetchUserData(session.user);
       } else {
         localStorage.removeItem('user');
-        // setUserData(null);
+        setUserData(null);
       }
     });
     return () => {
@@ -63,16 +84,16 @@ export function useProvideAuth() {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setUserData(null);
     localStorage.removeItem('user');
-    // setUserData(null);
   };
 
   return {
     user,
     session,
     loading,
+    userData,
     signInWithGoogle,
     signOut,
-    // userData,
   };
 } 

@@ -2,7 +2,6 @@ import MainPage from './pages/MainPage'
 import { GoogleMapsProvider } from './context/GoogleMapsContext'
 import { AuthProvider } from './context/AuthContext'
 import { TagsProvider } from './context/TagsContext'
-import { PublicationsProvider } from './context/PublicationsContext'
 import './App.css'
 
 function App() {
@@ -10,9 +9,7 @@ function App() {
     <GoogleMapsProvider>
       <AuthProvider>
         <TagsProvider>
-          <PublicationsProvider>
-            <MainPage />
-          </PublicationsProvider>
+          <MainPage />
         </TagsProvider>
       </AuthProvider>
     </GoogleMapsProvider>

@@ -25,6 +25,8 @@ const MainPage: React.FC = () => {
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   // Estado para publicaciones a remarcar en el sidebar
   const [highlightedPublications, setHighlightedPublications] = useState<Publication[]>([]);
+  // Estado para controlar si se están mostrando las publicaciones del usuario
+  const [showUserPublications, setShowUserPublications] = useState(false);
 
   // Función para remarcar publicaciones en el sidebar
   const handleHighlightPublications = (publications: Publication[]) => {
@@ -46,6 +48,15 @@ const MainPage: React.FC = () => {
     // Nota: El ContentArea se encarga de restaurar el mapa a través de restoreMapToOriginal()
   };
 
+  // Función para manejar el clic en "Mis publicaciones"
+  const handleMyPublicationsClick = () => {
+    console.log('📝 Cambiando a modo "Mis publicaciones"');
+    setShowUserPublications(!showUserPublications);
+    // Limpiar selección y highlights al cambiar de modo
+    setSelectedPublication(null);
+    setHighlightedPublications([]);
+  };
+
   return (
     <div className="grid grid-cols-5 grid-rows-[3.5rem_1fr] w-screen h-screen min-w-screen min-h-screen p-0 m-0">
       {/* Sidebar ocupa ambas filas, pegado al techo */}
@@ -54,6 +65,7 @@ const MainPage: React.FC = () => {
           setSelectedPublication={setSelectedPublication}
           highlightedPublications={highlightedPublications}
           selectedPublication={selectedPublication}
+          showUserPublications={showUserPublications}
         />
       </div>
       {/* ContentArea en la segunda fila y columnas 2-6 */}
@@ -64,6 +76,8 @@ const MainPage: React.FC = () => {
           onHighlightPublications={handleHighlightPublications}
           onSelectPublication={handleSelectPublication}
           onClearSelectedPublication={handleClearSelectedPublication}
+          onMyPublicationsClick={handleMyPublicationsClick}
+          showUserPublications={showUserPublications}
         />
       </div>
     </div>

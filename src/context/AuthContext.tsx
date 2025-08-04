@@ -3,13 +3,21 @@ import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { useProvideAuth } from '../hooks/useProvideAuth';
 
+interface UserData {
+  id: number;
+  user_id: string;
+  user_type: 'cliente' | 'residencia';
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  userData: UserData | null;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  // userData?: any; // Para datos extra del usuario (opcional)
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

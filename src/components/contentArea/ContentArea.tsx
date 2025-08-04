@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
+import { useAuth } from '../../context/AuthContext';
 import { useTags } from '../../context/TagsContext';
+import { useUserPublications } from '../../hooks/useUserPublications';
 import TagChip from '../common/TagChip';
 
 interface Image {
@@ -37,12 +39,16 @@ interface ContentAreaProps {
   onHighlightPublications: (publications: Publication[]) => void;
   onSelectPublication: (publication: Publication) => void; // Nueva prop
   onClearSelectedPublication?: () => void; // Nueva prop para limpiar la selección
+  onMyPublicationsClick: () => void; // Nueva prop para manejar clic en "Mis publicaciones"
+  showUserPublications: boolean; // Nueva prop para controlar el modo de visualización
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highlightedPublications, onHighlightPublications, onSelectPublication, onClearSelectedPublication }) => {
+const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highlightedPublications, onHighlightPublications, onSelectPublication, onClearSelectedPublication, onMyPublicationsClick, showUserPublications }) => {
   const { isLoaded, google, center, zoom, setZoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
+  const { userData } = useAuth();
   const { tags, loading: tagsLoading } = useTags();
+  const { publications: userPublications } = useUserPublications();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -192,11 +198,27 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Crear nuevos marcadores para ubicaciones
-    mapLocations.forEach((location) => {
+    // Filtrar ubicaciones según el modo
+    const locationsToShow = showUserPublications 
+      ? mapLocations.filter(location => 
+          location.publications_test?.some(pub => 
+            userPublications.some(userPub => userPub.id === pub.id)
+          )
+        )
+      : mapLocations;
+
+    // Crear nuevos marcadores para ubicaciones filtradas
+    locationsToShow.forEach((location) => {
       if (location.latitud && location.longitud) {
         const lat = parseFloat(location.latitud.toString());
         const lng = parseFloat(location.longitud.toString());
+
+        // Filtrar publicaciones según el modo
+        const publicationsToShow = showUserPublications
+          ? location.publications_test?.filter(pub => 
+              userPublications.some(userPub => userPub.id === pub.id)
+            ) || []
+          : location.publications_test || [];
 
         // Determinar el texto del label y color según las publicaciones
         let labelText = '';
@@ -204,11 +226,11 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
         let markerWidth = 24; // Ancho base del marcador
         let markerHeight = 24; // Alto base del marcador
         
-        if (location.publications_test && location.publications_test.length > 0) {
-          if (location.publications_test.length === 1) {
+        if (publicationsToShow.length > 0) {
+          if (publicationsToShow.length === 1) {
             // Si tiene una sola publicación, mostrar el precio en verde
-            labelText = `$${location.publications_test[0].price}`;
-            markerColor = '#27ae60'; // Verde para precio
+            labelText = `$${publicationsToShow[0].price}`;
+            markerColor = showUserPublications ? '#e74c3c' : '#27ae60'; // Rojo para mis publicaciones, verde para todas
             
             // Ajustar el ancho del marcador según la longitud del precio
             const priceLength = labelText.length;
@@ -221,8 +243,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
             }
           } else {
             // Si tiene múltiples publicaciones, mostrar la cantidad en azul
-            labelText = `${location.publications_test.length}`;
-            markerColor = '#2c5aa0'; // Azul para cantidad
+            labelText = `${publicationsToShow.length}`;
+            markerColor = showUserPublications ? '#e74c3c' : '#2c5aa0'; // Rojo para mis publicaciones, azul para todas
             markerWidth = 36; // Más grande para números
           }
         }
@@ -254,8 +276,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
         // Crear contenido del infoWindow con información de publicaciones
         let infoContent = '<div style="padding: 10px; max-width: 250px;">';
         
-        if (location.publications_test && location.publications_test.length > 0) {
-          location.publications_test.forEach((publication: any) => {
+        if (publicationsToShow.length > 0) {
+          publicationsToShow.forEach((publication: any) => {
             infoContent += `
               <p style="margin: 4px 0; font-size: 12px; color: #333;">
                 $${publication.price} | ${publication.capacidad} personas | ${publication.metros_cuadrados}m²
@@ -286,15 +308,15 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
         marker.addListener('click', () => {
           console.log('️ Click en marcador del mapa:', location);
           
-          if (location.publications_test && location.publications_test.length > 0) {
-            if (location.publications_test.length === 1) {
+          if (publicationsToShow.length > 0) {
+            if (publicationsToShow.length === 1) {
               // Marcador verde: seleccionar la publicación
-              console.log('🟢 Marcador verde - seleccionando publicación:', location.publications_test[0]);
-              onSelectPublication(location.publications_test[0]);
+              console.log('🟢 Marcador verde - seleccionando publicación:', publicationsToShow[0]);
+              onSelectPublication(publicationsToShow[0]);
             } else {
               // Marcador azul: resaltar publicaciones
-              console.log('🔵 Marcador azul - resaltando publicaciones:', location.publications_test);
-              onHighlightPublications(location.publications_test);
+              console.log('🔵 Marcador azul - resaltando publicaciones:', publicationsToShow);
+              onHighlightPublications(publicationsToShow);
             }
           }
         });
@@ -311,7 +333,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
         google.maps.event.removeListener(mapClickListener);
       }
     };
-  }, [mapLocations, google, onHighlightPublications, onSelectPublication, onClearSelectedPublication]);
+  }, [mapLocations, google, onHighlightPublications, onSelectPublication, onClearSelectedPublication, showUserPublications, userPublications]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
@@ -319,7 +341,15 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedPublication, highligh
       <div className="absolute top-0 left-0 w-full z-20 h-14 flex items-center bg-white/80 backdrop-blur-sm">
         <div className="flex items-center gap-4 px-4 w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* Botones adicionales al inicio del carrusel */}
-          <TagChip label="Mis publicaciones" />
+          {/* Mostrar "Mis publicaciones" solo para usuarios de tipo residencia */}
+          {userData?.user_type === 'residencia' && (
+            <button 
+              onClick={onMyPublicationsClick}
+              className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full text-sm font-medium transition-colors"
+            >
+              Mis publicaciones
+            </button>
+          )}
           <TagChip label="Mis alquileres" />
           {tagsLoading ? (
             <span className="text-primary">Cargando tags...</span>
