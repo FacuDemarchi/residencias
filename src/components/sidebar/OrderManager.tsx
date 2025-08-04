@@ -1,8 +1,73 @@
-import React from 'react';
-import { usePublications } from '../../context/PublicationsContext';
+import React, { useState, useMemo } from 'react';
 
-const OrderManager: React.FC = () => {
-  const { orderBy, setOrderBy } = usePublications();
+interface Image {
+  id: number;
+  publication_id: number;
+  url: string;
+  alt_text?: string;
+  is_primary?: boolean;
+  created_at: string;
+}
+
+interface Publication {
+  id: number;
+  user_id: number;
+  location_id: number;
+  estado: string;
+  titulo: string;
+  descripcion: string;
+  price: number;
+  direccion: string;
+  capacidad: number;
+  metros_cuadrados: number;
+  amenidades: string[];
+  created_at: string;
+  updated_at: string;
+  imagen?: string;
+  images?: Image[];
+}
+
+interface OrderManagerProps {
+  publications: Publication[];
+  onPublicationsChange: (sortedPublications: Publication[]) => void;
+}
+
+type OrderType = 'recomendados' | 'menor_precio' | 'mayor_precio' | 'recientes' | 'antiguos';
+
+const OrderManager: React.FC<OrderManagerProps> = ({ publications, onPublicationsChange }) => {
+  const [orderBy, setOrderBy] = useState<OrderType>('recomendados');
+
+  const sortedPublications = useMemo(() => {
+    const publicationsCopy = [...publications];
+    
+    switch (orderBy) {
+      case 'menor_precio':
+        return publicationsCopy.sort((a, b) => (a.price || 0) - (b.price || 0));
+      
+      case 'mayor_precio':
+        return publicationsCopy.sort((a, b) => (b.price || 0) - (a.price || 0));
+      
+      case 'recientes':
+        return publicationsCopy.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      
+      case 'antiguos':
+        return publicationsCopy.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      
+      case 'recomendados':
+      default:
+        // Para recomendados, mantenemos el orden original (que viene del contexto de Google Maps)
+        return publicationsCopy;
+    }
+  }, [publications, orderBy]);
+
+  // Notificar al componente padre cuando cambien las publicaciones ordenadas
+  React.useEffect(() => {
+    onPublicationsChange(sortedPublications);
+  }, [sortedPublications, onPublicationsChange]);
 
   return (
     <div className="w-full rounded-b-2xl bg-gray-50 shadow-sm px-4 py-3 box-border flex items-center gap-2">
@@ -15,7 +80,7 @@ const OrderManager: React.FC = () => {
       </span>
       <select 
         value={orderBy} 
-        onChange={(e) => setOrderBy(e.target.value as any)}
+        onChange={(e) => setOrderBy(e.target.value as OrderType)}
         className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <option value="recomendados">Recomendados</option>

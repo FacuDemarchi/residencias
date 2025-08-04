@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import AddressSearchBar from './AddressSearchBar';
 import OrderManager from './OrderManager';
 import PublicationCard from './PublicationCard';
@@ -30,22 +30,33 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
+  const [sortedPublications, setSortedPublications] = useState<Publication[]>([]);
 
   // Extraer todas las publicaciones de las ubicaciones del mapa
-  const allPublications = mapLocations.flatMap(location => 
-    location.publications_test.map(pub => ({
-      ...pub,
-      price: pub.price || 0
-    }))
+  const allPublications = useMemo(() => 
+    mapLocations.flatMap(location => 
+      location.publications_test.map(pub => ({
+        ...pub,
+        price: pub.price || 0
+      }))
+    ), [mapLocations]
   );
 
-  const publicationsToShow = allPublications;
+  // Actualizar las publicaciones ordenadas cuando cambien las publicaciones originales
+  React.useEffect(() => {
+    setSortedPublications(allPublications);
+  }, [allPublications]);
+
+  const publicationsToShow = sortedPublications;
 
   return (
     <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
       <div className="flex flex-col gap-2">
         <AddressSearchBar />
-        <OrderManager />
+        <OrderManager 
+          publications={allPublications}
+          onPublicationsChange={setSortedPublications}
+        />
       </div>
       <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
         {loadingLocations ? (
