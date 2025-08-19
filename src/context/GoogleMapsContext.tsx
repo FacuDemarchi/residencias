@@ -231,8 +231,20 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   // Cargar ubicaciones cuando cambie el centro
   useEffect(() => {
     loadMapLocations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center]);
+
+  // Ajustar zoom según el tipo de búsqueda
+  useEffect(() => {
+    if (currentSearchType) {
+      let newZoom = 15; // Zoom por defecto para barrios/direcciones
+      if (currentSearchType.includes('locality')) {
+        newZoom = 10; // Zoom para ciudades
+      } else if (currentSearchType.includes('administrative_area_level_1')) {
+        newZoom = 8; // Zoom para provincias
+      }
+      setZoom(newZoom);
+    }
+  }, [currentSearchType, setZoom]);
 
   const value: GoogleMapsContextType = {
     isLoaded,

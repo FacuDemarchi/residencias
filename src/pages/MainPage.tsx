@@ -78,8 +78,7 @@ const MainPage: React.FC = () => {
     if (filterType === 'mis_alquileres' && hasRentals && rentalPublications.length > 0) {
       console.log('🏠 Filtrando por mis alquileres:', rentalPublications.length);
       setHighlightedPublications(rentalPublications);
-      // Poner la primera publicación en selectedPublication
-      setSelectedPublication(rentalPublications[0]);
+      // No setear automáticamente selectedPublication para evitar panto automático
     } else if (filterType === 'Individual') {
       // Filtrar por capacidad = 1
       const filteredPublications = residenciaPublications.filter(pub => pub.capacidad === 1);
@@ -194,13 +193,14 @@ const MainPage: React.FC = () => {
   };
 
   // useEffect para manejar las publicaciones de residencia automáticamente
-  useEffect(() => {
-    if (userData?.user_type === 'residencia' && residenciaPublications.length > 0) {
-      console.log('🏢 Usuario es residencia, cargando publicaciones:', residenciaPublications.length);
-      // Actualizar los marcadores con las publicaciones de la residencia
-      setHighlightedPublications(residenciaPublications);
-    }
-  }, [userData?.user_type, residenciaPublications]);
+  // Comentado para evitar panto automático - solo se cargarán cuando el usuario interactúe
+  // useEffect(() => {
+  //   if (userData?.user_type === 'residencia' && residenciaPublications.length > 0) {
+  //     console.log('🏢 Usuario es residencia, cargando publicaciones:', residenciaPublications.length);
+  //     // Actualizar los marcadores con las publicaciones de la residencia
+  //     setHighlightedPublications(residenciaPublications);
+  //   }
+  // }, [userData?.user_type, residenciaPublications]);
 
   // useEffect para manejar los alquileres del usuario automáticamente
   useEffect(() => {
