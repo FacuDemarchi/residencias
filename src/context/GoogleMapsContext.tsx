@@ -174,12 +174,11 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
       
       const { data, error } = await supabase
         .from('location')
-        .select(`*, publications_test!inner(*, images(*))`)
+        .select(`*, publications_test(*, images(*))`)
         .gte('latitud', center.lat - latOffset)
         .lte('latitud', center.lat + latOffset)
         .gte('longitud', center.lng - lngOffset)
-        .lte('longitud', center.lng + lngOffset)
-        .eq('publications_test.estado', 'activo');
+        .lte('longitud', center.lng + lngOffset);
       
       console.log('Respuesta de Supabase (ubicaciones):', { data, error });
       
@@ -189,6 +188,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
       }
       
       console.log('Ubicaciones cargadas:', data?.length || 0);
+      console.log('Primera ubicación:', data?.[0]);
       setMapLocations(data || []);
     } catch (err) {
       console.error('Error completo:', err);

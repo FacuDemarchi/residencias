@@ -28,6 +28,8 @@ interface Publication {
 export function useUserRentals() {
   const { user } = useProvideAuth();
   const [hasRentals, setHasRentals] = useState(false);
+  const [hasReservations, setHasReservations] = useState(false);
+  const [hasActiveRentals, setHasActiveRentals] = useState(false);
   const [rentalPublications, setRentalPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +37,8 @@ export function useUserRentals() {
     async function checkUserRentals() {
       if (!user) {
         setHasRentals(false);
+        setHasReservations(false);
+        setHasActiveRentals(false);
         setRentalPublications([]);
         setLoading(false);
         return;
@@ -97,12 +101,18 @@ export function useUserRentals() {
           setRentalPublications([]);
         }
 
-        // El usuario tiene alquileres si tiene al menos una reserva o un alquiler
-        const hasAnyRental = (reservas && reservas.length > 0) || (alquileres && alquileres.length > 0);
-        setHasRentals(hasAnyRental);
+        // Separar las condiciones: reservas vs alquileres
+        const hasAnyReservation = reservas && reservas.length > 0;
+        const hasAnyRental = alquileres && alquileres.length > 0;
+        
+        setHasReservations(hasAnyReservation);
+        setHasActiveRentals(hasAnyRental);
+        setHasRentals(hasAnyReservation || hasAnyRental); // Mantener compatibilidad
       } catch (error) {
         console.error('Error checking user rentals:', error);
         setHasRentals(false);
+        setHasReservations(false);
+        setHasActiveRentals(false);
         setRentalPublications([]);
       } finally {
         setLoading(false);
@@ -114,6 +124,8 @@ export function useUserRentals() {
 
   return { 
     hasRentals, 
+    hasReservations,
+    hasActiveRentals,
     loading, 
     rentalPublications,
     // Función para refrescar los alquileres

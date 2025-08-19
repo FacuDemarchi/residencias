@@ -3,6 +3,8 @@ import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useAuth } from '../../context/AuthContext';
 import { useUserPublications } from '../../hooks/useUserPublications';
+import { useUserRentals } from '../../hooks/useUserRentals';
+import { useReservations } from '../../hooks/useReservations';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import TagChip from '../common/TagChip';
 
@@ -52,14 +54,14 @@ interface ContentAreaProps {
   onEditModeChange?: (editMode: boolean) => void; // Nueva prop para notificar cambios en el modo de edición
 }
 
-const ContentArea: React.FC<ContentAreaProps> = ({ 
-  selectedPublication, 
-  highlightedPublications, 
-  onHighlightPublications, 
-  onSelectPublication, 
-  onClearSelectedPublication, 
-  onMyPublicationsClick, 
-  showUserPublications, 
+const ContentArea: React.FC<ContentAreaProps> = ({
+  selectedPublication,
+  highlightedPublications,
+  onHighlightPublications,
+  onSelectPublication,
+  onClearSelectedPublication,
+  onMyPublicationsClick,
+  showUserPublications,
   isEditMode,
   editingImages,
   onUpdatePublication,
@@ -70,17 +72,53 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   hasRentals,
   onEditModeChange
 }) => {
-  const { isLoaded, google, center, zoom, setZoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
+  const { isLoaded, google, center, zoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { userData } = useAuth();
   const { publications: userPublications } = useUserPublications();
+
+  const { createReservation, loading: reservationLoading, error: reservationError } = useReservations();
   const { uploadImage, deleteImage, uploading: imageUploading, error: imageError } = useImageUpload();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Función para verificar si el usuario puede reservar una publicación
+  const canUserReserve = (publication: Publication): boolean => {
+    // No mostrar botón si no está autenticado, es residencia, o la publicación no está disponible
+    if (!user || !userData || 
+        userData.user_type === 'residencia' || 
+        publication.estado !== 'activo') {
+      return false;
+    }
+    return true;
+  };
+
+  // Función para manejar la reserva de una publicación
+  const handleReservation = async (publication: Publication) => {
+    if (!canUserReserve(publication)) {
+      console.log('No se puede reservar esta publicación');
+      return;
+    }
+
+    console.log('🔄 Creando reserva para publicación:', publication.id);
+    
+    const success = await createReservation(publication.id);
+    
+    if (success) {
+      console.log('✅ Reserva creada exitosamente');
+      // Mostrar mensaje de éxito
+      alert('¡Reserva creada exitosamente!');
+      
+      // Redireccionar a /reserva
+      window.location.href = '/reserva';
+    } else {
+      console.log('❌ Error al crear la reserva');
+      // El error ya está manejado en el hook
+    }
+  };
 
   // Función para manejar la carga de imágenes
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +127,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       // Validar tipo de archivo
       if (!file.type.startsWith('image/')) {
         alert('Solo se permiten archivos de imagen');
@@ -131,7 +169,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   // Función para actualizar campos de la publicación
   const handleFieldChange = (field: keyof Publication, value: any) => {
     if (!selectedPublication) return;
-    
+
     const updatedPublication = {
       ...selectedPublication,
       [field]: value
@@ -155,17 +193,17 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   useEffect(() => {
     if (selectedPublication) {
       console.log('📋 Mostrando detalle de publicación:', selectedPublication);
-      
+
       // Verificar si el usuario es residencia y si la publicación le pertenece
       const isUserResidencia = userData?.user_type === 'residencia';
       const isOwnPublication = selectedPublication.user_id === userData?.id;
       const shouldEditMode = isUserResidencia && isOwnPublication;
-      
+
       console.log('👤 Usuario es residencia:', isUserResidencia);
       console.log('📋 Publicación pertenece al usuario:', isOwnPublication);
       console.log('🆔 User ID:', userData?.id, 'Publication user_id:', selectedPublication.user_id);
       console.log('✏️ Modo edición activado:', shouldEditMode);
-      
+
       // Actualizar el modo de edición basado en la verificación local
       if (shouldEditMode !== isEditMode) {
         // Notificar al componente padre sobre el cambio de modo
@@ -178,9 +216,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({
           console.log('🔄 Desactivando modo edición automáticamente');
         }
       }
-      
+
       setShowDetail(true);
-      setCurrentImageIndex(0); // Resetear al primer índice de imagen
     } else {
       setShowDetail(false);
     }
@@ -192,7 +229,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
     if (selectedPublication) {
       // Buscar la publicación seleccionada en mapLocations.publications_test
-      const locationWithPublication = mapLocations.find(location => 
+      const locationWithPublication = mapLocations.find(location =>
         location.publications_test?.some(pub => pub.id === selectedPublication.id)
       );
 
@@ -208,7 +245,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
     } else if (highlightedPublications.length > 0) {
       // Si hay publicaciones resaltadas, hacer panto a la primera ubicación
       const firstPublication = highlightedPublications[0];
-      const locationWithPublication = mapLocations.find(location => 
+      const locationWithPublication = mapLocations.find(location =>
         location.publications_test?.some(pub => pub.id === firstPublication.id)
       );
 
@@ -253,6 +290,70 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
   console.log('mapLocations: ', mapLocations);
 
+  // Datos de ejemplo para testing mientras no hay datos en Supabase
+  const exampleLocations = [
+    {
+      id: 1,
+      latitud: -31.4167,
+      longitud: -64.1833,
+      direccion: 'Nueva Córdoba, Córdoba',
+      publications_test: [
+        {
+          id: 1,
+          user_id: 101,
+          location_id: 1,
+          estado: 'disponible',
+          titulo: 'Departamento céntrico',
+          descripcion: 'Hermoso departamento en el centro de la ciudad.',
+          price: 35000,
+          direccion: 'Calle Falsa 123',
+          capacidad: 3,
+          metros_cuadrados: 70,
+          amenidades: ['WiFi', 'Cochera', 'Balcón'],
+          created_at: '2024-06-01',
+          updated_at: '2024-06-05',
+          imagen: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+        }
+      ]
+    },
+    {
+      id: 2,
+      latitud: -31.4200,
+      longitud: -64.1900,
+      direccion: 'Centro, Córdoba',
+      publications_test: [
+        {
+          id: 2,
+          user_id: 102,
+          location_id: 2,
+          estado: 'disponible',
+          titulo: 'Casa con pileta',
+          descripcion: 'Casa amplia con pileta y jardín.',
+          price: 60000,
+          direccion: 'Av. Siempreviva 742',
+          capacidad: 6,
+          metros_cuadrados: 150,
+          amenidades: ['Pileta', 'Parrilla', 'Garage'],
+          created_at: '2024-05-20',
+          updated_at: '2024-06-03',
+          imagen: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
+        }
+      ]
+    }
+  ];
+
+  // Usar solo datos de Supabase
+  const locationsToProcess = mapLocations;
+  
+  console.log('🔍 Debug info:', {
+    isLoaded,
+    google: !!google,
+    mapInstance: !!mapInstance.current,
+    mapLocationsLength: mapLocations.length,
+    locationsToProcessLength: locationsToProcess.length,
+    exampleLocationsLength: exampleLocations.length
+  });
+
   useEffect(() => {
     if (isLoaded && google && mapRef.current && !mapInstance.current) {
       mapInstance.current = new google.maps.Map(mapRef.current, {
@@ -289,7 +390,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
   // Crear marcadores en el mapa cuando cambien las ubicaciones
   useEffect(() => {
-    if (!mapInstance.current || !google || mapLocations.length === 0) {
+    if (!mapInstance.current || !google || locationsToProcess.length === 0) {
       return;
     }
 
@@ -308,13 +409,13 @@ const ContentArea: React.FC<ContentAreaProps> = ({
     markersRef.current = [];
 
     // Filtrar ubicaciones según el modo
-    const locationsToShow = showUserPublications 
-      ? mapLocations.filter(location => 
-          location.publications_test?.some(pub => 
-            userPublications.some(userPub => userPub.id === pub.id)
-          )
+    const locationsToShow = showUserPublications
+      ? locationsToProcess.filter(location =>
+        location.publications_test?.some(pub =>
+          userPublications.some(userPub => userPub.id === pub.id)
         )
-      : mapLocations;
+      )
+      : locationsToProcess;
 
     // Crear nuevos marcadores para ubicaciones filtradas
     locationsToShow.forEach((location) => {
@@ -324,15 +425,15 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
         // Filtrar publicaciones según el modo y filtros
         let publicationsToShow = location.publications_test || [];
-        
+
         if (showUserPublications) {
           // Modo "Mis publicaciones" - filtrar por publicaciones del usuario
-          publicationsToShow = publicationsToShow.filter(pub => 
+          publicationsToShow = publicationsToShow.filter(pub =>
             userPublications.some(userPub => userPub.id === pub.id)
           );
         } else if (highlightedPublications.length > 0) {
           // Modo filtrado - mostrar solo las publicaciones resaltadas
-          publicationsToShow = publicationsToShow.filter(pub => 
+          publicationsToShow = publicationsToShow.filter(pub =>
             highlightedPublications.some(highlightedPub => highlightedPub.id === pub.id)
           );
         }
@@ -342,13 +443,13 @@ const ContentArea: React.FC<ContentAreaProps> = ({
         let markerColor = '#2c5aa0'; // Color por defecto
         let markerWidth = 24; // Ancho base del marcador
         let markerHeight = 24; // Alto base del marcador
-        
+
         if (publicationsToShow.length > 0) {
           if (publicationsToShow.length === 1) {
             // Si tiene una sola publicación, mostrar el precio en verde
             labelText = `$${publicationsToShow[0].price}`;
             markerColor = showUserPublications ? '#e74c3c' : '#27ae60'; // Rojo para mis publicaciones, verde para todas
-            
+
             // Ajustar el ancho del marcador según la longitud del precio
             const priceLength = labelText.length;
             if (priceLength > 6) {
@@ -392,7 +493,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
         // Crear contenido del infoWindow con información de publicaciones
         let infoContent = '<div style="padding: 10px; max-width: 250px;">';
-        
+
         if (publicationsToShow.length > 0) {
           publicationsToShow.forEach((publication: any) => {
             infoContent += `
@@ -404,7 +505,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
         } else {
           infoContent += '<p style="margin: 4px 0; font-size: 12px; color: #888;">Sin publicaciones</p>';
         }
-        
+
         infoContent += '</div>';
 
         // Agregar info window con detalles de las publicaciones
@@ -424,7 +525,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
         marker.addListener('click', () => {
           console.log('️ Click en marcador del mapa:', location);
-          
+
           if (publicationsToShow.length > 0) {
             if (publicationsToShow.length === 1) {
               // Marcador verde: seleccionar la publicación
@@ -460,7 +561,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
           {/* Botones adicionales al inicio del carrusel */}
           {/* Mostrar "Mis publicaciones" solo para usuarios de tipo residencia */}
           {userData?.user_type === 'residencia' && (
-            <button 
+            <button
               onClick={onMyPublicationsClick}
               className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full text-sm font-medium transition-colors"
             >
@@ -468,45 +569,45 @@ const ContentArea: React.FC<ContentAreaProps> = ({
             </button>
           )}
           {hasRentals && (
-            <TagChip 
-              label="Mis alquileres" 
+            <TagChip
+              label="Mis alquileres"
               onClick={() => onFilterPublications('mis_alquileres')}
               selected={activeFilter === 'mis_alquileres'}
             />
           )}
           {/* Filtros hardcodeados */}
-          <TagChip 
-            label="Individual" 
+          <TagChip
+            label="Individual"
             onClick={() => onFilterPublications('Individual')}
             selected={activeFilter === 'Individual'}
           />
-          <TagChip 
-            label="Doble" 
+          <TagChip
+            label="Doble"
             onClick={() => onFilterPublications('Doble')}
             selected={activeFilter === 'Doble'}
           />
-          <TagChip 
-            label="Triple" 
+          <TagChip
+            label="Triple"
             onClick={() => onFilterPublications('Triple')}
             selected={activeFilter === 'Triple'}
           />
-          <TagChip 
-            label="Cuádruple" 
+          <TagChip
+            label="Cuádruple"
             onClick={() => onFilterPublications('Cuádruple')}
             selected={activeFilter === 'Cuádruple'}
           />
-          <TagChip 
-            label="Residencia" 
+          <TagChip
+            label="Residencia"
             onClick={() => onFilterPublications('Residencia')}
             selected={activeFilter === 'Residencia'}
           />
-          <TagChip 
-            label="Departamento" 
+          <TagChip
+            label="Departamento"
             onClick={() => onFilterPublications('Departamento')}
             selected={activeFilter === 'Departamento'}
           />
         </div>
-        
+
         {loadingLocations && (
           <span className="ml-4 text-sm text-gray-600">Cargando ubicaciones...</span>
         )}
@@ -526,13 +627,13 @@ const ContentArea: React.FC<ContentAreaProps> = ({
           </button>
         )}
       </div>
-      
+
       {/* Detalle de publicación */}
       <div id="publication-detail" style={{ backgroundColor: '#fafafa' }} className={`absolute top-16 right-6 w-[clamp(280px,28vw,480px)] min-h-[200px] max-h-[82vh] bg-white/90 border border-neutral-300 rounded-2xl shadow-xl overflow-y-auto ${showDetail ? "z-50 opacity-100" : "z-1[-1] opacity-0 pointer-events-none"}`}>
         {selectedPublication && (
           <div className="p-6 relative">
             {/* Botón X para cerrar */}
-            <button 
+            <button
               onClick={() => {
                 setShowDetail(false);
                 restoreMapToOriginal();
@@ -544,7 +645,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
             >
               ✕
             </button>
-            
+
             {/* Título del modo */}
             <div className="mb-4">
               <h2 className="text-2xl font-bold">
@@ -556,24 +657,24 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                 </p>
               )}
             </div>
-            
+
             {isEditMode && userData?.user_type === 'residencia' ? (
               /* Formulario de edición - solo para usuarios residencia */
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Ingresa el título de la publicación"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={selectedPublication.titulo}
                     onChange={(e) => handleFieldChange('titulo', e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                  <textarea 
+                  <textarea
                     placeholder="Describe tu espacio..."
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -581,12 +682,12 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                     onChange={(e) => handleFieldChange('descripcion', e.target.value)}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={selectedPublication.price}
@@ -595,8 +696,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Capacidad</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={selectedPublication.capacidad}
@@ -604,33 +705,33 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Ingresa la dirección"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={selectedPublication.direccion}
                     onChange={(e) => handleFieldChange('direccion', e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Metros cuadrados</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={selectedPublication.metros_cuadrados}
                     onChange={(e) => handleFieldChange('metros_cuadrados', parseInt(e.target.value) || 0)}
                   />
                 </div>
-                
+
                 {/* Sección de imágenes */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-                  
+
                   {/* Input para cargar imágenes */}
                   <div className="mb-3">
                     <input
@@ -652,7 +753,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                       <p className="text-red-500 text-xs mt-1">{imageError}</p>
                     )}
                   </div>
-                  
+
                   {/* Vista previa de imágenes */}
                   {editingImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
@@ -674,10 +775,10 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                     </div>
                   )}
                 </div>
-                
+
                 {/* Botones de acción */}
                 <div className="flex gap-3 pt-4">
-                  <button 
+                  <button
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                     onClick={() => {
                       // TODO: Implementar guardado de publicación
@@ -686,7 +787,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                   >
                     Guardar publicación
                   </button>
-                  <button 
+                  <button
                     className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                     onClick={() => {
                       if (onClearSelectedPublication) {
@@ -703,7 +804,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
               <div className="text-center py-8">
                 <div className="text-red-500 text-lg font-semibold mb-2">Acceso denegado</div>
                 <p className="text-gray-600">Solo los usuarios de tipo "residencia" pueden crear publicaciones.</p>
-                <button 
+                <button
                   className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                   onClick={() => {
                     if (onClearSelectedPublication) {
@@ -719,19 +820,19 @@ const ContentArea: React.FC<ContentAreaProps> = ({
               <>
                 {/* Carrusel de imágenes */}
                 <div className="relative mb-4">
-                  {/* Imagen principal */}
-                  <img 
-                    src={selectedPublication.imagen || 'https://via.placeholder.com/400x300?text=Sin+imagen'} 
-                    alt={selectedPublication.titulo} 
-                    className="w-full h-48 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Error+al+cargar+imagen';
-                    }}
-                  />
-                  
+                                     {/* Imagen principal */}
+                   <img
+                     src={selectedPublication.imagen || '/src/assets/react.svg'}
+                     alt={selectedPublication.titulo}
+                     className="w-full h-48 object-cover rounded-lg"
+                     onError={(e) => {
+                       e.currentTarget.src = '/src/assets/react.svg';
+                     }}
+                   />
+
                   {/* Placeholder para futuras funcionalidades de carrusel */}
                 </div>
-                
+
                 {/* Información de la publicación */}
                 <div className="space-y-4">
                   {/* Descripción */}
@@ -741,7 +842,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                       <p className="text-gray-600 text-sm">{selectedPublication.descripcion}</p>
                     </div>
                   )}
-                  
+
                   {/* Precio y características principales */}
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-blue-600">${selectedPublication.price?.toLocaleString() || 0}</span>
@@ -750,61 +851,83 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                       <div className="text-xs text-gray-500">{selectedPublication.metros_cuadrados}m²</div>
                     </div>
                   </div>
-                  
+
                   {/* Dirección */}
                   <div>
                     <h3 className="text-sm font-semibold text-gray-700 mb-1">Ubicación</h3>
                     <p className="text-sm text-gray-600">{selectedPublication.direccion}</p>
                   </div>
-                  
+
                   {/* Estado */}
                   <div>
                     <h3 className="text-sm font-semibold text-gray-700 mb-1">Estado</h3>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      selectedPublication.estado === 'disponible' ? 'bg-green-100 text-green-800' :
-                      selectedPublication.estado === 'reservado' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${selectedPublication.estado === 'disponible' ? 'bg-green-100 text-green-800' :
+                        selectedPublication.estado === 'reservado' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                      }`}>
                       {selectedPublication.estado?.charAt(0).toUpperCase() + selectedPublication.estado?.slice(1)}
                     </span>
                   </div>
-                  
-                  {/* Amenidades */}
-                  {selectedPublication.amenidades && selectedPublication.amenidades.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-1">Amenidades</h3>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedPublication.amenidades.map((amenidad, index) => (
-                          <span key={index} className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                            {amenidad}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Botones de acción */}
-                <div className="flex gap-3 mt-6">
-                  {selectedPublication.estado === 'disponible' ? (
-                    <button 
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-                      onClick={() => {
-                        console.log('Reservar publicación:', selectedPublication.id);
-                        // TODO: Implementar lógica de reserva
-                      }}
-                    >
-                      Reservar
-                    </button>
-                  ) : (
-                    <button 
-                      className="flex-1 bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg cursor-not-allowed"
-                      disabled
-                    >
-                      {selectedPublication.estado === 'reservado' ? 'Reservado' : 'No disponible'}
-                    </button>
-                  )}
-                  <button 
+
+                                     {/* Amenidades */}
+                   {selectedPublication.amenidades && selectedPublication.amenidades.length > 0 && (
+                     <div>
+                       <h3 className="text-sm font-semibold text-gray-700 mb-1">Amenidades</h3>
+                       <div className="flex flex-wrap gap-1">
+                         {selectedPublication.amenidades.map((amenidad, index) => (
+                           <span key={index} className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                             {amenidad}
+                           </span>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                 </div>
+
+                 {/* Mensaje de error de reserva */}
+                 {reservationError && (
+                   <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                     <p className="text-red-700 text-sm">{reservationError}</p>
+                   </div>
+                 )}
+
+                                 {/* Botones de acción */}
+                 <div className="flex gap-3 mt-6">
+                   {!user ? (
+                     // Usuario no autenticado
+                     <button
+                       className="flex-1 bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg cursor-not-allowed"
+                       disabled
+                     >
+                       Inicia sesión para reservar
+                     </button>
+                   ) : userData?.user_type === 'residencia' ? (
+                     // Usuario es residencia
+                     <button
+                       className="flex-1 bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg cursor-not-allowed"
+                       disabled
+                     >
+                       Solo para clientes
+                     </button>
+                   ) : selectedPublication?.estado !== 'activo' ? (
+                     // Publicación no disponible
+                     <button
+                       className="flex-1 bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg cursor-not-allowed"
+                       disabled
+                     >
+                       No disponible
+                     </button>
+                   ) : (
+                     // Usuario puede reservar
+                     <button 
+                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                       onClick={() => handleReservation(selectedPublication)}
+                       disabled={reservationLoading}
+                     >
+                       {reservationLoading ? 'Creando reserva...' : 'Reservar'}
+                     </button>
+                   )}
+                  <button
                     className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                     onClick={() => {
                       console.log('Contactar sobre publicación:', selectedPublication.id);
@@ -820,8 +943,18 @@ const ContentArea: React.FC<ContentAreaProps> = ({
         )}
       </div>
 
-      {/* Mapa ocupa todo el espacio */}
-      <div ref={mapRef} className="h-full w-full z-10" />
+             {/* Mapa ocupa todo el espacio */}
+       <div ref={mapRef} className="h-full w-full z-10" />
+       
+       {/* Mensaje cuando no hay publicaciones */}
+       {mapLocations.length === 0 && !loadingLocations && (
+         <div className="absolute inset-0 flex items-center justify-center bg-white/90">
+           <div className="text-center p-6">
+             <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay publicaciones disponibles</h3>
+             <p className="text-gray-500">No se encontraron publicaciones en esta área. Intenta cambiar la ubicación o ajustar los filtros.</p>
+           </div>
+         </div>
+       )}
     </div>
   );
 };
