@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/sidebar/Sidebar';
 import ContentArea from '../components/contentArea/ContentArea';
 import { useAuth } from '../context/AuthContext';
+import { useResidenciaPublications } from '../hooks/useResidenciaPublications';
+import { useUserRentals } from '../hooks/useUserRentals';
 
 // Definir el tipo de publicación
 interface Publication {
@@ -33,6 +35,8 @@ interface Image {
 
 const MainPage: React.FC = () => {
   const { userData } = useAuth();
+  const { publications: residenciaPublications } = useResidenciaPublications();
+  const { hasRentals, rentalPublications } = useUserRentals();
   
   // Estado para la publicación seleccionada
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
@@ -44,8 +48,69 @@ const MainPage: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   // Estado para las imágenes en modo de edición
   const [editingImages, setEditingImages] = useState<Image[]>([]);
+  // Estado para el filtro activo de publicaciones
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  // Función para remarcar publicaciones en el sidebar
+  // Función para manejar el filtrado de publicaciones
+  const handleFilterPublications = (filterType: string | null) => {
+    console.log('🔍 Aplicando filtro:', filterType);
+    
+    // Si se hace clic en el mismo filtro que ya está activo, limpiarlo
+    if (activeFilter === filterType) {
+      console.log('🔄 Limpiando filtro activo:', filterType);
+      setActiveFilter(null);
+      setSelectedPublication(null);
+      setHighlightedPublications([]);
+      setIsEditMode(false);
+      setEditingImages([]);
+      return;
+    }
+    
+    setActiveFilter(filterType);
+    
+    // Limpiar selección y highlights al aplicar filtro
+    setSelectedPublication(null);
+    setHighlightedPublications([]);
+    setIsEditMode(false);
+    setEditingImages([]);
+
+    // Aplicar filtros específicos
+    if (filterType === 'mis_alquileres' && hasRentals && rentalPublications.length > 0) {
+      console.log('🏠 Filtrando por mis alquileres:', rentalPublications.length);
+      setHighlightedPublications(rentalPublications);
+      // Poner la primera publicación en selectedPublication
+      setSelectedPublication(rentalPublications[0]);
+    } else if (filterType === 'Individual') {
+      // Filtrar por capacidad = 1
+      const filteredPublications = residenciaPublications.filter(pub => pub.capacidad === 1);
+      setHighlightedPublications(filteredPublications);
+    } else if (filterType === 'Doble') {
+      // Filtrar por capacidad = 2
+      const filteredPublications = residenciaPublications.filter(pub => pub.capacidad === 2);
+      setHighlightedPublications(filteredPublications);
+    } else if (filterType === 'Triple') {
+      // Filtrar por capacidad = 3
+      const filteredPublications = residenciaPublications.filter(pub => pub.capacidad === 3);
+      setHighlightedPublications(filteredPublications);
+    } else if (filterType === 'Cuádruple') {
+      // Filtrar por capacidad = 4
+      const filteredPublications = residenciaPublications.filter(pub => pub.capacidad === 4);
+      setHighlightedPublications(filteredPublications);
+    } else if (filterType === 'Residencia') {
+      // Filtrar por metros cuadrados >= 80 (criterio para residencia)
+      const filteredPublications = residenciaPublications.filter(pub => pub.metros_cuadrados >= 80);
+      setHighlightedPublications(filteredPublications);
+    } else if (filterType === 'Departamento') {
+      // Filtrar por metros cuadrados < 80 (criterio para departamento)
+      const filteredPublications = residenciaPublications.filter(pub => pub.metros_cuadrados < 80);
+      setHighlightedPublications(filteredPublications);
+    } else {
+      // Limpiar filtros
+      setHighlightedPublications([]);
+    }
+  };
+
+  // Función para remarcar publicaciones en el sidebar (mantener para compatibilidad)
   const handleHighlightPublications = (publications: Publication[]) => {
     console.log('🎯 Publicaciones a remarcar en MainPage:', publications);
     setHighlightedPublications(publications);
@@ -53,17 +118,10 @@ const MainPage: React.FC = () => {
 
   // Nueva función para seleccionar publicación desde el mapa
   const handleSelectPublication = (publication: Publication) => {
-    console.log('🗺️ Publicación seleccionada desde el mapa:', publication);
+    console.log('🗺️ Publicación seleccionada:', publication);
     
-    // Verificar si el usuario es residencia y si la publicación le pertenece
-    const isUserResidencia = userData?.user_type === 'residencia';
-    const isOwnPublication = publication.user_id === userData?.id;
-    
-    // Activar modo de edición solo si es usuario residencia y la publicación es suya
-    const shouldEditMode = isUserResidencia && isOwnPublication;
-    
+    // La verificación de modo de edición se hará en ContentArea
     setSelectedPublication(publication);
-    setIsEditMode(shouldEditMode);
     setEditingImages([]);
   };
 
@@ -81,11 +139,12 @@ const MainPage: React.FC = () => {
   const handleMyPublicationsClick = () => {
     console.log('📝 Cambiando a modo "Mis publicaciones"');
     setShowUserPublications(!showUserPublications);
-    // Limpiar selección y highlights al cambiar de modo
+    // Limpiar selección, highlights y filtro al cambiar de modo
     setSelectedPublication(null);
     setHighlightedPublications([]);
     setIsEditMode(false);
     setEditingImages([]);
+    setActiveFilter(null);
   };
 
   // Función para manejar el clic en "Crear nueva publicación"
@@ -128,6 +187,29 @@ const MainPage: React.FC = () => {
     setEditingImages(prev => prev.filter(img => img.id !== imageId));
   };
 
+  // Función para manejar el cambio de modo de edición desde ContentArea
+  const handleEditModeChange = (editMode: boolean) => {
+    console.log('🔄 Cambiando modo de edición a:', editMode);
+    setIsEditMode(editMode);
+  };
+
+  // useEffect para manejar las publicaciones de residencia automáticamente
+  useEffect(() => {
+    if (userData?.user_type === 'residencia' && residenciaPublications.length > 0) {
+      console.log('🏢 Usuario es residencia, cargando publicaciones:', residenciaPublications.length);
+      // Actualizar los marcadores con las publicaciones de la residencia
+      setHighlightedPublications(residenciaPublications);
+    }
+  }, [userData?.user_type, residenciaPublications]);
+
+  // useEffect para manejar los alquileres del usuario automáticamente
+  useEffect(() => {
+    if (hasRentals && rentalPublications.length > 0 && !activeFilter) {
+      console.log('🏠 Usuario tiene alquileres, cargando publicaciones:', rentalPublications.length);
+      // No hacer nada automáticamente, solo cuando se active el filtro
+    }
+  }, [hasRentals, rentalPublications, activeFilter]);
+
   return (
     <div className="grid grid-cols-5 grid-rows-[3.5rem_1fr] w-screen h-screen min-w-screen min-h-screen p-0 m-0">
       {/* Sidebar ocupa ambas filas, pegado al techo */}
@@ -139,6 +221,7 @@ const MainPage: React.FC = () => {
           showUserPublications={showUserPublications}
           onNewPublicationClick={handleNewPublicationClick}
           onSelectPublication={handleSelectPublication}
+          activeFilter={activeFilter}
         />
       </div>
       {/* ContentArea en la segunda fila y columnas 2-6 */}
@@ -156,6 +239,10 @@ const MainPage: React.FC = () => {
           onUpdatePublication={handleUpdatePublication}
           onAddImage={handleAddImage}
           onRemoveImage={handleRemoveImage}
+          onFilterPublications={handleFilterPublications}
+          activeFilter={activeFilter}
+          hasRentals={hasRentals}
+          onEditModeChange={handleEditModeChange}
         />
       </div>
     </div>

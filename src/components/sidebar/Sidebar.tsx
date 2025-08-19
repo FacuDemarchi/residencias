@@ -31,13 +31,24 @@ interface SidebarProps {
   showUserPublications: boolean;
   onNewPublicationClick: () => void;
   onSelectPublication: (publication: Publication) => void; // Nueva prop para manejar selección con lógica de edición
+  activeFilter: string | null; // Nueva prop para el filtro activo
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications, onNewPublicationClick, onSelectPublication }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications, onNewPublicationClick, onSelectPublication, activeFilter }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
   const { userData } = useAuth();
   const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = useUserPublications();
   const [sortedPublications, setSortedPublications] = useState<Publication[]>([]);
+
+  // Definir los filtros (mismos que en ContentArea)
+  const predefinedFilters = {
+    'Individual': (pub: Publication) => pub.capacidad === 1,
+    'Doble': (pub: Publication) => pub.capacidad === 2,
+    'Triple': (pub: Publication) => pub.capacidad === 3,
+    'Cuádruple': (pub: Publication) => pub.capacidad === 4,
+    'Residencia': (pub: Publication) => pub.metros_cuadrados >= 80,
+    'Departamento': (pub: Publication) => pub.metros_cuadrados < 80
+  };
 
   // Extraer todas las publicaciones de las ubicaciones del mapa
   const allPublications = useMemo(() => 
@@ -49,17 +60,28 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
     ), [mapLocations]
   );
 
+  // Aplicar filtro si hay uno activo
+  const filteredPublications = useMemo(() => {
+    if (!activeFilter || !predefinedFilters[activeFilter as keyof typeof predefinedFilters]) {
+      console.log('📋 Sidebar: Sin filtro activo, mostrando todas las publicaciones:', allPublications.length);
+      return allPublications;
+    }
+    const filtered = allPublications.filter(predefinedFilters[activeFilter as keyof typeof predefinedFilters]);
+    console.log('🔍 Sidebar: Filtro activo:', activeFilter, 'publicaciones filtradas:', filtered.length);
+    return filtered;
+  }, [allPublications, activeFilter]);
+
   // Determinar qué publicaciones mostrar
   const publicationsToShow = showUserPublications ? userPublications : sortedPublications;
   const isLoading = showUserPublications ? userPublicationsLoading : loadingLocations;
   const hasError = showUserPublications ? userPublicationsError : null;
 
-  // Actualizar las publicaciones ordenadas cuando cambien las publicaciones originales
+  // Actualizar las publicaciones ordenadas cuando cambien las publicaciones originales o el filtro
   React.useEffect(() => {
     if (!showUserPublications) {
-      setSortedPublications(allPublications);
+      setSortedPublications(filteredPublications);
     }
-  }, [allPublications, showUserPublications]);
+  }, [filteredPublications, showUserPublications]);
 
   return (
     <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
@@ -67,7 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPu
         <AddressSearchBar />
         {!showUserPublications && (
           <OrderManager 
-            publications={allPublications}
+            publications={filteredPublications}
             onPublicationsChange={setSortedPublications}
           />
         )}

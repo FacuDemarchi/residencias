@@ -40,6 +40,8 @@ const OrderManager: React.FC<OrderManagerProps> = ({ publications, onPublication
   const sortedPublications = useMemo(() => {
     const publicationsCopy = [...publications];
     
+    console.log('🔄 OrderManager: Ordenando', publicationsCopy.length, 'publicaciones por:', orderBy);
+    
     switch (orderBy) {
       case 'menor_precio':
         return publicationsCopy.sort((a, b) => (a.price || 0) - (b.price || 0));
