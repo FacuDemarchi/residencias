@@ -1,0 +1,24 @@
+{
+  "$schema": "https://postgrestools.com/schema.json",
+  "db": {
+    "host": "db.pxjeifzojuckaknwlwgp.supabase.co",
+    "port": 5432,
+    "username": "postgres",
+    "password": "5lti94XYK0fGjGBG",
+    "database": "postgres",
+    "connTimeoutSecs": 10
+  },
+  "migrations": {
+    "migrationsDir": "./migrations"
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "root": ".",
+    "defaultBranch": "main"
+  },
+  "files": {
+    "maxSize": 1048576
+  }
+}
