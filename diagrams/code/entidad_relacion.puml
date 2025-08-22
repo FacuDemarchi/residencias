@@ -1,0 +1,277 @@
+@startuml
+
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+!define foreign_key(x) <i>x</i>
+!define implemented(x) class x << (I,#AAFFAA) >>
+!define planned(x) class x << (P,#FFFFAA) >>
+
+' ========================================
+' TABLAS IMPLEMENTADAS (REFACTORIZADAS)
+' ========================================
+
+implemented(users) {
+  primary_key(id)
+  email
+  created_at
+  updated_at
+}
+
+implemented(tags) {
+  primary_key(name)
+  created_at
+}
+
+implemented(location) {
+  primary_key(id)
+  latitud
+  longitud
+  direccion
+  created_at
+}
+
+' Tabla principal refactorizada
+implemented(publications) {
+  primary_key(id)
+  foreign_key(user_id)
+  foreign_key(location_id)
+  foreign_key(current_state_id)
+  titulo
+  descripcion
+  price
+  currency
+  deposit_amount
+  min_stay_days
+  max_stay_days
+  capacidad
+  metros_cuadrados
+  is_active
+  created_at
+  updated_at
+  created_by
+  updated_by
+  deleted_at
+}
+
+' ========================================
+' TABLAS DE ESTADOS (REFACTORIZADAS)
+' ========================================
+
+' Tabla maestra de estados disponibles
+implemented(states) {
+  primary_key(id)
+  nombre
+  descripcion
+  es_final
+  created_at
+}
+
+' Historial de cambios de estado de publicaciones
+implemented(state_history) {
+  primary_key(id)
+  foreign_key(publication_id)
+  foreign_key(state_id)
+  foreign_key(user_id)
+  motivo_cambio
+  created_at
+}
+
+' ========================================
+' TABLAS DE RESERVAS Y ALQUILERES
+' ========================================
+
+' Tabla de alquileres separada
+planned(rentals) {
+  primary_key(id)
+  foreign_key(publication_id)
+  foreign_key(user_id)
+  fecha_inicio
+  fecha_fin
+  check_in_time
+  check_out_time
+  total_personas
+  monto_total
+  deposit_paid
+  cleaning_fee
+  currency
+  contrato_aceptado
+  normas_aceptadas
+  porcentaje_actualizacion
+  fecha_actualizacion
+  created_at
+  updated_at
+  created_by
+  updated_by
+  deleted_at
+}
+
+' ========================================
+' TABLAS DE PAGOS Y CALIFICACIONES
+' ========================================
+
+planned(pagos) {
+  primary_key(id)
+  foreign_key(rental_id)
+  monto
+  fecha_vencimiento
+  fecha_pago
+  created_at
+  updated_at
+}
+
+planned(ratings) {
+  primary_key(id)
+  foreign_key(user_id)
+  foreign_key(rental_id)
+  cleanliness_score
+  communication_score
+  location_score
+  value_score
+  overall_score
+  would_recommend
+  is_anonymous
+  comentario
+  created_at
+}
+
+' ========================================
+' TABLAS DE AMENIDADES (NORMALIZADAS)
+' ========================================
+
+planned(amenities) {
+  primary_key(id)
+  nombre
+  created_at
+}
+
+planned(publication_amenities) {
+  primary_key(id)
+  foreign_key(publication_id)
+  foreign_key(amenity_id)
+  created_at
+}
+
+' ========================================
+' TABLAS DE TAGS (CORREGIDAS)
+' ========================================
+
+planned(publication_tags) {
+  primary_key(id)
+  foreign_key(publication_id)
+  foreign_key(tag_name)
+  created_at
+}
+
+' ========================================
+' TABLAS DE HISTORIAL DE PRECIOS
+' ========================================
+
+planned(price_history) {
+  primary_key(id)
+  foreign_key(publication_id)
+  precio_anterior
+  precio_nuevo
+  motivo_cambio
+  foreign_key(user_id)
+  created_at
+}
+
+' ========================================
+' TABLAS DE IMAGENES NORMALIZADAS
+' ========================================
+
+planned(images) {
+  primary_key(id)
+  foreign_key(publication_id)
+  url_imagen
+  tipo
+}
+
+' ========================================
+' TABLAS DE CONTACTOS
+' ========================================
+
+planned(contacts) {
+  primary_key(id)
+  foreign_key(publication_id)
+  contact_type
+  name
+  phone
+  email
+  is_primary
+  created_at
+  updated_at
+}
+
+' ========================================
+' TABLAS DE DISPONIBILIDAD
+' ========================================
+
+planned(availability) {
+  primary_key(id)
+  foreign_key(publication_id)
+  start_date
+  end_date
+  is_available
+  reason
+  created_at
+  updated_at
+}
+
+' ========================================
+' RELACIONES PRINCIPALES
+' ========================================
+
+' Relaciones implementadas
+users ||--o{ publications : "1:N"
+location ||--o{ publications : "1:N"
+
+' Relaciones de estados
+states ||--o{ state_history : "1:N"
+publications ||--o{ state_history : "1:N"
+
+' Relaciones de alquileres
+publications ||--o{ rentals : "1:N"
+rentals ||--o{ pagos : "1:N"
+rentals ||--o{ ratings : "1:N"
+
+' ========================================
+' RELACIONES MANY-TO-MANY
+' ========================================
+
+' Relaciones de amenidades
+publications ||--o{ publication_amenities : "1:N"
+amenities ||--o{ publication_amenities : "1:N"
+
+' Relaciones de tags
+publications ||--o{ publication_tags : "1:N"
+tags ||--o{ publication_tags : "1:N"
+
+' ========================================
+' RELACIONES DE HISTORIAL E IMAGENES
+' ========================================
+
+' Relaciones de historial de precios
+publications ||--o{ price_history : "1:N"
+
+' Relaciones de imagenes
+publications ||--o{ images : "1:N"
+
+' Relaciones de contactos
+publications ||--o{ contacts : "1:N"
+
+' Relaciones de disponibilidad
+publications ||--o{ availability : "1:N"
+
+' ========================================
+' NOTAS EXPLICATIVAS
+' ========================================
+
+note top of users : Implementado con\nGoogle OAuth\n\nTabla pertenece a otra\nbase de datos - solo\nrelacion con publications
+note top of states : Estados: eliminada, pausada,\ndisponible, reservada,\nalquilada, enMora, cancelada
+note top of price_history : Historial completo\nde cambios de precio
+note top of images : tipo: publicacion o edificio
+note top of contacts : contact_type: owner,\nemergency, maintenance
+note top of availability : Control de disponibilidad\npor fechas especificas
+
+@enduml

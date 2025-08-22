@@ -12,11 +12,21 @@
     "db:stop": "postgrestools stop",
     "db:check": "postgrestools check",
     "db:init": "postgrestools init",
-    "db:clean": "postgrestools clean"
+    "db:clean": "postgrestools clean",
+    "db:list-tables": "node scripts/list-tables.js",
+    "db:list-columns": "node scripts/list-table-columns.js",
+    "db:backup": "node scripts/backup-database.js",
+    "db:restore": "node scripts/restore-backup.js",
+    "db:list-backups": "node scripts/restore-backup.js",
+    "db:migrate": "node scripts/migrate-to-new-schema.js",
+    "db:drop": "node scripts/drop-tables.js",
+    "db:drop-sql": "node scripts/generate-drop-sql.js",
+    "db:execute-migrations": "node scripts/execute-migrations.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
     "@supabase/supabase-js": "^2.50.5",
+    "dotenv": "^17.2.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

@@ -1,0 +1,21 @@
+
+@startuml
+
+[*] --> pendiente : Sistema genera pago recurrente
+
+pendiente --> procesando : Intento de cobro iniciado
+pendiente --> vencido : Fecha limite superada
+
+procesando --> exitoso : Pago aprobado
+procesando --> fallido : Pago rechazado
+procesando --> pendiente : Reintento programado
+
+fallido --> pendiente : Reintento manual
+vencido --> pendiente : Reactivacion manual
+
+exitoso --> [*]
+
+note right of pendiente : Esperando procesamiento\nPagos mensuales automaticos
+note right of vencido : Puede generar suspension\ndel alquiler
+
+@enduml

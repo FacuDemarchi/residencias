@@ -1,0 +1,29 @@
+@startuml
+
+[*] --> pausada : Crear publicacion
+
+pausada --> disponible : Activar publicacion
+pausada --> eliminada : Eliminar publicacion
+
+disponible --> reservada : Cliente reserva
+disponible --> pausada : Pausar publicacion
+
+reservada --> alquilada : Cliente alquila
+reservada --> disponible : Cancelar reserva
+
+alquilada --> disponible : Finalizar contrato
+alquilada --> enMora : Cliente en mora
+alquilada --> resindido : Resindir contrato
+
+enMora --> alquilada : Regularizar pago
+enMora --> resindido : Resindir contrato
+
+note right of pausada : Estado inicial\nNo visible en busquedas
+note right of disponible : Disponible para reservas\nVisible en busquedas
+note right of reservada : Cliente reserva\nNo visible en busquedas
+note right of alquilada : Contrato activo\nNo visible en busquedas
+note right of enMora : Cliente en mora\nNo visible en busquedas
+note right of eliminada : Eliminada (final)\nNo visible en busquedas
+note right of resindido : Contrato resindido (final)\nNo visible en busquedas
+
+@enduml

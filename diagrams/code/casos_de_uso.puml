@@ -1,0 +1,73 @@
+
+@startuml
+
+left to right direction
+
+actor "Cliente" as Cliente
+actor "Residencia" as Residencia
+actor "Sistema" as Sistema
+
+' Casos de uso principales
+usecase "Buscar publicaciones" as UC1
+usecase "Filtrar por ubicacion" as UC2
+usecase "Filtrar por precio" as UC3
+usecase "Ver detalles publicacion" as UC4
+usecase "Solicitar reserva" as UC5
+usecase "Confirmar alquiler" as UC6
+usecase "Gestionar perfil" as UC7
+usecase "Ver historial" as UC8
+
+' Casos de uso de residencia
+usecase "Crear publicacion" as UC9
+usecase "Editar publicacion" as UC10
+usecase "Eliminar publicacion" as UC11
+usecase "Gestionar reservas" as UC12
+usecase "Confirmar/rechazar reserva" as UC13
+usecase "Ver estadisticas" as UC14
+
+' Casos de uso del sistema
+usecase "Autenticacion Google" as UC15
+usecase "Gestionar tags" as UC16
+usecase "Mostrar en mapa" as UC17
+
+' Relaciones Cliente
+Cliente -- UC1
+Cliente -- UC2
+Cliente -- UC3
+Cliente -- UC4
+Cliente -- UC5
+Cliente -- UC6
+Cliente -- UC7
+Cliente -- UC8
+Cliente -- UC15
+
+' Relaciones Residencia
+Residencia -- UC9
+Residencia -- UC10
+Residencia -- UC11
+Residencia -- UC12
+Residencia -- UC13
+Residencia -- UC14
+Residencia -- UC7
+Residencia -- UC8
+Residencia -- UC15
+
+' Relaciones Sistema
+Sistema -- UC15
+Sistema -- UC16
+Sistema -- UC17
+
+' Extensiones y dependencias
+UC1 .> UC17 : <<extend>>
+UC2 .> UC1 : <<extend>>
+UC3 .> UC1 : <<extend>>
+UC4 .> UC5 : <<include>>
+UC5 .> UC13 : <<include>>
+UC13 .> UC6 : <<include>>
+
+note right of UC1 : Funcionalidad principal\ncon datos hardcodeados
+note right of UC15 : Unica autenticacion\nimplementada
+note right of UC16 : Tabla tags funcional\nen Supabase
+note bottom of UC12 : Funcionalidad futura\nno implementada aun
+
+@enduml
