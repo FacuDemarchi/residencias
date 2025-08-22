@@ -18,7 +18,8 @@ implemented(users) {
 }
 
 implemented(tags) {
-  primary_key(name)
+  primary_key(id)
+  nombre
   created_at
 }
 
@@ -158,7 +159,7 @@ planned(publication_amenities) {
 planned(publication_tags) {
   primary_key(id)
   foreign_key(publication_id)
-  foreign_key(tag_name)
+  foreign_key(tag_id)
   created_at
 }
 

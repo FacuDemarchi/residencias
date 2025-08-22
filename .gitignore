@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 .env
-src/diagrams/code
+diagrams/code
 
 # Editor directories and files
 .vscode/*
