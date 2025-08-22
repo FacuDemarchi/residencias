@@ -1,34 +1,34 @@
 // Datos de tags para insertar en la base de datos
 const tagsData = [
   {
-    nombre: "Estudiantes"
+    name: "Estudiantes"
   },
   {
-    nombre: "Familiar"
+    name: "Familiar"
   },
   {
-    nombre: "Ejecutivo"
+    name: "Ejecutivo"
   },
   {
-    nombre: "Mascotas"
+    name: "Mascotas"
   },
   {
-    nombre: "Furnished"
+    name: "Furnished"
   },
   {
-    nombre: "WiFi"
+    name: "WiFi"
   },
   {
-    nombre: "Estacionamiento"
+    name: "Estacionamiento"
   },
   {
-    nombre: "Seguridad"
+    name: "Seguridad"
   },
   {
-    nombre: "Transporte"
+    name: "Transporte"
   },
   {
-    nombre: "Comercios"
+    name: "Comercios"
   }
 ];
 

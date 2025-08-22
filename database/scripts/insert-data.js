@@ -88,6 +88,100 @@ async function insertPublications() {
   }
 }
 
+// Función para insertar datos dependientes con foreign keys reales
+async function insertDependentData() {
+  try {
+    console.log('🔗 Insertando datos dependientes...');
+    
+    // Obtener IDs reales de las tablas principales
+    const { data: publications } = await supabase.from('publications').select('id');
+    const { data: rentals } = await supabase.from('rentals').select('id');
+    const { data: states } = await supabase.from('states').select('id');
+    
+    if (!publications || publications.length === 0) {
+      console.log('⚠️  No hay publicaciones disponibles para datos dependientes');
+      return;
+    }
+
+    // Insertar rentals con publication_id real
+    if (rentals && rentals.length === 0) {
+      const rentalsWithRealIds = rentalsData.map((rental, index) => ({
+        ...rental,
+        publication_id: publications[index % publications.length].id,
+        user_id: TEST_USER_ID,
+        created_by: TEST_USER_ID,
+        updated_by: TEST_USER_ID
+      }));
+      await insertData('rentals', rentalsWithRealIds);
+    }
+
+    // Obtener rentals actualizados
+    const { data: updatedRentals } = await supabase.from('rentals').select('id');
+    
+    // Insertar pagos con rental_id real
+    if (updatedRentals && updatedRentals.length > 0) {
+      const pagosWithRealIds = pagosData.map((pago, index) => ({
+        ...pago,
+        rental_id: updatedRentals[index % updatedRentals.length].id
+      }));
+      await insertData('pagos', pagosWithRealIds);
+    }
+
+    // Insertar ratings con rental_id real
+    if (updatedRentals && updatedRentals.length > 0) {
+      const ratingsWithRealIds = ratingsData.map((rating, index) => ({
+        ...rating,
+        rental_id: updatedRentals[index % updatedRentals.length].id,
+        user_id: TEST_USER_ID
+      }));
+      await insertData('ratings', ratingsWithRealIds);
+    }
+
+    // Insertar contacts con publication_id real
+    const contactsWithRealIds = contactsData.map((contact, index) => ({
+      ...contact,
+      publication_id: publications[index % publications.length].id
+    }));
+    await insertData('contacts', contactsWithRealIds);
+
+    // Insertar images con publication_id real
+    const imagesWithRealIds = imagesData.map((image, index) => ({
+      ...image,
+      publication_id: publications[index % publications.length].id
+    }));
+    await insertData('images', imagesWithRealIds);
+
+    // Insertar price_history con publication_id real
+    const priceHistoryWithRealIds = priceHistoryData.map((price, index) => ({
+      ...price,
+      publication_id: publications[index % publications.length].id,
+      user_id: TEST_USER_ID
+    }));
+    await insertData('price_history', priceHistoryWithRealIds);
+
+    // Insertar availability con publication_id real
+    const availabilityWithRealIds = availabilityData.map((availability, index) => ({
+      ...availability,
+      publication_id: publications[index % publications.length].id
+    }));
+    await insertData('availability', availabilityWithRealIds);
+
+    // Insertar state_history con publication_id y state_id real
+    if (states && states.length > 0) {
+      const stateHistoryWithRealIds = stateHistoryData.map((stateHistory, index) => ({
+        ...stateHistory,
+        publication_id: publications[index % publications.length].id,
+        state_id: states[index % states.length].id,
+        user_id: TEST_USER_ID
+      }));
+      await insertData('state_history', stateHistoryWithRealIds);
+    }
+
+  } catch (error) {
+    console.error('❌ Error al insertar datos dependientes:', error.message);
+  }
+}
+
 // Mapeo de nombres de tabla a datos
 const tableDataMap = {
   'location': locationsData,
@@ -138,21 +232,23 @@ async function main() {
 
   if (tableName === 'all') {
     console.log('📦 Insertando todos los datos...\n');
+    
+    // Insertar tablas principales primero
     await insertData('location', locationsData);
     await insertData('states', statesData);
     await insertData('tags', tagsData);
     await insertData('amenities', amenitiesData);
-    await insertData('rentals', rentalsData);
-    await insertData('pagos', pagosData);
-    await insertData('ratings', ratingsData);
-    await insertData('contacts', contactsData);
-    await insertData('images', imagesData);
-    await insertData('price_history', priceHistoryData);
-    await insertData('availability', availabilityData);
-    await insertData('state_history', stateHistoryData);
+    
+    // Insertar publicaciones
     await insertPublications();
+    
+    // Insertar datos dependientes con foreign keys reales
+    await insertDependentData();
+    
   } else if (tableName === 'publications') {
     await insertPublications();
+  } else if (tableName === 'dependent') {
+    await insertDependentData();
   } else if (tableDataMap[tableName]) {
     const actualTableName = tableName === 'locations' ? 'location' : tableName;
     await insertData(actualTableName, tableDataMap[tableName]);

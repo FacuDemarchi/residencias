@@ -1,84 +1,45 @@
 // Datos de contactos para insertar en la base de datos
+// Estructura según diagrama ER: id, publication_id, contact_type, name, phone, email, is_primary, created_at, updated_at
 const contactsData = [
   {
-    nombre: "María González",
-    email: "maria.gonzalez@email.com",
-    telefono: "+54 351 123-4567",
-    tipo: "propietario",
-    mensaje: "Interesado en alquilar su propiedad",
-    estado: "nuevo"
+    publication_id: "550e8400-e29b-41d4-a716-446655440022",
+    contact_type: "owner",
+    name: "María González",
+    phone: "+54 351 123-4567",
+    email: "maria@email.com",
+    is_primary: true
   },
   {
-    nombre: "Carlos Rodríguez",
-    email: "carlos.rodriguez@email.com",
-    telefono: "+54 351 234-5678",
-    tipo: "inquilino",
-    mensaje: "Busco alojamiento cerca de la universidad",
-    estado: "contactado"
+    publication_id: "550e8400-e29b-41d4-a716-446655440023",
+    contact_type: "emergency",
+    name: "Carlos Rodríguez",
+    phone: "+54 351 987-6543",
+    email: "carlos@email.com",
+    is_primary: true
   },
   {
-    nombre: "Ana Martínez",
-    email: "ana.martinez@email.com",
-    telefono: "+54 351 345-6789",
-    tipo: "propietario",
-    mensaje: "Quiero publicar mi departamento",
-    estado: "nuevo"
+    publication_id: "550e8400-e29b-41d4-a716-446655440024",
+    contact_type: "owner",
+    name: "Ana Martínez",
+    phone: "+54 351 555-1234",
+    email: "ana@email.com",
+    is_primary: true
   },
   {
-    nombre: "Luis Fernández",
-    email: "luis.fernandez@email.com",
-    telefono: "+54 351 456-7890",
-    tipo: "inquilino",
-    mensaje: "Interesado en el departamento de Nueva Córdoba",
-    estado: "respondido"
+    publication_id: "550e8400-e29b-41d4-a716-446655440025",
+    contact_type: "maintenance",
+    name: "Luis Fernández",
+    phone: "+54 351 777-8888",
+    email: "luis@email.com",
+    is_primary: true
   },
   {
-    nombre: "Sofía López",
-    email: "sofia.lopez@email.com",
-    telefono: "+54 351 567-8901",
-    tipo: "propietario",
-    mensaje: "Necesito ayuda para gestionar mis alquileres",
-    estado: "nuevo"
-  },
-  {
-    nombre: "Diego Pérez",
-    email: "diego.perez@email.com",
-    telefono: "+54 351 678-9012",
-    tipo: "inquilino",
-    mensaje: "Busco alojamiento para estudiantes",
-    estado: "contactado"
-  },
-  {
-    nombre: "Valentina Silva",
-    email: "valentina.silva@email.com",
-    telefono: "+54 351 789-0123",
-    tipo: "propietario",
-    mensaje: "Quiero conocer más sobre el servicio",
-    estado: "respondido"
-  },
-  {
-    nombre: "Javier Torres",
-    email: "javier.torres@email.com",
-    telefono: "+54 351 890-1234",
-    tipo: "inquilino",
-    mensaje: "Interesado en alquiler a largo plazo",
-    estado: "nuevo"
-  },
-  {
-    nombre: "Camila Ruiz",
-    email: "camila.ruiz@email.com",
-    telefono: "+54 351 901-2345",
-    tipo: "propietario",
-    mensaje: "Tengo varias propiedades para alquilar",
-    estado: "contactado"
-  },
-  {
-    nombre: "Matías Herrera",
-    email: "matias.herrera@email.com",
-    telefono: "+54 351 012-3456",
-    tipo: "inquilino",
-    mensaje: "Busco alojamiento familiar",
-    estado: "respondido"
+    publication_id: "550e8400-e29b-41d4-a716-446655440026",
+    contact_type: "emergency",
+    name: "Sofía López",
+    phone: "+54 351 444-5555",
+    email: "sofia@email.com",
+    is_primary: true
   }
 ];
 

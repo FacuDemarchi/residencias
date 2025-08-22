@@ -1,94 +1,50 @@
 // Datos de amenidades para insertar en la base de datos
+// Estructura según diagrama ER: id, nombre, created_at
 const amenitiesData = [
   {
-    nombre: "WiFi",
-    descripcion: "Internet inalámbrico de alta velocidad",
-    icono: "wifi",
-    categoria: "Conectividad"
+    nombre: "WiFi"
   },
   {
-    nombre: "Aire Acondicionado",
-    descripcion: "Sistema de aire acondicionado",
-    icono: "snowflake",
-    categoria: "Climatización"
+    nombre: "Aire Acondicionado"
   },
   {
-    nombre: "Calefacción",
-    descripcion: "Sistema de calefacción",
-    icono: "fire",
-    categoria: "Climatización"
+    nombre: "Calefacción"
   },
   {
-    nombre: "Estacionamiento",
-    descripcion: "Estacionamiento privado",
-    icono: "car",
-    categoria: "Estacionamiento"
+    nombre: "Estacionamiento"
   },
   {
-    nombre: "Lavadora",
-    descripcion: "Lavadora disponible",
-    icono: "tshirt",
-    categoria: "Limpieza"
+    nombre: "Lavadora"
   },
   {
-    nombre: "Secadora",
-    descripcion: "Secadora disponible",
-    icono: "wind",
-    categoria: "Limpieza"
+    nombre: "Secadora"
   },
   {
-    nombre: "Cocina Equipada",
-    descripcion: "Cocina completamente equipada",
-    icono: "utensils",
-    categoria: "Cocina"
+    nombre: "Cocina Equipada"
   },
   {
-    nombre: "Balcón",
-    descripcion: "Balcón privado",
-    icono: "door-open",
-    categoria: "Exterior"
+    nombre: "Balcón"
   },
   {
-    nombre: "Terraza",
-    descripcion: "Terraza compartida o privada",
-    icono: "mountain",
-    categoria: "Exterior"
+    nombre: "Terraza"
   },
   {
-    nombre: "Gimnasio",
-    descripcion: "Gimnasio del edificio",
-    icono: "dumbbell",
-    categoria: "Recreación"
+    nombre: "Gimnasio"
   },
   {
-    nombre: "Piscina",
-    descripcion: "Piscina del edificio",
-    icono: "swimming-pool",
-    categoria: "Recreación"
+    nombre: "Piscina"
   },
   {
-    nombre: "Seguridad 24/7",
-    descripcion: "Vigilancia las 24 horas",
-    icono: "shield-alt",
-    categoria: "Seguridad"
+    nombre: "Seguridad 24/7"
   },
   {
-    nombre: "Ascensor",
-    descripcion: "Ascensor disponible",
-    icono: "arrow-up",
-    categoria: "Accesibilidad"
+    nombre: "Ascensor"
   },
   {
-    nombre: "Mascotas Permitidas",
-    descripcion: "Se permiten mascotas",
-    icono: "paw",
-    categoria: "Mascotas"
+    nombre: "Mascotas Permitidas"
   },
   {
-    nombre: "Furnished",
-    descripcion: "Incluye muebles básicos",
-    icono: "couch",
-    categoria: "Mobiliario"
+    nombre: "Furnished"
   }
 ];
 

@@ -1,84 +1,35 @@
 // Datos de pagos para insertar en la base de datos
+// Estructura según diagrama ER: id, rental_id, monto, fecha_vencimiento, fecha_pago, created_at, updated_at, created_by, updated_by, deleted_at
 const pagosData = [
   {
+    rental_id: "550e8400-e29b-41d4-a716-446655440007",
     monto: 45000,
-    fecha_pago: "2025-01-15",
-    metodo_pago: "transferencia",
-    estado: "completado",
-    referencia: "TRF-2025-001",
-    notas: "Pago mensual enero"
+    fecha_vencimiento: "2025-02-15",
+    fecha_pago: "2025-01-15"
   },
   {
+    rental_id: "550e8400-e29b-41d4-a716-446655440008",
     monto: 35000,
-    fecha_pago: "2025-02-01",
-    metodo_pago: "efectivo",
-    estado: "completado",
-    referencia: "EFE-2025-002",
-    notas: "Pago mensual febrero"
+    fecha_vencimiento: "2025-03-01",
+    fecha_pago: "2025-02-01"
   },
   {
+    rental_id: "550e8400-e29b-41d4-a716-446655440009",
     monto: 55000,
-    fecha_pago: "2025-01-01",
-    metodo_pago: "tarjeta",
-    estado: "completado",
-    referencia: "TAR-2025-003",
-    notas: "Pago mensual enero"
+    fecha_vencimiento: "2025-02-01",
+    fecha_pago: "2025-01-01"
   },
   {
+    rental_id: "550e8400-e29b-41d4-a716-446655440010",
     monto: 40000,
-    fecha_pago: "2024-12-01",
-    metodo_pago: "transferencia",
-    estado: "completado",
-    referencia: "TRF-2024-012",
-    notas: "Pago mensual diciembre"
+    fecha_vencimiento: "2025-03-15",
+    fecha_pago: "2025-02-15"
   },
   {
+    rental_id: "550e8400-e29b-41d4-a716-446655440011",
     monto: 48000,
-    fecha_pago: "2025-03-01",
-    metodo_pago: "transferencia",
-    estado: "pendiente",
-    referencia: "TRF-2025-004",
-    notas: "Pago mensual marzo - pendiente"
-  },
-  {
-    monto: 30000,
-    fecha_pago: "2025-01-10",
-    metodo_pago: "efectivo",
-    estado: "completado",
-    referencia: "EFE-2025-005",
-    notas: "Pago mensual enero"
-  },
-  {
-    monto: 42000,
-    fecha_pago: "2024-11-15",
-    metodo_pago: "tarjeta",
-    estado: "completado",
-    referencia: "TAR-2024-011",
-    notas: "Pago mensual noviembre"
-  },
-  {
-    monto: 52000,
-    fecha_pago: "2025-02-15",
-    metodo_pago: "transferencia",
-    estado: "completado",
-    referencia: "TRF-2025-006",
-    notas: "Pago mensual febrero"
-  },
-  {
-    monto: 90000,
-    fecha_pago: "2025-01-15",
-    metodo_pago: "transferencia",
-    estado: "completado",
-    referencia: "TRF-2025-007",
-    notas: "Depósito de garantía"
-  },
-  {
-    monto: 70000,
-    fecha_pago: "2025-02-01",
-    metodo_pago: "efectivo",
-    estado: "completado",
-    referencia: "EFE-2025-008",
-    notas: "Depósito de garantía"
+    fecha_vencimiento: "2025-04-01",
+    fecha_pago: "2025-03-01"
   }
 ];
 

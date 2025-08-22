@@ -1,64 +1,65 @@
 // Datos de calificaciones para insertar en la base de datos
+// Estructura según diagrama ER: id, user_id, rental_id, cleanliness_score, communication_score, location_score, value_score, overall_score, would_recommend, is_anonymous, comentario, created_at, updated_at, created_by, updated_by, deleted_at
 const ratingsData = [
   {
-    puntuacion: 5,
-    comentario: "Excelente ubicación y muy buena atención del propietario",
-    fecha_calificacion: "2025-01-20",
-    categoria: "general"
+    user_id: "550e8400-e29b-41d4-a716-446655440012",
+    rental_id: "550e8400-e29b-41d4-a716-446655440013",
+    cleanliness_score: 5,
+    communication_score: 4,
+    location_score: 5,
+    value_score: 4,
+    overall_score: 4.5,
+    would_recommend: true,
+    is_anonymous: false,
+    comentario: "Excelente experiencia, muy recomendable"
   },
   {
-    puntuacion: 4,
-    comentario: "Muy buena experiencia, el lugar está bien mantenido",
-    fecha_calificacion: "2025-02-05",
-    categoria: "general"
+    user_id: "550e8400-e29b-41d4-a716-446655440014",
+    rental_id: "550e8400-e29b-41d4-a716-446655440015",
+    cleanliness_score: 4,
+    communication_score: 5,
+    location_score: 4,
+    value_score: 5,
+    overall_score: 4.5,
+    would_recommend: true,
+    is_anonymous: false,
+    comentario: "Muy buena comunicación y excelente relación precio-calidad"
   },
   {
-    puntuacion: 5,
-    comentario: "Perfecto para estudiantes, cerca de la universidad",
-    fecha_calificacion: "2025-01-25",
-    categoria: "ubicacion"
+    user_id: "550e8400-e29b-41d4-a716-446655440016",
+    rental_id: "550e8400-e29b-41d4-a716-446655440017",
+    cleanliness_score: 3,
+    communication_score: 4,
+    location_score: 5,
+    value_score: 3,
+    overall_score: 3.75,
+    would_recommend: false,
+    is_anonymous: true,
+    comentario: "Ubicación perfecta pero la limpieza podría mejorar"
   },
   {
-    puntuacion: 4,
-    comentario: "Buen precio por la calidad del lugar",
-    fecha_calificacion: "2025-02-10",
-    categoria: "precio"
+    user_id: "550e8400-e29b-41d4-a716-446655440018",
+    rental_id: "550e8400-e29b-41d4-a716-446655440019",
+    cleanliness_score: 5,
+    communication_score: 5,
+    location_score: 4,
+    value_score: 4,
+    overall_score: 4.5,
+    would_recommend: true,
+    is_anonymous: false,
+    comentario: "Todo perfecto, muy satisfecho con la estadía"
   },
   {
-    puntuacion: 3,
-    comentario: "El lugar está bien pero necesita algunas mejoras",
-    fecha_calificacion: "2025-01-30",
-    categoria: "mantenimiento"
-  },
-  {
-    puntuacion: 5,
-    comentario: "Muy limpio y organizado, super recomendado",
-    fecha_calificacion: "2025-02-15",
-    categoria: "limpieza"
-  },
-  {
-    puntuacion: 4,
-    comentario: "Buena comunicación con el propietario",
-    fecha_calificacion: "2025-01-28",
-    categoria: "comunicacion"
-  },
-  {
-    puntuacion: 5,
-    comentario: "Excelente relación calidad-precio",
-    fecha_calificacion: "2025-02-12",
-    categoria: "valor"
-  },
-  {
-    puntuacion: 4,
-    comentario: "Zona tranquila y segura",
-    fecha_calificacion: "2025-01-22",
-    categoria: "seguridad"
-  },
-  {
-    puntuacion: 5,
-    comentario: "Muy satisfecho con la experiencia",
-    fecha_calificacion: "2025-02-08",
-    categoria: "general"
+    user_id: "550e8400-e29b-41d4-a716-446655440020",
+    rental_id: "550e8400-e29b-41d4-a716-446655440021",
+    cleanliness_score: 4,
+    communication_score: 3,
+    location_score: 4,
+    value_score: 5,
+    overall_score: 4.0,
+    would_recommend: true,
+    is_anonymous: false,
+    comentario: "Buena relación precio-calidad, comunicación mejorable"
   }
 ];
 

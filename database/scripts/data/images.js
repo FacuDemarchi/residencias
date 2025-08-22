@@ -1,64 +1,55 @@
 // Datos de imágenes para insertar en la base de datos
+// Estructura según diagrama ER: id, publication_id, url_imagen, tipo, created_at, updated_at, created_by, updated_by, deleted_at
 const imagesData = [
   {
-    url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-    alt_text: "Sala de estar moderna",
-    tipo: "principal",
-    orden: 1
+    publication_id: "550e8400-e29b-41d4-a716-446655440027",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800",
-    alt_text: "Cocina equipada",
-    tipo: "secundaria",
-    orden: 2
+    publication_id: "550e8400-e29b-41d4-a716-446655440028",
+    url_imagen: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1560448075-bb485b067938?w=800",
-    alt_text: "Dormitorio principal",
-    tipo: "secundaria",
-    orden: 3
+    publication_id: "550e8400-e29b-41d4-a716-446655440029",
+    url_imagen: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
-    alt_text: "Baño moderno",
-    tipo: "secundaria",
-    orden: 4
+    publication_id: "550e8400-e29b-41d4-a716-446655440030",
+    url_imagen: "https://images.unsplash.com/photo-1560448075-bb485b067938?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800",
-    alt_text: "Balcón con vista",
-    tipo: "secundaria",
-    orden: 5
+    publication_id: "550e8400-e29b-41d4-a716-446655440031",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-    alt_text: "Exterior del edificio",
-    tipo: "secundaria",
-    orden: 6
+    publication_id: "550e8400-e29b-41d4-a716-446655440032",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800",
-    alt_text: "Área de estudio",
-    tipo: "secundaria",
-    orden: 7
+    publication_id: "550e8400-e29b-41d4-a716-446655440033",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1560448075-bb485b067938?w=800",
-    alt_text: "Vista desde la ventana",
-    tipo: "secundaria",
-    orden: 8
+    publication_id: "550e8400-e29b-41d4-a716-446655440034",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
-    alt_text: "Detalles de decoración",
-    tipo: "secundaria",
-    orden: 9
+    publication_id: "550e8400-e29b-41d4-a716-446655440035",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   },
   {
-    url: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800",
-    alt_text: "Plano del departamento",
-    tipo: "plano",
-    orden: 10
+    publication_id: "550e8400-e29b-41d4-a716-446655440036",
+    url_imagen: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
+    tipo: "publicacion"
   }
 ];
 
