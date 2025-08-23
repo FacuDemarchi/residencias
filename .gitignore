@@ -13,6 +13,8 @@ dist-ssr
 *.local
 .env
 
+src/diagrams/code/plantuml.jar
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
