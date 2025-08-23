@@ -1,37 +1,20 @@
 import React from 'react';
+import type { Publication } from '../../types/app';
 
 interface PublicationCardProps {
   onClick?: () => void;
   isHighlighted?: boolean;
   isSelected?: boolean;
-  id: number;
-  user_id: number;
-  location_id: number;
-  estado: string;
-  titulo: string;
-  descripcion: string;
-  price: number;
-  direccion: string;
-  capacidad: number;
-  metros_cuadrados: number;
-  amenidades: string[];
-  created_at: string;
-  updated_at: string;
-  imagen?: string; // Made imagen optional
+  publication: Publication;
 }
 
 const PublicationCard: React.FC<PublicationCardProps> = ({ 
   onClick, 
   isHighlighted = false,
   isSelected = false,
-  titulo, 
-  price, 
-  direccion, 
-  capacidad, 
-  metros_cuadrados, 
-  imagen,
-  estado
+  publication
 }) => {
+  const { titulo, price, direccion, capacidad, metros_cuadrados, imagen, estado } = publication;
   return (
     <button
       onClick={onClick}

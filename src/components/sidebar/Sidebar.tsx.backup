@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import AddressSearchBar from './AddressSearchBar';
 import OrderManager from './OrderManager';
 import PublicationCard from './PublicationCard';
@@ -6,7 +6,6 @@ import NewPublicationCard from './NewPublicationCard';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useAuth } from '../../context/AuthContext';
 import { useUserPublications } from '../../hooks/useUserPublications';
-import { usePublications } from '../../hooks/usePublications';
 import type { Publication } from '../../types/app';
 
 interface SidebarProps {
@@ -15,47 +14,15 @@ interface SidebarProps {
   selectedPublication: Publication | null;
   showUserPublications: boolean;
   onNewPublicationClick: () => void;
-  onSelectPublication: (publication: Publication) => void;
-  activeFilter: string | null;
+  onSelectPublication: (publication: Publication) => void; // Nueva prop para manejar selección con lógica de edición
+  activeFilter: string | null; // Nueva prop para el filtro activo
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  setSelectedPublication, 
-  highlightedPublications, 
-  selectedPublication, 
-  showUserPublications, 
-  onNewPublicationClick, 
-  onSelectPublication, 
-  activeFilter 
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedPublication, highlightedPublications, selectedPublication, showUserPublications, onNewPublicationClick, onSelectPublication, activeFilter }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
   const { userData } = useAuth();
   const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = useUserPublications();
-  
-  // Estado para ordenamiento
-  const [sortBy, setSortBy] = useState<'created_at' | 'price' | 'capacidad'>('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
-  // Extraer IDs de ubicaciones para el hook de publicaciones
-  const locationIds = useMemo(() => 
-    mapLocations.map(location => location.id), 
-    [mapLocations]
-  );
-  
-  // Usar el hook de publicaciones con ordenamiento dinámico
-  const { 
-    publications: sortedPublications, 
-    loading: publicationsLoading, 
-    error: publicationsError,
-    hasMore,
-    loadMore,
-    refresh: refreshPublications
-  } = usePublications({
-    locationIds,
-    sortBy,
-    sortOrder,
-    pageSize: 20
-  });
+  const [sortedPublications, setSortedPublications] = useState<Publication[]>([]);
 
   // Definir los filtros (mismos que en ContentArea)
   const predefinedFilters = {
@@ -67,59 +34,38 @@ const Sidebar: React.FC<SidebarProps> = ({
     'Departamento': (pub: Publication) => pub.metros_cuadrados < 80
   };
 
+  // Extraer todas las publicaciones de las ubicaciones del mapa
+  const allPublications = useMemo(() => 
+    mapLocations.flatMap(location => 
+      location.publications_test.map(pub => ({
+        ...pub,
+        price: pub.price || 0
+      }))
+    ), [mapLocations]
+  );
+
   // Aplicar filtro si hay uno activo
   const filteredPublications = useMemo(() => {
     if (!activeFilter || !predefinedFilters[activeFilter as keyof typeof predefinedFilters]) {
-      console.log(' Sidebar: Sin filtro activo, mostrando todas las publicaciones:', sortedPublications.length);
-      return sortedPublications;
+      console.log('📋 Sidebar: Sin filtro activo, mostrando todas las publicaciones:', allPublications.length);
+      return allPublications;
     }
-    const filtered = sortedPublications.filter(predefinedFilters[activeFilter as keyof typeof predefinedFilters]);
-    console.log(' Sidebar: Filtro activo:', activeFilter, 'publicaciones filtradas:', filtered.length);
+    const filtered = allPublications.filter(predefinedFilters[activeFilter as keyof typeof predefinedFilters]);
+    console.log('🔍 Sidebar: Filtro activo:', activeFilter, 'publicaciones filtradas:', filtered.length);
     return filtered;
-  }, [sortedPublications, activeFilter]);
+  }, [allPublications, activeFilter]);
 
   // Determinar qué publicaciones mostrar
-  const publicationsToShow = showUserPublications ? userPublications : filteredPublications;
-  const isLoading = showUserPublications ? userPublicationsLoading : (publicationsLoading || loadingLocations);
-  const hasError = showUserPublications ? userPublicationsError : publicationsError;
+  const publicationsToShow = showUserPublications ? userPublications : sortedPublications;
+  const isLoading = showUserPublications ? userPublicationsLoading : loadingLocations;
+  const hasError = showUserPublications ? userPublicationsError : null;
 
-  // Función para manejar cambios de ordenamiento desde OrderManager
-  const handleOrderChange = (orderType: string) => {
-    console.log(' Sidebar: Cambiando ordenamiento a:', orderType);
-    
-    switch (orderType) {
-      case 'recientes':
-        setSortBy('created_at');
-        setSortOrder('desc');
-        break;
-      case 'antiguos':
-        setSortBy('created_at');
-        setSortOrder('asc');
-        break;
-      case 'menor_precio':
-        setSortBy('price');
-        setSortOrder('asc');
-        break;
-      case 'mayor_precio':
-        setSortBy('price');
-        setSortOrder('desc');
-        break;
-      case 'recomendados':
-      default:
-        setSortBy('created_at');
-        setSortOrder('desc');
-        break;
+  // Actualizar las publicaciones ordenadas cuando cambien las publicaciones originales o el filtro
+  React.useEffect(() => {
+    if (!showUserPublications) {
+      setSortedPublications(filteredPublications);
     }
-  };
-
-  // Función para manejar scroll infinito
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight * 1.5 && hasMore && !publicationsLoading) {
-      console.log(' Sidebar: Cargando más publicaciones...');
-      loadMore();
-    }
-  };
+  }, [filteredPublications, showUserPublications]);
 
   return (
     <div className="h-full w-full bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 max-w-xs min-w-[280px]">
@@ -128,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {!showUserPublications && (
           <OrderManager 
             publications={filteredPublications}
-            onPublicationsChange={handleOrderChange}
+            onPublicationsChange={setSortedPublications}
           />
         )}
         {showUserPublications && (
@@ -137,10 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
       </div>
-      <div 
-        className="flex-1 overflow-y-auto space-y-2 mi-scrollbar"
-        onScroll={!showUserPublications ? handleScroll : undefined}
-      >
+      <div className="flex-1 overflow-y-auto space-y-2 mi-scrollbar">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">
@@ -174,9 +117,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <PublicationCard 
                   key={pub.id} 
                   onClick={() => {
+                    // Si la publicación ya está seleccionada, la deseleccionamos
                     if (isSelected) {
                       setSelectedPublication(null);
                     } else {
+                      // Si no está seleccionada, la seleccionamos usando la función que maneja el modo de edición
                       onSelectPublication(pub);
                     }
                   }}
@@ -187,14 +132,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               );
             })
         )}
-        {!showUserPublications && hasMore && (
-          <div className="flex items-center justify-center py-4">
-            <div className="text-gray-500 text-sm">
-              {publicationsLoading ? 'Cargando más...' : 'Desliza para cargar más'}
-            </div>
-          </div>
-        )}
       </div>
+      {/* Mostrar el botón "+ crear nueva publicación" solo para usuarios con user_type "residencia" */}
       {userData?.user_type === 'residencia' && (
         <div>
           <NewPublicationCard onClick={onNewPublicationClick} />
@@ -204,4 +143,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-export default Sidebar;
+export default Sidebar; 

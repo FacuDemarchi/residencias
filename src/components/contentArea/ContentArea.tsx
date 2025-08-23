@@ -3,37 +3,11 @@ import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useAuth } from '../../context/AuthContext';
 import { useUserPublications } from '../../hooks/useUserPublications';
-import { useUserRentals } from '../../hooks/useUserRentals';
+
 import { useReservations } from '../../hooks/useReservations';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import TagChip from '../common/TagChip';
-
-interface Image {
-  id: number;
-  publication_id: number;
-  url: string;
-  alt_text?: string;
-  is_primary?: boolean;
-  created_at: string;
-}
-
-interface Publication {
-  id: number;
-  user_id: number;
-  location_id: number;
-  estado: string;
-  titulo: string;
-  descripcion: string;
-  price: number;
-  direccion: string;
-  capacidad: number;
-  metros_cuadrados: number;
-  amenidades: string[];
-  created_at: string;
-  updated_at: string;
-  imagen?: string;
-  images?: Image[];
-}
+import type { Publication, Image } from '../../types/app';
 
 interface ContentAreaProps {
   selectedPublication: Publication | null;
@@ -47,7 +21,7 @@ interface ContentAreaProps {
   editingImages: Image[]; // Nueva prop para las imágenes en modo de edición
   onUpdatePublication: (publication: Publication) => void; // Nueva prop para actualizar publicación
   onAddImage: (image: Image) => void; // Nueva prop para agregar imagen
-  onRemoveImage: (imageId: number) => void; // Nueva prop para eliminar imagen
+  onRemoveImage: (imageId: string) => void; // Nueva prop para eliminar imagen
   onFilterPublications: (filterType: string | null) => void; // Nueva prop para manejar filtros
   activeFilter: string | null; // Nueva prop para el filtro activo
   hasRentals: boolean; // Nueva prop para mostrar/ocultar botón "Mis alquileres"
@@ -78,7 +52,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   const { publications: userPublications } = useUserPublications();
 
   const { createReservation, loading: reservationLoading, error: reservationError } = useReservations();
-  const { uploadImage, deleteImage, uploading: imageUploading, error: imageError } = useImageUpload();
+  const { uploadImage, uploading: imageUploading, error: imageError } = useImageUpload();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -142,12 +116,13 @@ const ContentArea: React.FC<ContentAreaProps> = ({
 
       const result = await uploadImage(file);
       if (result) {
-        const newImage: Image = {
-          id: result.id,
-          publication_id: selectedPublication?.id || 0,
-          url: result.url,
-          created_at: new Date().toISOString()
-        };
+                            const newImage: Image = {
+            id: result.id.toString(),
+            publication_id: selectedPublication?.id.toString() || '0',
+            url_imagen: result.url,
+            tipo: 'principal',
+            created_at: new Date().toISOString()
+          };
         onAddImage(newImage);
       }
     }
@@ -159,11 +134,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   };
 
   // Función para eliminar imagen
-  const handleRemoveImage = async (imageId: number, imageUrl: string) => {
-    const success = await deleteImage(imageId, imageUrl);
-    if (success) {
-      onRemoveImage(imageId);
-    }
+  const handleRemoveImage = async (imageId: string) => {
+    onRemoveImage(imageId);
   };
 
   // Función para actualizar campos de la publicación
@@ -288,7 +260,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
     };
   }, [selectedPublication, onClearSelectedPublication]);
 
-  console.log('mapLocations: ', mapLocations);
+
 
   // Datos de ejemplo para testing mientras no hay datos en Supabase
   const exampleLocations = [
@@ -345,14 +317,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   // Usar solo datos de Supabase
   const locationsToProcess = mapLocations;
   
-  console.log('🔍 Debug info:', {
-    isLoaded,
-    google: !!google,
-    mapInstance: !!mapInstance.current,
-    mapLocationsLength: mapLocations.length,
-    locationsToProcessLength: locationsToProcess.length,
-    exampleLocationsLength: exampleLocations.length
-  });
+
 
   useEffect(() => {
     if (isLoaded && google && mapRef.current && !mapInstance.current) {
@@ -551,7 +516,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
         google.maps.event.removeListener(mapClickListener);
       }
     };
-  }, [mapLocations, google, onHighlightPublications, onSelectPublication, onClearSelectedPublication, showUserPublications, userPublications]);
+  }, [mapLocations, google, showUserPublications, userPublications]);
 
   return (
     <div className="col-start-2 col-end-6 row-start-1 row-end-3 h-full w-full box-border relative">
@@ -760,12 +725,12 @@ const ContentArea: React.FC<ContentAreaProps> = ({
                       {editingImages.map((image, index) => (
                         <div key={image.id} className="relative group">
                           <img
-                            src={image.url}
+                            src={image.url_imagen}
                             alt={`Imagen ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg"
                           />
                           <button
-                            onClick={() => handleRemoveImage(image.id, image.url)}
+                            onClick={() => handleRemoveImage(image.id)}
                             className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             ×

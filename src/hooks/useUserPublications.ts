@@ -35,12 +35,20 @@ export function useUserPublications() {
         return;
       }
 
+      // Evitar consultar con UUIDs de prueba
+      if (user.id === '00000000-0000-0000-0000-000000000001') {
+        setPublications([]);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
       try {
         const { data, error } = await supabase
-          .from('publications_test')
+          .from('publications')
           .select('*')
           .eq('user_id', user.id);
 
@@ -69,14 +77,14 @@ export function useUserPublications() {
     error,
     // Función para refrescar las publicaciones
     refreshPublications: () => {
-      if (user && userData?.user_type === 'residencia') {
+      if (user && userData?.user_type === 'residencia' && user.id !== '00000000-0000-0000-0000-000000000001') {
         const fetchUserPublications = async () => {
           setLoading(true);
           setError(null);
 
           try {
             const { data, error } = await supabase
-              .from('publications_test')
+              .from('publications')
               .select('*')
               .eq('user_id', user.id);
 

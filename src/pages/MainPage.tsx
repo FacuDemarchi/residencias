@@ -1,40 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/sidebar/Sidebar';
 import ContentArea from '../components/contentArea/ContentArea';
-import { useAuth } from '../context/AuthContext';
+
 import { useResidenciaPublications } from '../hooks/useResidenciaPublications';
 import { useUserRentals } from '../hooks/useUserRentals';
+import type { Publication, Image } from '../types/app';
 
-// Definir el tipo de publicación
-interface Publication {
-  id: number;
-  user_id: number;
-  location_id: number;
-  estado: string;
-  titulo: string;
-  descripcion: string;
-  price: number;
-  direccion: string;
-  capacidad: number;
-  metros_cuadrados: number;
-  amenidades: string[];
-  created_at: string;
-  updated_at: string;
-  imagen?: string;
-}
 
-// Definir el tipo de imagen
-interface Image {
-  id: number;
-  publication_id: number;
-  url: string;
-  alt_text?: string;
-  is_primary?: boolean;
-  created_at: string;
-}
 
 const MainPage: React.FC = () => {
-  const { userData } = useAuth();
+
   const { publications: residenciaPublications } = useResidenciaPublications();
   const { hasRentals, rentalPublications } = useUserRentals();
   
@@ -182,7 +157,7 @@ const MainPage: React.FC = () => {
   };
 
   // Función para eliminar imagen en modo de edición
-  const handleRemoveImage = (imageId: number) => {
+  const handleRemoveImage = (imageId: string) => {
     setEditingImages(prev => prev.filter(img => img.id !== imageId));
   };
 
