@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useProvideAuth } from '../../hooks/useProvideAuth';
 import { useAuth } from '../../context/AuthContext';
-import { useUserPublications } from '../../hooks/useUserPublications';
+import { getMyPublications } from '../../hooks/getMyPublications';
 
 import { useReservations } from '../../hooks/useReservations';
 import { useImageUpload } from '../../hooks/useImageUpload';
@@ -49,7 +49,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   const { isLoaded, google, center, zoom, viewport, mapLocations, loadingLocations } = useGoogleMaps();
   const { user, signInWithGoogle, signOut } = useProvideAuth();
   const { userData } = useAuth();
-  const { publications: userPublications } = useUserPublications();
+  const { publications: userPublications } = getMyPublications();
 
   const { createReservation, loading: reservationLoading, error: reservationError } = useReservations();
   const { uploadImage, uploading: imageUploading, error: imageError } = useImageUpload();

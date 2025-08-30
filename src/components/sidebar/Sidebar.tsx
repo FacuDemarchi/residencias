@@ -5,8 +5,8 @@ import PublicationCard from './PublicationCard';
 import NewPublicationCard from './NewPublicationCard';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import { useAuth } from '../../context/AuthContext';
-import { useUserPublications } from '../../hooks/useUserPublications';
-import { usePublications } from '../../hooks/usePublications';
+import { getMyPublications } from '../../hooks/getMyPublications';
+import { getPublications } from '../../hooks/getPublications';
 import type { Publication } from '../../types/app';
 
 interface SidebarProps {
@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { mapLocations, loadingLocations } = useGoogleMaps();
   const { userData } = useAuth();
-  const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = useUserPublications();
+  const { publications: userPublications, loading: userPublicationsLoading, error: userPublicationsError } = getMyPublications();
   
   // Estado para ordenamiento
   const [sortBy, setSortBy] = useState<'created_at' | 'price' | 'capacidad'>('created_at');
@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     hasMore,
     loadMore,
     refresh: refreshPublications
-  } = usePublications({
+  } = getPublications({
     locationIds,
     sortBy,
     sortOrder,

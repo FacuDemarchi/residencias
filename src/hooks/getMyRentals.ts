@@ -26,7 +26,7 @@ interface Publication {
   };
 }
 
-export function useUserRentals() {
+export function getMyRentals() {
   const { user } = useProvideAuth();
   const { userData } = useAuth();
   const [hasRentals, setHasRentals] = useState(false);
@@ -128,4 +128,9 @@ export function useUserRentals() {
       }
     }
   };
-} 
+}
+
+
+
+
+

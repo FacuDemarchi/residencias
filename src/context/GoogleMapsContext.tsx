@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { MapLocation } from '../types/app';
-import { useLocations } from '../hooks/useLocations';
+import { getLocations } from '../hooks/getLocations';
 
 interface GoogleMapsContextType {
   isLoaded: boolean;
@@ -75,8 +75,8 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
   const [currentSearchType, setCurrentSearchType] = useState<string | null>(null);
 
-  // Usar el hook useLocations para obtener las ubicaciones
-  const { locations: mapLocations, loading: loadingLocations, error: errorLocations, refreshLocations } = useLocations({
+  // Usar el hook getLocations para obtener las ubicaciones
+  const { locations: mapLocations, loading: loadingLocations, error: errorLocations, refreshLocations } = getLocations({
     center,
     searchType: currentSearchType
   });

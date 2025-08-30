@@ -1,15 +1,15 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
 import type { Publication } from '../types/app';
 
-interface UsePublicationsProps {
+interface GetPublicationsProps {
   locationIds: bigint[];
   sortBy?: 'created_at' | 'price' | 'capacidad';
   sortOrder?: 'asc' | 'desc';
   pageSize?: number;
 }
 
-interface UsePublicationsReturn {
+interface GetPublicationsReturn {
   publications: Publication[];
   loading: boolean;
   error: string | null;
@@ -19,12 +19,12 @@ interface UsePublicationsReturn {
   totalLoaded: number;
 }
 
-export const usePublications = ({ 
+export const getPublications = ({ 
   locationIds, 
   sortBy = 'created_at', 
   sortOrder = 'desc',
   pageSize = 20 
-}: UsePublicationsProps): UsePublicationsReturn => {
+}: GetPublicationsProps): GetPublicationsReturn => {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -149,3 +149,8 @@ export const usePublications = ({
     totalLoaded: publications.length
   };
 };
+
+
+
+
+

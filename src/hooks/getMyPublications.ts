@@ -19,7 +19,7 @@ interface Publication {
   imagen?: string;
 }
 
-export function useUserPublications() {
+export function getMyPublications() {
   const { user, userData } = useAuth();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(false);
@@ -108,4 +108,9 @@ export function useUserPublications() {
       }
     }
   };
-} 
+}
+
+
+
+
+

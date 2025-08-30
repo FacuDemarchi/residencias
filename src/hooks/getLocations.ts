@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import type { MapLocation } from '../types/app';
 
-interface UseLocationsProps {
+interface GetLocationsProps {
   center: { lat: number; lng: number };
   searchType: string | null;
 }
 
-export const useLocations = ({ center, searchType }: UseLocationsProps) => {
+export const getLocations = ({ center, searchType }: GetLocationsProps) => {
   const [locations, setLocations] = useState<MapLocation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,3 +93,8 @@ export const useLocations = ({ center, searchType }: UseLocationsProps) => {
     refreshLocations: loadLocations
   };
 };
+
+
+
+
+

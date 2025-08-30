@@ -3,15 +3,89 @@ import Sidebar from '../components/sidebar/Sidebar';
 import ContentArea from '../components/contentArea/ContentArea';
 
 import { useResidenciaPublications } from '../hooks/useResidenciaPublications';
-import { useUserRentals } from '../hooks/useUserRentals';
-import type { Publication, Image } from '../types/app';
-
-
+import { getMyRentals } from '../hooks/getMyRentals';
+import { getLocations } from '../hooks/getLocations';
+import { getMyPublications } from '../hooks/getMyPublications';
+import { getPublications } from '../hooks/getPublications';
+import { useGoogleMaps } from '../context/GoogleMapsContext';
+import type { Publication, Image, MapLocation } from '../types/app';
 
 const MainPage: React.FC = () => {
+  // Estados para los datos cargados al montar la aplicación
+  const [myRentals, setMyRentals] = useState<any>(null);
+  const [locations, setLocations] = useState<MapLocation[]>([]);
+  const [publications, setPublications] = useState<Publication[]>([]);
+
+  // Obtener el centro dinámico del GoogleMapsContext
+  const { center } = useGoogleMaps();
+
+  // Hook para obtener alquileres del usuario
+  const { hasRentals, rentalPublications, loading: rentalsLoading } = getMyRentals();
+  
+  // Hook para obtener ubicaciones (usando el centro dinámico del mapa)
+  const { locations: fetchedLocations, loading: locationsLoading } = getLocations({
+    center: center, // Usar el centro dinámico del mapa
+    searchType: null
+  });
+
+  // Hook para obtener publicaciones del usuario (se ejecutará cuando tengamos los locationIds)
+  const { publications: userPublications, loading: publicationsLoading } = getMyPublications();
+
+  // Extraer IDs de ubicaciones para el hook de publicaciones
+  const locationIds = locations.map(location => location.id);
+
+  // Hook para obtener publicaciones basadas en las locations (se ejecuta automáticamente cuando cambian las locations)
+  const { 
+    publications: locationPublications
+  } = getPublications({
+    locationIds,
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+    pageSize: 20
+  });
+
+  // Efecto para guardar los alquileres cuando se carguen
+  useEffect(() => {
+    if (!rentalsLoading) {
+      setMyRentals({
+        hasRentals,
+        rentalPublications
+      });
+    }
+  }, [hasRentals, rentalPublications, rentalsLoading]);
+
+  // Efecto para guardar las ubicaciones cuando se carguen
+  useEffect(() => {
+    if (!locationsLoading) {
+      setLocations(fetchedLocations);
+    }
+  }, [fetchedLocations, locationsLoading]);
+
+  // Efecto para guardar las publicaciones cuando se carguen
+  useEffect(() => {
+    if (!publicationsLoading) {
+      setPublications(userPublications);
+    }
+  }, [userPublications, publicationsLoading]);
+
+  // Efecto para mostrar los datos cargados
+  useEffect(() => {
+    console.log('📊 Datos cargados al montar la aplicación:');
+    console.log('🏠 My Rentals:', myRentals);
+    console.log('📍 Locations:', locations.length, 'ubicaciones');
+    console.log('📋 Publications:', publications.length, 'publicaciones');
+  }, [myRentals, locations, publications]);
+
+  // Efecto para mostrar cuando se ejecute la búsqueda automática de publicaciones por locations
+  useEffect(() => {
+    if (locations.length > 0) {
+      console.log('🔄 Ejecutando búsqueda automática de publicaciones por locations:');
+      console.log('📍 Location IDs:', locationIds);
+      console.log('📋 Publicaciones encontradas:', locationPublications.length);
+    }
+  }, [locations, locationIds, locationPublications]);
 
   const { publications: residenciaPublications } = useResidenciaPublications();
-  const { hasRentals, rentalPublications } = useUserRentals();
   
   // Estado para la publicación seleccionada
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
@@ -224,4 +298,4 @@ const MainPage: React.FC = () => {
   );
 };
 
-export default MainPage; 
+export default MainPage;
