@@ -6,15 +6,27 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Colores para layout y estructura
       colors: {
-        primary: '#7c3aed',
-        secondary: '#f3e8ff',
-        accent: '#a78bfa',
-        neutral: '#f9fafb',
-        text: '#312e81',
+        layout: {
+          primary: '#1a202c',
+          secondary: '#2d3748',
+          accent: '#4a5568',
+          surface: '#f7fafc',
+          border: '#e2e8f0',
+        },
       },
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+      // Espaciado para layout
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+      },
+      // Grid para layout
+      gridTemplateColumns: {
+        'sidebar': '300px 1fr',
+        'sidebar-sm': '250px 1fr',
+        'sidebar-lg': '350px 1fr',
       },
     },
   },

@@ -25,9 +25,13 @@
     "db:execute-migrations": "node scripts/execute-migrations.js"
   },
   "dependencies": {
+    "@chakra-ui/react": "^3.26.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@react-google-maps/api": "^2.20.7",
     "@supabase/supabase-js": "^2.50.5",
     "dotenv": "^17.2.1",
+    "framer-motion": "^12.23.12",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

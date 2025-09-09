@@ -1,19 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Flex, 
+  HStack, 
+  Text, 
+  IconButton,
+  useBreakpointValue
+} from '@chakra-ui/react';
+// Icono hamburguesa SVG simple
+const HamburgerIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+    <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
+  </svg>
+);
 import { PublicationsService } from '../services/publicationsService';
 import { getLocations } from '../services/locationsService';
 import { useAuth } from '../context/AuthContext';
-import { useGoogleMaps } from '../context/GoogleMapsContext';
 import type { Tables } from '../types/database';
 import Map from '../components/Map';
+import Sidebar from '../components/Sidebar';
 
 type Location = Tables<'locations'>;
 type Publication = Tables<'publications'>;
 
 const MainPage: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
-  const [publications, setPublications] = useState<Publication[]>([]);
+  const [publications] = useState<Publication[]>([]);
   const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [myRentals, setMyRentals] = useState<any[]>([]);
+
+  // Chakra UI hooks
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // context - solo se ejecutan cuando cambian las dependencias
   const { user, userData } = useAuth();
@@ -47,7 +65,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchMyRentals = async () => {
       if (user?.id) {
-      const rentals = await PublicationsService.getRentalsWithPublications(user.id);
+        const rentals = await PublicationsService.getRentalsWithPublications(user.id);
         setMyRentals(rentals);
       }
     };
@@ -60,12 +78,128 @@ const MainPage: React.FC = () => {
   console.log('My Publications:', myPublications);
   console.log('My Rentals:', myRentals);
 
+
   return (
-    <div className="w-screen h-screen grid grid-cols-1 lg:grid-cols-3 gap-0 overflow-hidden">
-      <div className="lg:col-span-1 bg-white">
-        <Map />
-      </div>
-    </div>
+    <Box className="w-screen h-screen overflow-hidden">
+      {/* Layout responsive */}
+      <Flex h="full">
+        {/* Sidebar - Desktop */}
+        {!isMobile && (
+          <Box 
+            w="300px" 
+            bg="white" 
+            borderRight="1px" 
+            borderColor="gray.200"
+            className="hidden md:block"
+          >
+            <Sidebar 
+              userData={userData}
+              myRentals={myRentals}
+              publications={publications}
+            />
+          </Box>
+        )}
+
+        {/* Contenido principal */}
+        <Box flex="1" position="relative">
+          {/* Header móvil */}
+          {isMobile && (
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              zIndex={10}
+              bg="white"
+              p={2}
+              borderBottom="1px"
+              borderColor="gray.200"
+            >
+              <HStack justify="space-between" align="center">
+                <IconButton
+                  aria-label="Abrir menú"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsDrawerOpen(true)}
+                >
+                  <HamburgerIcon />
+                </IconButton>
+                <Text fontSize="lg" fontWeight="bold" color="gray.700" flex="1" textAlign="center">
+                  Residencias
+                </Text>
+                <Box w="40px" /> {/* Espaciador para centrar el título */}
+              </HStack>
+            </Box>
+          )}
+
+          {/* Mapa */}
+          <Box
+            h="full"
+            className={isMobile ? "pt-12" : ""}
+          >
+            <Map />
+          </Box>
+        </Box>
+      </Flex>
+
+      {/* Drawer móvil */}
+      {isDrawerOpen && (
+        <>
+          {/* Overlay */}
+          <Box
+            position="fixed"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            bg="blackAlpha.600"
+            zIndex={1000}
+            onClick={() => setIsDrawerOpen(false)}
+          />
+          
+          {/* Drawer */}
+          <Box
+            position="fixed"
+            top={0}
+            left={0}
+            bottom={0}
+            w="300px"
+            bg="white"
+            zIndex={1001}
+            shadow="lg"
+          >
+            {/* Header del drawer */}
+            <Box p={4} borderBottom="1px" borderColor="gray.200">
+              <HStack justify="space-between" align="center">
+                <IconButton
+                  aria-label="Cerrar menú"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                  </svg>
+                </IconButton>
+                <Text fontSize="lg" fontWeight="bold" color="gray.700" flex="1" textAlign="center">
+                  Residencias
+                </Text>
+                <Box w="40px" /> {/* Espaciador para centrar el título */}
+              </HStack>
+            </Box>
+            
+            {/* Contenido del drawer */}
+            <Box h="calc(100vh - 80px)" overflowY="auto">
+              <Sidebar 
+                userData={userData}
+                myRentals={myRentals}
+                publications={publications}
+              />
+            </Box>
+          </Box>
+        </>
+      )}
+    </Box>
   );
 };
 
