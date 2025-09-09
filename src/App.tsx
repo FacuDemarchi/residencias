@@ -1,4 +1,4 @@
-import MainPage from './pages/MainPage'
+import MainPage from './pages/MainPage.tsx'
 import { GoogleMapsProvider } from './context/GoogleMapsContext'
 import { AuthProvider } from './context/AuthContext'
 import { TagsProvider } from './context/TagsContext'

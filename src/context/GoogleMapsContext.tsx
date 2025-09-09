@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { MapLocation } from '../types/app';
-import { getLocations } from '../hooks/getLocations';
 
 interface GoogleMapsContextType {
   isLoaded: boolean;
@@ -15,11 +13,7 @@ interface GoogleMapsContextType {
   setZoom: (zoom: number) => void;
   viewport: google.maps.LatLngBounds | null;
   setViewport: (viewport: google.maps.LatLngBounds | null) => void;
-  // NUEVO: ubicaciones para marcadores
-  mapLocations: MapLocation[];
-  loadingLocations: boolean;
-  errorLocations: string | null;
-  refreshLocations: () => void;
+  currentSearchType: string | null;
 }
 
 const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(undefined);
@@ -75,14 +69,6 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
   const [currentSearchType, setCurrentSearchType] = useState<string | null>(null);
 
-  // Usar el hook getLocations para obtener las ubicaciones
-  const { locations: mapLocations, loading: loadingLocations, error: errorLocations, refreshLocations } = getLocations({
-    center,
-    searchType: currentSearchType
-  });
-
-
-
   // Función setCenter mejorada que acepta tipo de búsqueda
   const setCenter = (newCenter: { lat: number; lng: number }, searchType?: string) => {
     setCenterState(newCenter);
@@ -95,8 +81,6 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const setZoom = (newZoom: number) => {
     setZoomState(newZoom);
   };
-
-
 
   // Función para reintentar la carga si falla
   const retryLoad = () => {
@@ -127,8 +111,6 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-
   // Ajustar zoom según el tipo de búsqueda
   useEffect(() => {
     if (currentSearchType) {
@@ -154,10 +136,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
     setZoom,
     viewport,
     setViewport,
-    mapLocations,
-    loadingLocations,
-    errorLocations,
-    refreshLocations
+    currentSearchType
   };
 
   return (

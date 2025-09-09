@@ -149,7 +149,7 @@ export type Database = {
           },
         ]
       }
-      location: {
+      locations: {
         Row: {
           created_at: string | null
           direccion: string | null
@@ -397,7 +397,7 @@ export type Database = {
             foreignKeyName: "publications_location_id_fkey"
             columns: ["location_id"]
             isOneToOne: false
-            referencedRelation: "location"
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]

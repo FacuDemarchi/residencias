@@ -14,7 +14,7 @@ dist-ssr
 .env
 
 src/diagrams/code/plantuml.jar
-
+src/components/backup/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
