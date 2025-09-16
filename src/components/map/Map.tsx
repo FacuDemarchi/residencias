@@ -21,6 +21,7 @@ const Map: React.FC<MapProps> = ({ locations = [] }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const originalCenterRef = useRef<google.maps.LatLngLiteral | null>(null);
+  const originalZoomRef = useRef<number | null>(null);
   
   const { 
     google, 
@@ -117,14 +118,15 @@ const Map: React.FC<MapProps> = ({ locations = [] }) => {
 
     mapInstanceRef.current = map;
     
-    // Guardar el center original
+    // Guardar el center y zoom originales
     originalCenterRef.current = center;
+    originalZoomRef.current = zoom;
     
-    // Agregar listener para doble click en el mapa (volver al center original)
+    // Agregar listener para doble click en el mapa (volver al center y zoom originales)
     map.addListener('dblclick', () => {
-      if (mapInstanceRef.current && originalCenterRef.current) {
+      if (mapInstanceRef.current && originalCenterRef.current && originalZoomRef.current !== null) {
         mapInstanceRef.current.panTo(originalCenterRef.current);
-        mapInstanceRef.current.setZoom(zoom);
+        mapInstanceRef.current.setZoom(originalZoomRef.current);
       }
     });
 
@@ -135,8 +137,9 @@ const Map: React.FC<MapProps> = ({ locations = [] }) => {
     if (mapInstanceRef.current && isLoaded) {
       mapInstanceRef.current.setCenter(center);
       mapInstanceRef.current.setZoom(zoom);
-      // Actualizar el center original cuando cambie desde el sidebar
+      // Actualizar el center y zoom originales cuando cambien desde el sidebar
       originalCenterRef.current = center;
+      originalZoomRef.current = zoom;
     }
   }, [center, zoom, isLoaded]);
 

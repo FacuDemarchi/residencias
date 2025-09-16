@@ -49,6 +49,9 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Layout optimizado**: Sidebar compacto (250px) para mejor UX
 - **Interfaz limpia**: Controles del mapa removidos para diseño minimalista
 - **Responsive design**: Funciona perfectamente en desktop y móvil
+- **Marcadores funcionando**: Sistema de marcadores dinámicos con clustering automático
+- **Zoom ajustado**: Mapa con zoom inicial optimizado (13) para mejor visualización
+- **Estructura modular**: Componentes Map, Marker y GroupMarker organizados
 
 ## 🎯 Tareas principales pendientes
 
@@ -63,10 +66,13 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Configurar controles y opciones del mapa
   - [x] Implementar responsive design
 
-- [ ] **Agregar marcadores al mapa**
-  - [ ] Crear marcadores dinámicos para publicaciones
-  - [ ] Implementar iconos personalizados por tipo
-  - [ ] Agregar eventos click y hover
+- [x] **Agregar marcadores al mapa** ✅
+  - [x] Crear marcadores dinámicos para publicaciones
+  - [x] Implementar iconos personalizados por tipo
+  - [x] Agregar eventos click y hover
+  - [x] Implementar clustering automático para ubicaciones cercanas
+  - [x] Crear componentes modulares (Map, Marker, GroupMarker)
+  - [ ] Corregir panTo y zoom al deseleccionar un marcador
 
 ### 🔧 Funcionalidades core
 - [x] **Agregar sidebar** ✅
