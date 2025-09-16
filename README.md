@@ -13,8 +13,10 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - React 19 + TypeScript
 - **Tailwind CSS** (Layout responsive)
 - **Chakra UI** (Componentes UI) ✅
+- **React Router DOM** (Navegación entre páginas) ✅
 - Supabase (DB + Auth)
 - Google Maps API
+- **Pago TIC** (Pasarela de pagos con iframe) ✅
 - Vite
 
 ## ⚡ Instalación rápida
@@ -38,6 +40,10 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
    npm run dev
    ```
 
+## 🛣️ Rutas disponibles
+- **`/`** - Página principal con mapa y sidebar
+- **`/checkout?id=123`** - Página de checkout con iframe de Pago TIC
+
 ## 📦 Scripts útiles
 - `npm run dev` – Modo desarrollo
 - `npm run build` – Build de producción
@@ -52,14 +58,18 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Marcadores funcionando**: Sistema de marcadores dinámicos con clustering automático
 - **Zoom ajustado**: Mapa con zoom inicial optimizado (13) para mejor visualización
 - **Estructura modular**: Componentes Map, Marker y GroupMarker organizados
+- **Checkout implementado**: Página de checkout con iframe de Pago TIC integrado
+- **Sistema de rutas**: React Router configurado para navegación entre páginas
 
 ## 🎯 Tareas principales pendientes
 
 ### 🔥 Prioridad alta
-- [ ] **Crear ruta para el checkout**
-  - [ ] Implementar página de checkout
-  - [ ] Integrar pasarela de pagos
-  - [ ] Manejar estados de pago y confirmación
+- [x] **Crear ruta para el checkout** ✅
+  - [x] Implementar página de checkout
+  - [x] Integrar pasarela de pagos (Pago TIC con iframe)
+  - [x] Manejar estados de pago y confirmación
+  - [x] Configurar React Router para navegación
+  - [ ] Crear una publicación en estado disponible para testear pasarela de pagos
 
 - [x] **Agregar mapa al contenedor principal** ✅
   - [x] Integrar Google Maps en el layout principal
@@ -73,6 +83,11 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Implementar clustering automático para ubicaciones cercanas
   - [x] Crear componentes modulares (Map, Marker, GroupMarker)
   - [ ] Corregir panTo y zoom al deseleccionar un marcador
+
+- [ ] **Configurar Pago TIC**
+  - [ ] Crear usuario en Pago TIC
+  - [ ] Obtener credenciales de la API
+  - [ ] Testear funcionamiento en /checkout
 
 ### 🔧 Funcionalidades core
 - [x] **Agregar sidebar** ✅

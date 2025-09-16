@@ -1,7 +1,9 @@
-import MainPage from './pages/MainPage.tsx'
-import { GoogleMapsProvider } from './context/GoogleMapsContext'
-import { AuthProvider } from './context/AuthContext'
-import { TagsProvider } from './context/TagsContext'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import MainPage from './pages/MainPage.tsx';
+import CheckoutPage from './pages/CheckoutPage.tsx';
+import { GoogleMapsProvider } from './context/GoogleMapsContext';
+import { AuthProvider } from './context/AuthContext';
+import { TagsProvider } from './context/TagsContext';
 import './App.css'
 
 function App() {
@@ -9,7 +11,12 @@ function App() {
     <GoogleMapsProvider>
       <AuthProvider>
         <TagsProvider>
-          <MainPage />
+          <Router>
+            <Routes>
+              <Route path="/" element={<MainPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+            </Routes>
+          </Router>
         </TagsProvider>
       </AuthProvider>
     </GoogleMapsProvider>
