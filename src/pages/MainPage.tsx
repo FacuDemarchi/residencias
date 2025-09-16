@@ -80,17 +80,17 @@ const MainPage: React.FC = () => {
 
 
   return (
-    <Box className="w-screen h-screen overflow-hidden">
+    <Box className="w-full h-screen overflow-hidden" position="fixed" top="0" left="0" right="0" bottom="0">
       {/* Layout responsive */}
-      <Flex h="full">
+      <Flex h="full" w="full">
         {/* Sidebar - Desktop */}
         {!isMobile && (
           <Box 
-            w="300px" 
+            w="250px" 
             bg="white" 
             borderRight="1px" 
             borderColor="gray.200"
-            className="hidden md:block"
+            className="sidebar-desktop"
           >
             <Sidebar 
               userData={userData}
@@ -134,6 +134,7 @@ const MainPage: React.FC = () => {
 
           {/* Mapa */}
           <Box
+            flex="1"
             h="full"
             className={isMobile ? "pt-12" : ""}
           >
@@ -163,7 +164,7 @@ const MainPage: React.FC = () => {
             top={0}
             left={0}
             bottom={0}
-            w="300px"
+            w="250px"
             bg="white"
             zIndex={1001}
             shadow="lg"

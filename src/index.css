@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
 
 /* Reset y configuración base para layout responsive */
 html, body, #root {
@@ -45,11 +51,23 @@ html, body {
 }
 
 .sidebar-desktop {
-  @apply hidden md:block w-80 bg-white border-r border-gray-200;
+  @apply hidden w-80 bg-white border-r border-gray-200;
+}
+
+@media (min-width: 768px) {
+  .sidebar-desktop {
+    @apply block;
+  }
 }
 
 .sidebar-mobile {
-  @apply md:hidden;
+  @apply block;
+}
+
+@media (min-width: 768px) {
+  .sidebar-mobile {
+    @apply hidden;
+  }
 }
 
 .content-main {
