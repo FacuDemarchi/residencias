@@ -44,6 +44,12 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - `npm run preview` – Previsualizar build
 - `npm run lint` – Linter
 
+## ✅ Logros recientes
+- **Mapa implementado**: Google Maps integrado con pantalla completa
+- **Layout optimizado**: Sidebar compacto (250px) para mejor UX
+- **Interfaz limpia**: Controles del mapa removidos para diseño minimalista
+- **Responsive design**: Funciona perfectamente en desktop y móvil
+
 ## 🎯 Tareas principales pendientes
 
 ### 🔥 Prioridad alta
@@ -52,10 +58,10 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [ ] Integrar pasarela de pagos
   - [ ] Manejar estados de pago y confirmación
 
-- [ ] **Agregar mapa al contenedor principal**
-  - [ ] Integrar Google Maps en el layout principal
-  - [ ] Configurar controles y opciones del mapa
-  - [ ] Implementar responsive design
+- [x] **Agregar mapa al contenedor principal** ✅
+  - [x] Integrar Google Maps en el layout principal
+  - [x] Configurar controles y opciones del mapa
+  - [x] Implementar responsive design
 
 - [ ] **Agregar marcadores al mapa**
   - [ ] Crear marcadores dinámicos para publicaciones
@@ -77,9 +83,10 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [ ] Conectar con la base de datos
 
 - [ ] **Agregar publication cards**
-  - [ ] Crear componente de tarjeta de publicación
-  - [ ] Mostrar información relevante
-  - [ ] Implementar acciones (ver detalles, reservar)
+  - [ ] Crear componente de tarjeta compacta (solo imagen + precio)
+  - [ ] Mostrar información básica en sidebar optimizado
+  - [ ] Implementar detalle expandible al hacer click
+  - [ ] Conectar con marcadores del mapa
 
 - [ ] **Agregar manejador de filtros y orden**
   - [ ] Implementar sistema de filtros

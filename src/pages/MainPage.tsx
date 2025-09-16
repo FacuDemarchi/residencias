@@ -16,8 +16,9 @@ const HamburgerIcon = () => (
 import { PublicationsService } from '../services/publicationsService';
 import { getLocations } from '../services/locationsService';
 import { useAuth } from '../context/AuthContext';
+import { useGoogleMaps } from '../context/GoogleMapsContext';
 import type { Tables } from '../types/database';
-import Map from '../components/Map';
+import Map from '../components/map/Map';
 import Sidebar from '../components/Sidebar';
 
 type Location = Tables<'locations'>;
@@ -35,12 +36,15 @@ const MainPage: React.FC = () => {
 
   // context - solo se ejecutan cuando cambian las dependencias
   const { user, userData } = useAuth();
+  const { center, currentSearchType } = useGoogleMaps();
 
   // Cargar locations
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const data = await getLocations();
+        console.log('Fetching locations with:', { center, currentSearchType });
+        const data = await getLocations(center, currentSearchType);
+        console.log('Locations fetched:', data);
         setLocations(data);
       } catch (err) {
         console.error('Error al cargar locations:', err);
@@ -48,7 +52,7 @@ const MainPage: React.FC = () => {
       }
     };
     fetchLocations();
-  }, []);
+  }, [center, currentSearchType]);
 
   // Consulta mis publicaciones (para residencias)
   useEffect(() => {
@@ -138,7 +142,7 @@ const MainPage: React.FC = () => {
             h="full"
             className={isMobile ? "pt-12" : ""}
           >
-            <Map />
+            <Map locations={locations} />
           </Box>
         </Box>
       </Flex>

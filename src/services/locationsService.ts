@@ -1,6 +1,5 @@
 import { supabase } from './supabaseClient';
 import type { Tables } from '../types/database';
-import { useGoogleMaps } from '../context/GoogleMapsContext';
 
 type Location = Tables<'locations'>;
 
@@ -21,9 +20,10 @@ const getSearchDistance = (searchType: string | null) => {
 // Cache simple para evitar consultas repetidas
 const cache = new Map<string, { data: Location[]; timestamp: number }>();
 
-export async function getLocations(): Promise<Location[]> {
-  const { center, currentSearchType } = useGoogleMaps();
-  return await getLocationsByCoordinates(center, currentSearchType);
+export async function getLocations(center?: { lat: number; lng: number }, searchType?: string | null): Promise<Location[]> {
+  // Si no se pasan coordenadas, usar coordenadas por defecto de Córdoba
+  const defaultCenter = center || { lat: -31.4167, lng: -64.1833 };
+  return await getLocationsByCoordinates(defaultCenter, searchType);
 }
 
 export async function getLocationsByCoordinates(

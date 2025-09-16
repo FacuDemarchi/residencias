@@ -65,7 +65,7 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [center, setCenterState] = useState<{ lat: number; lng: number }>({ lat: -31.4167, lng: -64.1833 }); // Córdoba, Argentina
-  const [zoom, setZoomState] = useState<number>(12); // Zoom inicial
+  const [zoom, setZoomState] = useState<number>(13); // Zoom inicial más cercano
   const [viewport, setViewport] = useState<google.maps.LatLngBounds | null>(null);
   const [currentSearchType, setCurrentSearchType] = useState<string | null>(null);
 
@@ -114,11 +114,11 @@ export const GoogleMapsProvider = ({ children }: { children: ReactNode }) => {
   // Ajustar zoom según el tipo de búsqueda
   useEffect(() => {
     if (currentSearchType) {
-      let newZoom = 15; // Zoom por defecto para barrios/direcciones
+      let newZoom = 16; // Zoom por defecto para barrios/direcciones (más cercano)
       if (currentSearchType.includes('locality')) {
-        newZoom = 10; // Zoom para ciudades
+        newZoom = 12; // Zoom para ciudades
       } else if (currentSearchType.includes('administrative_area_level_1')) {
-        newZoom = 8; // Zoom para provincias
+        newZoom = 10; // Zoom para provincias
       }
       setZoom(newZoom);
     }
