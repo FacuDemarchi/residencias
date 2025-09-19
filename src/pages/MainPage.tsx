@@ -5,8 +5,11 @@ import {
   HStack, 
   Text, 
   IconButton,
+  Button,
+  Icon,
   useBreakpointValue
 } from '@chakra-ui/react';
+import { FiFilter } from 'react-icons/fi';
 // Icono hamburguesa SVG simple
 const HamburgerIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -20,6 +23,7 @@ import { useGoogleMaps } from '../context/GoogleMapsContext';
 import type { Tables } from '../types/database';
 import Map from '../components/map/Map';
 import Sidebar from '../components/Sidebar';
+import FiltersPanel from '../components/FiltersPanel';
 
 type Location = Tables<'locations'>;
 type Publication = Tables<'publications'>;
@@ -29,6 +33,9 @@ const MainPage: React.FC = () => {
   const [publications] = useState<Publication[]>([]);
   const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [myRentals, setMyRentals] = useState<any[]>([]);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [searchFilters, setSearchFilters] = useState<any>({});
+  const [showFiltersPanel, setShowFiltersPanel] = useState(false);
 
   // Chakra UI hooks
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -36,7 +43,7 @@ const MainPage: React.FC = () => {
 
   // context - solo se ejecutan cuando cambian las dependencias
   const { user, userData } = useAuth();
-  const { center, currentSearchType } = useGoogleMaps();
+  const { center, currentSearchType, setCenter, setZoom } = useGoogleMaps();
 
   // Cargar locations
   useEffect(() => {
@@ -77,10 +84,28 @@ const MainPage: React.FC = () => {
     fetchMyRentals();
   }, [user]);
 
+  // Función para manejar la selección de ubicación desde el buscador
+  const handleLocationSearch = (location: { lat: number; lng: number; address: string }) => {
+    setCurrentLocation(location);
+    // Actualizar el centro del mapa
+    setCenter({ lat: location.lat, lng: location.lng });
+    // Ajustar zoom para mejor visualización de la ubicación
+    setZoom(15);
+    console.log('Ubicación seleccionada:', location);
+  };
+
+  // Función para manejar cambios en los filtros
+  const handleFiltersChange = (filters: any) => {
+    setSearchFilters(filters);
+    console.log('Filtros actualizados:', filters);
+  };
+
   console.log('Locations:', locations);
   console.log('Publications:', publications);
   console.log('My Publications:', myPublications);
   console.log('My Rentals:', myRentals);
+  console.log('Current Location:', currentLocation);
+  console.log('Search Filters:', searchFilters);
 
   return (
     <Box className="w-full h-screen overflow-hidden" position="fixed" top="0" left="0" right="0" bottom="0">
@@ -90,15 +115,18 @@ const MainPage: React.FC = () => {
         {!isMobile && (
           <Box 
             w="250px" 
-            bg="white" 
+            bg="rgba(255, 255, 255, 0.95)"
+            backdropFilter="blur(10px)"
             borderRight="1px" 
-            borderColor="gray.200"
+            borderColor="rgba(255, 255, 255, 0.2)"
             className="sidebar-desktop"
           >
             <Sidebar 
               userData={userData}
               myRentals={myRentals}
               publications={publications}
+              onLocationSearch={handleLocationSearch}
+              currentLocation={currentLocation}
             />
           </Box>
         )}
@@ -140,8 +168,33 @@ const MainPage: React.FC = () => {
             flex="1"
             h="full"
             className={isMobile ? "pt-12" : ""}
+            position="relative"
           >
             <Map locations={locations} />
+            
+            {/* Botón de filtros flotante */}
+            {!isMobile && (
+              <Box
+                position="absolute"
+                top="15px"
+                left="15px" // Pegado al sidebar
+                zIndex={998}
+              >
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowFiltersPanel(!showFiltersPanel)}
+                  bg="rgba(255, 255, 255, 0.9)"
+                  backdropFilter="blur(10px)"
+                  border="1px"
+                  borderColor="rgba(0, 0, 0, 0.1)"
+                  _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
+                  boxShadow="lg"
+                >
+                  <Icon as={FiFilter} />
+                </Button>
+              </Box>
+            )}
           </Box>
         </Box>
       </Flex>
@@ -168,7 +221,8 @@ const MainPage: React.FC = () => {
             left={0}
             bottom={0}
             w="250px"
-            bg="white"
+            bg="rgba(255, 255, 255, 0.95)"
+            backdropFilter="blur(10px)"
             zIndex={1001}
             shadow="lg"
           >
@@ -198,11 +252,21 @@ const MainPage: React.FC = () => {
                 userData={userData}
                 myRentals={myRentals}
                 publications={publications}
+                onLocationSearch={handleLocationSearch}
+                currentLocation={currentLocation}
               />
             </Box>
           </Box>
         </>
       )}
+
+      {/* Panel de filtros */}
+      <FiltersPanel
+        isOpen={showFiltersPanel}
+        onClose={() => setShowFiltersPanel(false)}
+        onFiltersChange={handleFiltersChange}
+        currentFilters={searchFilters}
+      />
     </Box>
   );
 };

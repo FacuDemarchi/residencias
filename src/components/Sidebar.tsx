@@ -6,6 +6,7 @@ import {
   Button
 } from '@chakra-ui/react';
 import type { Tables } from '../types/database';
+import AddressSearchBar from './AddressSearchBar';
 
 type Publication = Tables<'publications'>;
 
@@ -15,14 +16,24 @@ interface SidebarProps {
   } | null;
   myRentals: any[];
   publications: Publication[];
+  onLocationSearch?: (location: { lat: number; lng: number; address: string }) => void;
+  currentLocation?: { lat: number; lng: number; address: string } | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ userData, myRentals, publications }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+  userData, 
+  myRentals, 
+  publications, 
+  onLocationSearch, 
+  currentLocation 
+}) => {
   return (
-    <VStack gap={4} align="stretch" p={4} h="full">
-      <Text fontSize="xl" fontWeight="bold" color="gray.700">
-        Residencias
-      </Text>
+    <VStack gap={3} align="stretch" p={3} h="full">
+      {/* Buscador - Movido arriba */}
+      <AddressSearchBar
+        onLocationSelect={onLocationSearch || (() => {})}
+        currentLocation={currentLocation}
+      />
       
       {/* Botones de filtro */}
       <VStack gap={2} align="stretch">
@@ -48,21 +59,6 @@ const Sidebar: React.FC<SidebarProps> = ({ userData, myRentals, publications }) 
           </Button>
         )}
       </VStack>
-
-      {/* Buscador */}
-      <Box>
-        <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.600">
-          Buscar por ubicación
-        </Text>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          w="full"
-          onClick={() => console.log('Abrir buscador')}
-        >
-          Nueva Córdoba, Córdoba
-        </Button>
-      </Box>
 
       {/* Lista de publicaciones */}
       <Box flex="1" overflowY="auto">

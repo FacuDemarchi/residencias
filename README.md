@@ -90,18 +90,22 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [ ] Testear funcionamiento en /checkout
 
 ### 🔧 Funcionalidades core
-- [x] **Agregar sidebar** ✅
+- [x] **sidebar** ✅
   - [x] Crear componente de sidebar con Chakra UI
   - [x] Implementar navegación y filtros básicos
   - [x] Integrar con el layout principal responsive
   - [x] Solucionar problemas de compatibilidad Tailwind/Chakra
   - [x] Configurar sistema de temas de Chakra UI correctamente
   - [x] Extraer sidebar a componente separado (Sidebar.tsx)
+  - [ ] Cambiar UI
+    - [ ] Fondo transparente
+    - [ ] 
 
-- [ ] **Agregar buscador al sidebar**
-  - [ ] Implementar búsqueda por ubicación
-  - [ ] Agregar filtros avanzados
-  - [ ] Conectar con la base de datos
+- [x] **Buscador del sidebar** ✅
+  - [x] Implementar búsqueda por ubicación
+  - [x] Agregar filtros avanzados
+  - [x] Conectar con la base de datos
+  - [ ] Cambiar UI
 
 - [ ] **Agregar publication cards**
   - [ ] Crear componente de tarjeta compacta (solo imagen + precio)
