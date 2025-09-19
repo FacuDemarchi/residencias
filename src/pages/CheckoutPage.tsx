@@ -8,7 +8,7 @@ import {
   IconButton,
   Spinner
 } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { ChevronLeftIcon } from 'react-icons/hi2';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
@@ -308,7 +308,7 @@ const CheckoutPage: React.FC = () => {
           <HStack justify="space-between" mb={6}>
             <IconButton
               aria-label="Volver"
-              icon={<ArrowBackIcon />}
+              _icon={<ChevronLeftIcon />}
               onClick={() => navigate('/')}
               variant="ghost"
             />
