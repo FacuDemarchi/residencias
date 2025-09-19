@@ -16,7 +16,7 @@ const HamburgerIcon = () => (
     <path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h16v2H2v-2z" />
   </svg>
 );
-import { PublicationsService } from '../services/publicationsService';
+import { PublicationsService, getPublications } from '../services/publicationsService';
 import { getLocations } from '../services/locationsService';
 import { useAuth } from '../context/AuthContext';
 import { useGoogleMaps } from '../context/GoogleMapsContext';
@@ -30,7 +30,7 @@ type Publication = Tables<'publications'>;
 
 const MainPage: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
-  const [publications] = useState<Publication[]>([]);
+  const [publications, setPublications] = useState<Publication[]>([]);
   const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [myRentals, setMyRentals] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
@@ -60,6 +60,27 @@ const MainPage: React.FC = () => {
     };
     fetchLocations();
   }, [center, currentSearchType]);
+
+  // Cargar publicaciones basadas en las locations
+  useEffect(() => {
+    const fetchPublications = async () => {
+      if (locations.length > 0) {
+        try {
+          const locationIds = locations.map(location => Number(location.id));
+          console.log('Fetching publications for location IDs:', locationIds);
+          const data = await getPublications(locationIds);
+          console.log('Publications fetched:', data);
+          setPublications(data);
+        } catch (err) {
+          console.error('Error al cargar publicaciones:', err);
+          setPublications([]);
+        }
+      } else {
+        setPublications([]);
+      }
+    };
+    fetchPublications();
+  }, [locations]);
 
   // Consulta mis publicaciones (para residencias)
   useEffect(() => {

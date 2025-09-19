@@ -8,6 +8,30 @@ export interface RentalWithPublication extends Rental {
   publications: Publication;
 }
 
+// Función simple para obtener publicaciones por location IDs
+export async function getPublications(locationIds: number[]): Promise<Publication[]> {
+  if (locationIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('publications')
+      .select('*')
+      .in('location_id', locationIds);
+
+    if (error) {
+      console.error('Error al cargar publicaciones:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Error al cargar publicaciones:', err);
+    return [];
+  }
+}
+
 export class PublicationsService {
   private static cache: Map<string, any> = new Map();
 
