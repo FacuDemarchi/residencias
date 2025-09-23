@@ -66,7 +66,10 @@ const MainPage: React.FC = () => {
     const fetchPublications = async () => {
       if (locations.length > 0) {
         try {
-          const locationIds = locations.map(location => Number(location.id));
+          console.log('🔍 Raw locations data:', locations);
+          console.log('🔍 Location IDs before conversion:', locations.map(l => ({ id: l.id, type: typeof l.id })));
+          
+          const locationIds = locations.map(location => location.id); // Los IDs son strings (UUIDs)
           console.log('Fetching publications for location IDs:', locationIds);
           const data = await getPublications(locationIds);
           console.log('Publications fetched:', data);

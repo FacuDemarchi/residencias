@@ -3,10 +3,13 @@ import {
   Box, 
   VStack, 
   Text, 
-  Button
+  Button,
+  Badge,
+  HStack
 } from '@chakra-ui/react';
 import type { Tables } from '../types/database';
 import AddressSearchBar from './AddressSearchBar';
+import PublicationCard from './PublicationCard';
 
 type Publication = Tables<'publications'>;
 
@@ -27,6 +30,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   onLocationSearch, 
   currentLocation 
 }) => {
+  // Función para manejar selección de publicación
+  const handlePublicationSelect = (publication: Publication) => {
+    console.log('Publicación seleccionada:', publication);
+    // Aquí puedes agregar lógica para centrar el mapa en la publicación
+  };
+
+  // Contar publicaciones por estado
+  const publicationsByState = publications.reduce((acc, pub) => {
+    const state = pub.states?.nombre || 'sin estado';
+    acc[state] = (acc[state] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <VStack gap={3} align="stretch" p={3} h="full">
       {/* Buscador - Movido arriba */}
@@ -55,35 +71,74 @@ const Sidebar: React.FC<SidebarProps> = ({
             size="sm"
             onClick={() => console.log('Mis alquileres')}
           >
-            Mis Alquileres
+            Mis Alquileres ({myRentals.length})
           </Button>
         )}
       </VStack>
 
+      <Box h="1px" bg="gray.200" />
+
+      {/* Resumen de publicaciones */}
+      <Box>
+        <HStack justify="space-between" align="center" mb={2}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.600">
+            Publicaciones encontradas
+          </Text>
+          <Badge colorScheme="blue" variant="subtle">
+            {publications.length}
+          </Badge>
+        </HStack>
+        
+        {/* Contador por estado */}
+        {Object.keys(publicationsByState).length > 0 && (
+          <HStack spacing={1} wrap="wrap">
+            {Object.entries(publicationsByState).map(([state, count]) => (
+              <Badge 
+                key={state} 
+                size="sm" 
+                variant="outline" 
+                colorScheme={
+                  state === 'disponible' ? 'green' :
+                  state === 'reservada' ? 'yellow' :
+                  state === 'alquilada' ? 'red' :
+                  state === 'pausada' ? 'orange' :
+                  'gray'
+                }
+                fontSize="xs"
+              >
+                {state}: {count}
+              </Badge>
+            ))}
+          </HStack>
+        )}
+      </Box>
+
+      <Box h="1px" bg="gray.200" />
+
       {/* Lista de publicaciones */}
       <Box flex="1" overflowY="auto">
-        <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.600">
-          Publicaciones disponibles
-        </Text>
         <VStack gap={2} align="stretch">
-          {publications.slice(0, 5).map((pub, index) => (
+          {publications.length > 0 ? (
+            publications.map((pub) => (
+              <PublicationCard
+                key={pub.id}
+                publication={pub}
+                onSelect={handlePublicationSelect}
+              />
+            ))
+          ) : (
             <Box 
-              key={index}
-              p={3} 
-              border="1px" 
-              borderColor="gray.200" 
-              borderRadius="md"
-              cursor="pointer"
-              _hover={{ bg: "gray.50" }}
+              p={4} 
+              textAlign="center" 
+              color="gray.500"
+              fontSize="sm"
             >
-              <Text fontSize="sm" fontWeight="medium">
-                {`Publicación ${index + 1}`}
-              </Text>
-              <Text fontSize="xs" color="gray.500">
-                ${pub.price || 'Precio no disponible'}
+              <Text>No hay publicaciones disponibles</Text>
+              <Text fontSize="xs" mt={1}>
+                Cambia la ubicación o ajusta los filtros
               </Text>
             </Box>
-          ))}
+          )}
         </VStack>
       </Box>
     </VStack>
