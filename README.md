@@ -49,6 +49,7 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - `npm run build` – Build de producción
 - `npm run preview` – Previsualizar build
 - `npm run lint` – Linter
+- `npm run test:db` – Script de testing para verificar datos de la base de datos
 
 ## ✅ Logros recientes
 - **Mapa implementado**: Google Maps integrado con pantalla completa
@@ -60,6 +61,9 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Estructura modular**: Componentes Map, Marker y GroupMarker organizados
 - **Checkout implementado**: Página de checkout con iframe de Pago TIC integrado
 - **Sistema de rutas**: React Router configurado para navegación entre páginas
+- **PublicationCard implementado**: Componente compacto para mostrar publicaciones en sidebar
+- **Integración de datos**: Sistema de consultas a base de datos funcionando
+- **Compatibilidad Chakra UI v3**: Errores de compatibilidad corregidos
 
 ## 🎯 Tareas principales pendientes
 
@@ -97,19 +101,20 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Solucionar problemas de compatibilidad Tailwind/Chakra
   - [x] Configurar sistema de temas de Chakra UI correctamente
   - [x] Extraer sidebar a componente separado (Sidebar.tsx)
-  - [ ] Cambiar UI
+  - [ ] Mejorar UI del sidebar
 
 - [x] **Buscador del sidebar** ✅
   - [x] Implementar búsqueda por ubicación
   - [x] Agregar filtros avanzados
   - [x] Conectar con la base de datos
-  - [ ] Cambiar UI
+  - [ ] Mejorar UI del buscador
 
-- [ ] **Agregar publication cards**
-  - [ ] Crear componente de tarjeta compacta (solo imagen + precio)
-  - [ ] Mostrar información básica en sidebar optimizado
-  - [ ] Implementar detalle expandible al hacer click
-  - [ ] Conectar con marcadores del mapa
+- [x] **Agregar publication cards** ✅
+  - [x] Crear componente de tarjeta compacta (PublicationCard)
+  - [x] Mostrar información básica en sidebar optimizado
+  - [x] Integrar con sistema de estados y ubicaciones
+  - [x] Conectar con marcadores del mapa
+  - [ ] Crear PublicationDetail para vista expandida
 
 - [ ] **Agregar manejador de filtros y orden**
   - [ ] Implementar sistema de filtros
