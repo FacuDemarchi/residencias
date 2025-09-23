@@ -98,8 +98,6 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Configurar sistema de temas de Chakra UI correctamente
   - [x] Extraer sidebar a componente separado (Sidebar.tsx)
   - [ ] Cambiar UI
-    - [ ] Fondo transparente
-    - [ ] 
 
 - [x] **Buscador del sidebar** ✅
   - [x] Implementar búsqueda por ubicación

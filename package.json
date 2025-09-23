@@ -16,6 +16,7 @@
     "db:types": "supabase gen types typescript --project-id pxjeifzojuckaknwlwgp > src/types/database.ts",
     "db:insert-data": "node database/scripts/insert-data.js",
     "db:list-table-data": "node database/scripts/list-table-data.js",
+    "test:db": "node src/testing/test-database.js",
     "db:backup": "node scripts/backup-database.js",
     "db:restore": "node scripts/restore-backup.js",
     "db:list-backups": "node scripts/restore-backup.js",
