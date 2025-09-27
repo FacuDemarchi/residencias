@@ -27,7 +27,11 @@ import FiltersPanel from '../components/FiltersPanel';
 import DetailContainer from '../components/DetailContainer';
 
 type Location = Tables<'locations'>;
-type Publication = Tables<'publications'>;
+type Publication = Tables<'publications'> & {
+  location?: Tables<'locations'>;
+  states?: Tables<'states'>;
+  images?: Tables<'images'>[];
+};
 
 const MainPage: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -146,17 +150,32 @@ const MainPage: React.FC = () => {
   };
 
   // Función para manejar selección de publicación individual
-  const handlePublicationSelect = (publication: Publication) => {
-    setPublicacionSeleccionada(publication);
-    setGrupoSeleccionado(null); // Limpiar selección de grupo
-    console.log('Publicación seleccionada:', publication);
+  const handlePublicationSelect = (publicationId: string) => {
+    const publication = publications.find(pub => pub.id === publicationId);
+    if (publication) {
+      setPublicacionSeleccionada(publication);
+      setGrupoSeleccionado(null); // Limpiar selección de grupo
+      console.log('Publicación seleccionada:', publication);
+    } else {
+      console.log('No se encontró publicación con ID:', publicationId);
+    }
   };
 
   // Función para manejar selección de grupo
-  const handleGroupSelect = (locations: Location[]) => {
-    setGrupoSeleccionado(locations);
-    setPublicacionSeleccionada(null); // Limpiar selección individual
-    console.log('Grupo seleccionado:', locations);
+  const handleGroupSelect = (publicationIds: string[]) => {
+    const selectedPublications = publications.filter(pub => publicationIds.includes(pub.id));
+    if (selectedPublications.length > 0) {
+      // Para grupoSeleccionado necesitamos las locations, no las publicaciones
+      const selectedLocations = selectedPublications
+        .map(pub => pub.location)
+        .filter(loc => loc !== undefined) as Location[];
+      
+      setGrupoSeleccionado(selectedLocations);
+      setPublicacionSeleccionada(null); // Limpiar selección individual
+      console.log('Grupo seleccionado:', selectedLocations);
+    } else {
+      console.log('No se encontraron publicaciones con IDs:', publicationIds);
+    }
   };
 
   // Función para limpiar selecciones
@@ -169,6 +188,7 @@ const MainPage: React.FC = () => {
   const handleReserve = (publication: Publication) => {
     window.open(`/checkout?id=${publication.id}`, '_blank');
   };
+
 
   console.log('Locations:', locations);
   console.log('Publications:', publications);
@@ -263,6 +283,7 @@ const MainPage: React.FC = () => {
           >
             <Map 
               locations={locations} 
+              publications={publications}
               onPublicationSelect={handlePublicationSelect}
               onGroupSelect={handleGroupSelect}
               publicacionSeleccionada={publicacionSeleccionada}

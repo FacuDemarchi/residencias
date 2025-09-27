@@ -8,8 +8,9 @@ type Location = Tables<'locations'>;
 
 interface MapProps {
   locations?: Location[];
-  onPublicationSelect?: (publication: any) => void;
-  onGroupSelect?: (locations: Location[]) => void;
+  publications?: any[];
+  onPublicationSelect?: (publicationId: string) => void;
+  onGroupSelect?: (publicationIds: string[]) => void;
   publicacionSeleccionada?: any | null;
   grupoSeleccionado?: Location[] | null;
 }
@@ -23,6 +24,7 @@ interface ClusteredItem {
 
 const Map: React.FC<MapProps> = ({ 
   locations = [], 
+  publications = [],
   onPublicationSelect,
   onGroupSelect,
   publicacionSeleccionada,
@@ -36,27 +38,31 @@ const Map: React.FC<MapProps> = ({
   // Función para manejar click en marcador individual
   const handleMarkerClick = (location: Location) => {
     console.log('Marker clicked:', location);
-    // Por ahora solo hacemos pan to, más adelante buscaremos la publicación asociada
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.panTo({ lat: location.latitud, lng: location.longitud });
-      mapInstanceRef.current.setZoom(16);
+    // Buscar publicación asociada a esta ubicación
+    const associatedPublication = publications.find(pub => pub.location_id === location.id);
+    if (associatedPublication && onPublicationSelect) {
+      console.log('Publicación encontrada:', associatedPublication.id);
+      onPublicationSelect(associatedPublication.id);
+    } else {
+      console.log('No se encontró publicación asociada a esta ubicación');
     }
-    // TODO: Buscar publicación asociada a esta ubicación y llamar onPublicationSelect
   };
 
   // Función para manejar click en marcador de grupo
   const handleGroupClick = (locations: Location[]) => {
     console.log('Group marker clicked:', locations);
-    if (mapInstanceRef.current && locations.length > 0) {
-      // Pan to al centro del grupo
-      mapInstanceRef.current.panTo({ 
-        lat: locations[0].latitud, 
-        lng: locations[0].longitud 
-      });
-      // Zoom in para mostrar mejor el grupo
-      mapInstanceRef.current.setZoom(17);
+    // Buscar todas las publicaciones asociadas a estas ubicaciones
+    const associatedPublications = locations
+      .map(location => publications.find(pub => pub.location_id === location.id))
+      .filter(pub => pub !== undefined);
+    
+    if (associatedPublications.length > 0 && onGroupSelect) {
+      const publicationIds = associatedPublications.map(pub => pub.id);
+      console.log('Publicaciones encontradas en grupo:', publicationIds);
+      onGroupSelect(publicationIds);
+    } else {
+      console.log('No se encontraron publicaciones asociadas a este grupo');
     }
-    onGroupSelect?.(locations);
   };
   
   const { 
@@ -178,6 +184,36 @@ const Map: React.FC<MapProps> = ({
       originalZoomRef.current = zoom;
     }
   }, [center, zoom, isLoaded]);
+
+  // Pan to automático cuando se selecciona una publicación
+  useEffect(() => {
+    if (publicacionSeleccionada && publicacionSeleccionada.location_id && mapInstanceRef.current) {
+      // Buscar la ubicación correspondiente en la lista de locations
+      const location = locations.find(loc => loc.id === publicacionSeleccionada.location_id);
+      if (location) {
+        console.log('🎯 Pan to publicación seleccionada:', location);
+        mapInstanceRef.current.panTo({
+          lat: location.latitud,
+          lng: location.longitud
+        });
+        mapInstanceRef.current.setZoom(16);
+      } else {
+        console.log('❌ No se encontró ubicación para la publicación:', publicacionSeleccionada.location_id);
+      }
+    }
+  }, [publicacionSeleccionada?.id, locations, isLoaded]);
+
+  // Pan to automático cuando se selecciona un grupo
+  useEffect(() => {
+    if (grupoSeleccionado && grupoSeleccionado.length > 0 && mapInstanceRef.current) {
+      console.log('🎯 Pan to grupo seleccionado:', grupoSeleccionado);
+      mapInstanceRef.current.panTo({
+        lat: grupoSeleccionado[0].latitud,
+        lng: grupoSeleccionado[0].longitud
+      });
+      mapInstanceRef.current.setZoom(17);
+    }
+  }, [grupoSeleccionado, isLoaded]);
 
   // Limpiar al desmontar
   useEffect(() => {

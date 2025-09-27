@@ -19,7 +19,7 @@ interface SidebarProps {
   publications: Publication[];
   onLocationSearch?: (location: { lat: number; lng: number; address: string }) => void;
   currentLocation?: { lat: number; lng: number; address: string } | null;
-  onPublicationSelect?: (publication: Publication) => void;
+  onPublicationSelect?: (publicationId: string) => void;
   publicacionSeleccionada?: Publication | null;
   grupoSeleccionado?: any[] | null;
 }
@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   // Función para manejar selección de publicación
   const handlePublicationSelect = (publication: Publication) => {
-    onPublicationSelect?.(publication);
+    onPublicationSelect?.(publication.id);
   };
 
 
