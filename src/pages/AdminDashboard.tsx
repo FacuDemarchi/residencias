@@ -4,17 +4,26 @@ import {
   VStack, 
   HStack, 
   Text, 
-  Button, 
-  Grid, 
-  GridItem,
-  Card,
-  CardBody,
+  Button,
+  Icon,
   Badge,
-  Icon
+  IconButton,
+  Spinner,
+  Center
 } from '@chakra-ui/react';
-import { FiPlus, FiEdit, FiEye, FiDollarSign, FiUsers, FiHome } from 'react-icons/fi';
+import { 
+  FiPlus, 
+  FiEdit, 
+  FiEye, 
+  FiDollarSign, 
+  FiUsers, 
+  FiHome,
+  FiCalendar,
+  FiMoreVertical
+} from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { AdminService } from '../services/adminService';
 import type { Tables } from '../types/database';
 
 type Publication = Tables<'publications'>;
@@ -24,46 +33,22 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalPublications: 0,
-    activePublications: 0,
-    totalRevenue: 0,
-    totalCapacity: 0
-  });
-
-  const cardBg = 'white';
-  const borderColor = 'gray.200';
-
-  // Verificar que sea una residencia (ya validado por ProtectedRoute)
-  useEffect(() => {
-    if (userData && userData.user_type !== 'residencia') {
-      navigate('/');
-    }
-  }, [userData, navigate]);
 
   // Cargar publicaciones del usuario
   useEffect(() => {
     const loadMyPublications = async () => {
-      if (!userData?.user_id) return;
+      if (!userData?.user_id) {
+        setLoading(false);
+        return;
+      }
       
       try {
-        // TODO: Implementar getMyPublications en adminService
-        // const publications = await AdminService.getMyPublications(userData.user_id);
-        // setMyPublications(publications);
-        
-        // Calcular estadísticas
-        const totalPublications = myPublications.length;
-        const activePublications = myPublications.filter(pub => pub.is_active).length;
-        const totalRevenue = myPublications.reduce((sum, pub) => sum + (pub.price || 0), 0);
-        const totalCapacity = myPublications.reduce((sum, pub) => sum + (pub.capacidad || 0), 0);
-        
-        setStats({
-          totalPublications,
-          activePublications,
-          totalRevenue,
-          totalCapacity
-        });
-        
+        setLoading(true);
+        console.log('Cargando publicaciones para usuario:', userData.user_id);
+        const adminService = new AdminService();
+        const publications = await adminService.getMyPublications(userData.user_id);
+        console.log('Publicaciones cargadas:', publications);
+        setMyPublications(publications);
         setLoading(false);
       } catch (error) {
         console.error('Error al cargar publicaciones:', error);
@@ -72,219 +57,282 @@ const AdminDashboard: React.FC = () => {
     };
 
     loadMyPublications();
-  }, [userData, myPublications]);
+  }, [userData]);
+
+  const formatPrice = (price: number | null) => {
+    if (!price) return 'No definido';
+    return `$${price.toLocaleString('es-AR')}/mes`;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No disponible';
+    return new Date(dateString).toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
 
   if (loading) {
     return (
       <Box p={8} textAlign="center">
-        <Text>Cargando dashboard...</Text>
+        <Center h="200px">
+          <VStack gap={4}>
+            <Spinner size="lg" color="blue.500" />
+            <Text color="gray.600">Cargando publicaciones...</Text>
+          </VStack>
+        </Center>
       </Box>
     );
   }
 
   return (
-    <Box p={6} maxW="1200px" mx="auto">
-      {/* Header */}
-      <VStack align="stretch" gap={6}>
-        <HStack justify="space-between" align="center">
-          <VStack align="start" gap={1}>
-            <Text fontSize="2xl" fontWeight="bold" color="gray.800">
-              Panel de Administración
+    <Box 
+      p={8} 
+      maxW="1400px" 
+      mx="auto" 
+      minH="100vh"
+      overflowY="auto"
+      bg="gray.50"
+    >
+      <VStack align="stretch" gap={8}>
+        {/* Header */}
+        <Box bg="white" p={6} borderRadius="xl" boxShadow="sm">
+          <HStack justify="space-between" align="center">
+            <VStack align="start" gap={1}>
+              <Text fontSize="3xl" fontWeight="bold" color="gray.800">
+                Panel de Administración
+              </Text>
+              <Text color="gray.600" fontSize="lg">
+                Gestiona tus publicaciones y reservas
+              </Text>
+            </VStack>
+            
+            <Button
+              colorScheme="blue"
+              size="lg"
+              leftIcon={<Icon as={FiPlus} />}
+              onClick={() => navigate('/admin/publications/new')}
+              borderRadius="lg"
+              px={8}
+            >
+              Nueva Publicación
+            </Button>
+          </HStack>
+        </Box>
+
+        {/* Estadísticas rápidas */}
+        <HStack gap={6} justify="center">
+          <Box bg="white" p={6} borderRadius="xl" boxShadow="sm" textAlign="center" minW="150px">
+            <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+              {myPublications.length}
             </Text>
-            <Text color="gray.600">
-              Gestiona tus publicaciones y reservas
+            <Text color="gray.600" fontSize="sm">
+              Total Publicaciones
             </Text>
-          </VStack>
-          
-          <Button
-            colorScheme="blue"
-            leftIcon={<Icon as={FiPlus} />}
-            onClick={() => navigate('/admin/publications/new')}
-          >
-            Nueva Publicación
-          </Button>
+          </Box>
+          <Box bg="white" p={6} borderRadius="xl" boxShadow="sm" textAlign="center" minW="150px">
+            <Text fontSize="2xl" fontWeight="bold" color="green.500">
+              {myPublications.filter(p => p.is_active).length}
+            </Text>
+            <Text color="gray.600" fontSize="sm">
+              Activas
+            </Text>
+          </Box>
+          <Box bg="white" p={6} borderRadius="xl" boxShadow="sm" textAlign="center" minW="150px">
+            <Text fontSize="2xl" fontWeight="bold" color="orange.500">
+              {myPublications.reduce((sum, p) => sum + (p.capacidad || 0), 0)}
+            </Text>
+            <Text color="gray.600" fontSize="sm">
+              Capacidad Total
+            </Text>
+          </Box>
         </HStack>
 
-        {/* Estadísticas */}
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={4}>
-          <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor}>
-              <CardBody>
-                <VStack align="start" gap={2}>
-                  <Text fontSize="sm" color="gray.600">Total Publicaciones</Text>
-                  <Text fontSize="2xl" fontWeight="bold" color="blue.500">{stats.totalPublications}</Text>
-                  <Badge colorScheme="green" variant="subtle">
-                    {stats.activePublications} activas
-                  </Badge>
-                </VStack>
-              </CardBody>
-            </Card>
-          </GridItem>
-          
-          <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor}>
-              <CardBody>
-                <VStack align="start" gap={2}>
-                  <Text fontSize="sm" color="gray.600">Capacidad Total</Text>
-                  <Text fontSize="2xl" fontWeight="bold" color="green.500">{stats.totalCapacity}</Text>
-                  <Text fontSize="xs" color="gray.500">personas</Text>
-                </VStack>
-              </CardBody>
-            </Card>
-          </GridItem>
-          
-          <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor}>
-              <CardBody>
-                <VStack align="start" gap={2}>
-                  <Text fontSize="sm" color="gray.600">Ingresos Mensuales</Text>
-                  <Text fontSize="2xl" fontWeight="bold" color="purple.500">
-                    ${stats.totalRevenue.toLocaleString('es-AR')}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500">estimado</Text>
-                </VStack>
-              </CardBody>
-            </Card>
-          </GridItem>
-          
-          <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor}>
-              <CardBody>
-                <VStack align="start" gap={2}>
-                  <Text fontSize="sm" color="gray.600">Reservas Activas</Text>
-                  <Text fontSize="2xl" fontWeight="bold" color="orange.500">0</Text>
-                  <Text fontSize="xs" color="gray.500">este mes</Text>
-                </VStack>
-              </CardBody>
-            </Card>
-          </GridItem>
-        </Grid>
-
-        {/* Acciones rápidas */}
-        <Card bg={cardBg} border="1px" borderColor={borderColor}>
-          <CardBody>
-            <VStack align="stretch" gap={4}>
-              <Text fontSize="lg" fontWeight="semibold">
-                Acciones Rápidas
+        {/* Lista de publicaciones */}
+        <Box bg="white" borderRadius="xl" boxShadow="sm" overflow="hidden">
+          <Box p={6} borderBottom="1px" borderColor="gray.100">
+            <HStack justify="space-between">
+              <Text fontSize="xl" fontWeight="semibold" color="gray.800">
+                Mis Publicaciones
               </Text>
-              
-              <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={4}>
-                <Button
-                  variant="outline"
-                  leftIcon={<Icon as={FiPlus} />}
-                  onClick={() => navigate('/admin/publications/new')}
-                  h="60px"
-                >
-                  <VStack gap={1}>
-                    <Text fontWeight="semibold">Nueva Publicación</Text>
-                    <Text fontSize="sm" color="gray.600">
-                      Crear una nueva residencia
-                    </Text>
-                  </VStack>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  leftIcon={<Icon as={FiEdit} />}
-                  onClick={() => navigate('/admin/publications')}
-                  h="60px"
-                >
-                  <VStack gap={1}>
-                    <Text fontWeight="semibold">Gestionar Publicaciones</Text>
-                    <Text fontSize="sm" color="gray.600">
-                      Ver y editar todas
-                    </Text>
-                  </VStack>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  leftIcon={<Icon as={FiEye} />}
-                  onClick={() => navigate('/admin/reservations')}
-                  h="60px"
-                >
-                  <VStack gap={1}>
-                    <Text fontWeight="semibold">Ver Reservas</Text>
-                    <Text fontSize="sm" color="gray.600">
-                      Gestionar alquileres
-                    </Text>
-                  </VStack>
-                </Button>
-              </Grid>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        {/* Publicaciones recientes */}
-        <Card bg={cardBg} border="1px" borderColor={borderColor}>
-          <CardBody>
-            <VStack align="stretch" gap={4}>
-              <HStack justify="space-between">
-                <Text fontSize="lg" fontWeight="semibold">
-                  Publicaciones Recientes
+              <Text fontSize="sm" color="gray.500">
+                {myPublications.length} publicación{myPublications.length !== 1 ? 'es' : ''}
+              </Text>
+            </HStack>
+          </Box>
+          
+          {myPublications.length === 0 ? (
+            <Box textAlign="center" py={16}>
+              <Icon as={FiHome} boxSize={20} color="gray.300" mb={6} />
+              <Text fontSize="xl" color="gray.600" mb={4} fontWeight="medium">
+                No tienes publicaciones aún
+              </Text>
+              <Text color="gray.500" mb={8} maxW="400px" mx="auto">
+                Crea tu primera publicación para comenzar a gestionar tu residencia
+              </Text>
+              <Button
+                colorScheme="blue"
+                size="lg"
+                leftIcon={<Icon as={FiPlus} />}
+                onClick={() => navigate('/admin/publications/new')}
+                borderRadius="lg"
+                px={8}
+              >
+                Crear tu primera publicación
+              </Button>
+            </Box>
+          ) : (
+            <VStack align="stretch" gap={0}>
+              {/* Encabezado de la tabla */}
+              <Box 
+                bg="gray.50" 
+                p={4} 
+                borderBottom="1px" 
+                borderColor="gray.200"
+                display="grid"
+                gridTemplateColumns="2fr 1fr 1fr 1fr 1fr 1fr 120px"
+                gap={4}
+                alignItems="center"
+              >
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Título
                 </Text>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/admin/publications')}
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Precio
+                </Text>
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Capacidad
+                </Text>
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Área
+                </Text>
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Estado
+                </Text>
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm">
+                  Creada
+                </Text>
+                <Text color="gray.600" fontWeight="semibold" fontSize="sm" textAlign="center">
+                  Acciones
+                </Text>
+              </Box>
+
+              {/* Filas de publicaciones */}
+              {myPublications.map((publication, index) => (
+                <Box
+                  key={publication.id}
+                  p={4}
+                  borderBottom={index < myPublications.length - 1 ? "1px" : "none"}
+                  borderColor="gray.200"
+                  _hover={{ bg: 'gray.50' }}
+                  cursor="pointer"
+                  onClick={() => navigate(`/admin/publications/${publication.id}/edit`)}
+                  display="grid"
+                  gridTemplateColumns="2fr 1fr 1fr 1fr 1fr 1fr 120px"
+                  gap={4}
+                  alignItems="center"
                 >
-                  Ver todas
-                </Button>
-              </HStack>
-              
-              {myPublications.length === 0 ? (
-                <Box textAlign="center" py={8}>
-                  <Icon as={FiHome} boxSize={12} color="gray.400" mb={4} />
-                  <Text color="gray.600" mb={4}>
-                    No tienes publicaciones aún
-                  </Text>
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => navigate('/admin/publications/new')}
+                  {/* Título */}
+                  <VStack align="start" gap={1}>
+                    <Text fontWeight="semibold" color="gray.800" fontSize="md">
+                      {publication.titulo}
+                    </Text>
+                    {publication.descripcion && (
+                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                        {publication.descripcion}
+                      </Text>
+                    )}
+                  </VStack>
+
+                  {/* Precio */}
+                  <HStack gap={1}>
+                    <Icon as={FiDollarSign} color="green.500" />
+                    <Text fontWeight="medium" color="gray.700" fontSize="sm">
+                      {formatPrice(publication.price)}
+                    </Text>
+                  </HStack>
+
+                  {/* Capacidad */}
+                  <HStack gap={1}>
+                    <Icon as={FiUsers} color="blue.500" />
+                    <Text color="gray.700" fontSize="sm">
+                      {publication.capacidad} persona{publication.capacidad !== 1 ? 's' : ''}
+                    </Text>
+                  </HStack>
+
+                  {/* Área */}
+                  <HStack gap={1}>
+                    <Icon as={FiHome} color="orange.500" />
+                    <Text color="gray.700" fontSize="sm">
+                      {publication.metros_cuadrados ? `${publication.metros_cuadrados} m²` : 'No definido'}
+                    </Text>
+                  </HStack>
+
+                  {/* Estado */}
+                  <Badge
+                    colorScheme={publication.is_active ? 'green' : 'gray'}
+                    variant="subtle"
+                    borderRadius="full"
+                    px={3}
+                    py={1}
+                    fontSize="xs"
                   >
-                    Crear tu primera publicación
-                  </Button>
+                    {publication.is_active ? 'Activa' : 'Inactiva'}
+                  </Badge>
+
+                  {/* Fecha */}
+                  <HStack gap={1}>
+                    <Icon as={FiCalendar} color="gray.400" />
+                    <Text fontSize="sm" color="gray.600">
+                      {formatDate(publication.created_at)}
+                    </Text>
+                  </HStack>
+
+                  {/* Acciones */}
+                  <HStack gap={1} justify="center">
+                    <IconButton
+                      aria-label="Ver detalles"
+                      icon={<FiEye />}
+                      size="sm"
+                      variant="ghost"
+                      colorScheme="blue"
+                      title="Ver detalles"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Implementar vista de detalles
+                      }}
+                    />
+                    <IconButton
+                      aria-label="Editar"
+                      icon={<FiEdit />}
+                      size="sm"
+                      variant="ghost"
+                      colorScheme="green"
+                      title="Editar"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/admin/publications/${publication.id}/edit`);
+                      }}
+                    />
+                    <IconButton
+                      aria-label="Más opciones"
+                      icon={<FiMoreVertical />}
+                      size="sm"
+                      variant="ghost"
+                      colorScheme="gray"
+                      title="Más opciones"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Implementar menú de opciones
+                      }}
+                    />
+                  </HStack>
                 </Box>
-              ) : (
-                <VStack align="stretch" gap={2}>
-                  {myPublications.slice(0, 5).map((publication) => (
-                    <HStack
-                      key={publication.id}
-                      p={3}
-                      border="1px"
-                      borderColor={borderColor}
-                      borderRadius="md"
-                      _hover={{ bg: 'gray.50' }}
-                      cursor="pointer"
-                      onClick={() => navigate(`/admin/publications/edit/${publication.id}`)}
-                    >
-                      <VStack align="start" flex="1" gap={1}>
-                        <Text fontWeight="semibold">{publication.titulo}</Text>
-                        <HStack gap={4} fontSize="sm" color="gray.600">
-                          <HStack gap={1}>
-                            <Icon as={FiDollarSign} />
-                            <Text>${publication.price?.toLocaleString('es-AR')}</Text>
-                          </HStack>
-                          <HStack gap={1}>
-                            <Icon as={FiUsers} />
-                            <Text>{publication.capacidad} personas</Text>
-                          </HStack>
-                        </HStack>
-                      </VStack>
-                      
-                      <Badge
-                        colorScheme={publication.is_active ? 'green' : 'gray'}
-                        variant="subtle"
-                      >
-                        {publication.is_active ? 'Activa' : 'Inactiva'}
-                      </Badge>
-                    </HStack>
-                  ))}
-                </VStack>
-              )}
+              ))}
             </VStack>
-          </CardBody>
-        </Card>
+          )}
+        </Box>
       </VStack>
     </Box>
   );

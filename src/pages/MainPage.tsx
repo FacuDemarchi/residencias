@@ -230,7 +230,7 @@ const MainPage: React.FC = () => {
 
 
   return (
-    <Box className="w-full h-screen overflow-hidden transparent-sidebar" position="fixed" top="0" left="0" right="0" bottom="0">
+    <Box className="w-full h-screen transparent-sidebar" position="relative">
       {/* Layout responsive */}
       <Flex h="full" w="full" className="transparent-sidebar">
         {/* Sidebar - Desktop */}

@@ -32,13 +32,27 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/" replace />;
   }
 
-  // Si no hay userData o user_type no es válido, redirigir
-  if (!userData || (userData.user_type !== 'cliente' && userData.user_type !== 'residencia')) {
+  // Si hay usuario pero aún no se ha cargado userData, mostrar loading
+  if (user && !userData) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        Cargando datos del usuario...
+      </div>
+    );
+  }
+
+  // Si user_type no es válido, redirigir
+  if (userData && (userData.user_type !== 'cliente' && userData.user_type !== 'residencia')) {
     return <Navigate to="/" replace />;
   }
 
   // Si se requiere un tipo específico de usuario
-  if (requiredUserType && userData.user_type !== requiredUserType) {
+  if (requiredUserType && userData && userData.user_type !== requiredUserType) {
     return <Navigate to="/" replace />;
   }
 

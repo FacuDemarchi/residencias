@@ -30,11 +30,15 @@ interface SearchResult {
 interface AddressSearchBarProps {
   onLocationSelect: (location: { lat: number; lng: number; address: string }) => void;
   currentLocation?: { lat: number; lng: number; address: string } | null;
+  placeholder?: string;
+  isInvalid?: boolean;
 }
 
 const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
   onLocationSelect,
-  currentLocation
+  currentLocation,
+  placeholder = "Buscar ubicación...",
+  isInvalid = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -246,7 +250,7 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
         <Box position="relative">
           <Input
             ref={inputRef}
-            placeholder="Buscar ubicación..."
+            placeholder={placeholder}
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => setShowResults(searchResults.length > 0)}
@@ -254,11 +258,11 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
             pr="8"
             bg="transparent"
             border="1px"
-            borderColor="rgba(0, 0, 0, 0.1)"
+            borderColor={isInvalid ? "red.300" : "rgba(0, 0, 0, 0.1)"}
             _focus={{
               bg: "transparent",
-              borderColor: "blue.400",
-              boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.3)"
+              borderColor: isInvalid ? "red.400" : "blue.400",
+              boxShadow: isInvalid ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : "0 0 0 1px rgba(66, 153, 225, 0.3)"
             }}
           />
           {searchTerm && (

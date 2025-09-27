@@ -128,12 +128,19 @@ const Map: React.FC<MapProps> = ({
 
   // Inicializar el mapa
   useEffect(() => {
-    if (!isLoaded || !google || !mapRef.current || mapInstanceRef.current) return;
+    if (!isLoaded || !google || !google.maps || !mapRef.current || mapInstanceRef.current) return;
 
-    const map = new google.maps.Map(mapRef.current, {
+    // Pequeño delay para asegurar que la API esté completamente cargada
+    const initMap = () => {
+      if (!google.maps.Map) {
+        setTimeout(initMap, 100);
+        return;
+      }
+
+      const map = new google.maps.Map(mapRef.current, {
       center,
       zoom,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeId: 'roadmap',
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
@@ -154,13 +161,16 @@ const Map: React.FC<MapProps> = ({
     originalCenterRef.current = center;
     originalZoomRef.current = zoom;
     
-    // Agregar listener para doble click en el mapa (volver al center y zoom originales)
-    map.addListener('dblclick', () => {
-      if (mapInstanceRef.current && originalCenterRef.current && originalZoomRef.current !== null) {
-        mapInstanceRef.current.panTo(originalCenterRef.current);
-        mapInstanceRef.current.setZoom(originalZoomRef.current);
-      }
-    });
+      // Agregar listener para doble click en el mapa (volver al center y zoom originales)
+      map.addListener('dblclick', () => {
+        if (mapInstanceRef.current && originalCenterRef.current && originalZoomRef.current !== null) {
+          mapInstanceRef.current.panTo(originalCenterRef.current);
+          mapInstanceRef.current.setZoom(originalZoomRef.current);
+        }
+      });
+    };
+
+    initMap();
 
   }, [isLoaded, google, center, zoom]);
 

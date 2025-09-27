@@ -29,21 +29,25 @@ function loadGoogleMapsScript(libraries: string[] = ['places']): Promise<void> {
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
     if (existingScript) {
       // Si ya existe el script, esperar a que Google Maps esté disponible
+      let attempts = 0;
+      const maxAttempts = 50; // 5 segundos máximo
       const checkGoogleMaps = () => {
         if (window.google && window.google.maps) {
           resolve();
-        } else {
+        } else if (attempts < maxAttempts) {
+          attempts++;
           setTimeout(checkGoogleMaps, 100);
+        } else {
+          reject(new Error('Timeout: Google Maps no se cargó'));
         }
       };
       checkGoogleMaps();
       return;
     }
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=${libraries.join(',')}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=${libraries.join(',')}&loading=async`;
     script.async = true;
     script.defer = true;
-    script.setAttribute('loading', 'async');
     script.onload = () => resolve();
     script.onerror = (e) => reject(e);
     document.head.appendChild(script);

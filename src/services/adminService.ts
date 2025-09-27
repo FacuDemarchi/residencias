@@ -2,14 +2,14 @@ import { supabase } from './supabaseClient';
 import type { Tables } from '../types/database';
 
 type Publication = Tables<'publications'>;
-type PublicationInsert = Tables<'publications'>['Insert'];
-type PublicationUpdate = Tables<'publications'>['Update'];
+type PublicationInsert = Omit<Publication, 'id' | 'created_at' | 'updated_at'>;
+type PublicationUpdate = Partial<Omit<Publication, 'id' | 'created_at' | 'updated_at'>>;
 type Image = Tables<'images'>;
-type ImageInsert = Tables<'images'>['Insert'];
+type ImageInsert = Omit<Image, 'id' | 'created_at'>;
 
 export class AdminService {
   // 1. Obtener publicaciones del usuario (residencia)
-  static async getMyPublications(userId: string): Promise<Publication[]> {
+  async getMyPublications(userId: string): Promise<Publication[]> {
     try {
       const { data, error } = await supabase
         .from('publications')
@@ -34,9 +34,41 @@ export class AdminService {
     }
   }
 
-  // 2. Crear nueva publicación
-  static async createPublication(publicationData: PublicationInsert): Promise<Publication> {
+  // 2. Obtener publicación por ID
+  async getPublicationById(publicationId: string, userId: string): Promise<Publication & { images: Image[], locations: any }> {
     try {
+      const { data, error } = await supabase
+        .from('publications')
+        .select(`
+          *,
+          images(*),
+          locations(*)
+        `)
+        .eq('id', publicationId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error al cargar publicación:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('Publicación no encontrada');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error en getPublicationById:', error);
+      throw error;
+    }
+  }
+
+  // 3. Crear nueva publicación
+  async createPublication(publicationData: PublicationInsert): Promise<Publication> {
+    try {
+      console.log('AdminService: Insertando publicación en Supabase:', publicationData);
+      
       const { data, error } = await supabase
         .from('publications')
         .insert(publicationData)
@@ -48,6 +80,7 @@ export class AdminService {
         throw error;
       }
 
+      console.log('AdminService: Publicación insertada exitosamente:', data);
       return data;
     } catch (error) {
       console.error('Error en createPublication:', error);
@@ -56,11 +89,14 @@ export class AdminService {
   }
 
   // 3. Actualizar publicación
-  static async updatePublication(
+  async updatePublication(
     publicationId: string, 
-    updateData: PublicationUpdate
+    updateData: PublicationUpdate,
+    userId: string
   ): Promise<Publication> {
     try {
+      console.log('Actualizando publicación:', publicationId, 'con datos:', updateData);
+      
       const { data, error } = await supabase
         .from('publications')
         .update({
@@ -68,12 +104,17 @@ export class AdminService {
           updated_at: new Date().toISOString()
         })
         .eq('id', publicationId)
+        .eq('user_id', userId) // Asegurar que solo actualice publicaciones del usuario
         .select()
         .single();
 
       if (error) {
         console.error('Error al actualizar publicación:', error);
         throw error;
+      }
+
+      if (!data) {
+        throw new Error('No se encontró la publicación para actualizar');
       }
 
       return data;
@@ -84,7 +125,7 @@ export class AdminService {
   }
 
   // 4. Eliminar publicación (soft delete)
-  static async deletePublication(publicationId: string): Promise<void> {
+  async deletePublication(publicationId: string): Promise<void> {
     try {
       const { error } = await supabase
         .from('publications')
@@ -104,8 +145,8 @@ export class AdminService {
     }
   }
 
-  // 5. Subir imagen al bucket public_images
-  static async uploadImage(
+  // 5. Subir imagen al bucket images
+  async uploadImage(
     file: File, 
     publicationId: string,
     orderIndex: number = 0
@@ -117,8 +158,8 @@ export class AdminService {
       const filePath = `publications/${fileName}`;
 
       // Subir archivo al bucket
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('public_images')
+      const { error: uploadError } = await supabase.storage
+        .from('images')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -131,15 +172,14 @@ export class AdminService {
 
       // Obtener URL pública de la imagen
       const { data: urlData } = supabase.storage
-        .from('public_images')
+        .from('images')
         .getPublicUrl(filePath);
 
       // Crear registro en la tabla images
       const imageData: ImageInsert = {
         publication_id: publicationId,
         url_imagen: urlData.publicUrl,
-        orden: orderIndex,
-        alt_text: file.name
+        tipo: 'publicacion'
       };
 
       const { data: imageRecord, error: imageError } = await supabase
@@ -150,8 +190,8 @@ export class AdminService {
 
       if (imageError) {
         console.error('Error al crear registro de imagen:', imageError);
-        // Intentar eliminar el archivo subido si falla el registro
-        await supabase.storage.from('public_images').remove([filePath]);
+            // Intentar eliminar el archivo subido si falla el registro
+            await supabase.storage.from('images').remove([filePath]);
         throw imageError;
       }
 
@@ -163,7 +203,7 @@ export class AdminService {
   }
 
   // 6. Subir múltiples imágenes
-  static async uploadMultipleImages(
+  async uploadMultipleImages(
     files: File[], 
     publicationId: string
   ): Promise<Image[]> {
@@ -181,7 +221,7 @@ export class AdminService {
   }
 
   // 7. Eliminar imagen
-  static async deleteImage(imageId: string): Promise<void> {
+  async deleteImage(imageId: string): Promise<void> {
     try {
       // Obtener información de la imagen
       const { data: image, error: fetchError } = await supabase
@@ -201,7 +241,7 @@ export class AdminService {
 
       // Eliminar archivo del storage
       const { error: deleteError } = await supabase.storage
-        .from('public_images')
+        .from('images')
         .remove([filePath]);
 
       if (deleteError) {
@@ -226,7 +266,7 @@ export class AdminService {
   }
 
   // 8. Obtener estadísticas del usuario
-  static async getUserStats(userId: string) {
+  async getUserStats(userId: string) {
     try {
       // Obtener publicaciones del usuario
       const { data: publications, error: pubError } = await supabase
@@ -262,7 +302,7 @@ export class AdminService {
   }
 
   // 9. Cambiar estado de publicación
-  static async togglePublicationStatus(
+  async togglePublicationStatus(
     publicationId: string, 
     isActive: boolean
   ): Promise<Publication> {
@@ -289,3 +329,6 @@ export class AdminService {
     }
   }
 }
+
+// Exportar una instancia por defecto
+export const adminService = new AdminService();
