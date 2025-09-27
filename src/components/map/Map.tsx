@@ -4,7 +4,9 @@ import Marker from './Marker';
 import GroupMarker from './GroupMarker';
 import type { Tables } from '../../types/database';
 
-type Location = Tables<'locations'>;
+type Location = Tables<'locations'> & {
+  publications?: Tables<'publications'>[];
+};
 
 interface MapProps {
   locations?: Location[];

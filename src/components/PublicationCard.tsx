@@ -81,7 +81,6 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
   const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=200&h=120&fit=crop&crop=center';
 
   const stateName = publication.states?.nombre;
-  const stateBgColor = getStateBgColor(stateName);
   const stateBorderColor = getStateBorderColor(stateName);
   const stateTextColor = getStateTextColor(stateName);
 

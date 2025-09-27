@@ -7,8 +7,7 @@ import {
   Badge, 
   HStack,
   Flex,
-  Button,
-  IconButton
+  Button
 } from '@chakra-ui/react';
 import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiX, FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import type { Tables } from '../types/database';
