@@ -61,6 +61,7 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Sistema de Selección**: Selección de publicaciones desde sidebar y mapa ✅
 - **Panel de Detalle**: Carrusel de imágenes con navegación y información completa ✅
 - **UX Mejorada**: Destacado visual, pan to automático, layout optimizado ✅
+- **Tooltip de Marcadores**: Información básica en hover con datos de publicación ✅
 
 ## 🎯 Próximas tareas
 
@@ -78,6 +79,13 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Remover botón "ver y reservar"
   - [x] Hacer toda la card clickeable
   - [x] Invitar a hacer click para ver más información
+
+- [x] **Sistema de Tooltip para Marcadores** ✅
+  - [x] Tooltip simple en hover sobre marcadores
+  - [x] Mostrar información básica: título, capacidad, precio, metros cuadrados
+  - [x] Posicionamiento fijo en esquina superior derecha
+  - [x] Ocultar tooltip al quitar hover del marcador
+  - [x] Optimización de rendimiento sin console.logs excesivos
 
 - [ ] **Mejorar filtros del sidebar**
   - [ ] Quitar títulos innecesarios
