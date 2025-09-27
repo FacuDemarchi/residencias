@@ -41,18 +41,6 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
     return `$${price.toLocaleString('es-AR')}`;
   };
 
-  // Función para obtener color de fondo según el estado
-  const getStateBgColor = (stateName?: string) => {
-    switch (stateName) {
-      case 'disponible': return 'green.50';
-      case 'reservada': return 'yellow.50';
-      case 'alquilada': return 'red.50';
-      case 'pausada': return 'orange.50';
-      case 'eliminada': return 'gray.50';
-      default: return 'blue.50';
-    }
-  };
-
   // Función para obtener color del borde según el estado
   const getStateBorderColor = (stateName?: string) => {
     switch (stateName) {
