@@ -8,7 +8,7 @@ import {
   HStack,
   Flex
 } from '@chakra-ui/react';
-import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck } from 'react-icons/fi';
+import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiUser } from 'react-icons/fi';
 import type { Tables } from '../types/database';
 
 type Publication = Tables<'publications'>;
@@ -115,13 +115,19 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
     >
       {/* Header con precio y estado */}
       <Flex justify="space-between" align="center" p={2} pb={1}>
-        <Text
-          fontSize="lg"
-          fontWeight="bold"
-          color={stateTextColor}
-        >
-          {formatPrice(publication.price || 0)}
-        </Text>
+        <HStack gap={1}>
+          <Text
+            fontSize="lg"
+            fontWeight="bold"
+            color={stateTextColor}
+          >
+            {formatPrice(publication.price || 0)}
+          </Text>
+          <HStack gap={0} fontSize="sm" color="gray.600" fontWeight="medium">
+            <Text>/</Text>
+            <FiUser size={12} />
+          </HStack>
+        </HStack>
         
         {stateName && (
           <Badge

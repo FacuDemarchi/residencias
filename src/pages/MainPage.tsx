@@ -45,6 +45,9 @@ const MainPage: React.FC = () => {
   // Estados para selección de publicaciones
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publication | null>(null);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<Location[] | null>(null);
+  
+  // Estado para ordenamiento
+  const [sortOption, setSortOption] = useState<'precio-asc' | 'precio-desc' | 'capacidad-asc' | 'capacidad-desc' | 'metros-asc' | 'metros-desc' | 'precio-por-metro-asc' | 'precio-por-persona-asc' | 'default'>('default');
 
   // Chakra UI hooks
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -161,6 +164,56 @@ const MainPage: React.FC = () => {
     }
   }, [publications]);
 
+  // Función para manejar cambios de ordenamiento
+  const handleSortChange = (sort: typeof sortOption) => {
+    setSortOption(sort);
+  };
+
+  // Función para filtrar y ordenar publicaciones
+  const getSortedPublications = () => {
+    let filtered = [...publications];
+    
+    // Aplicar filtros de precio
+    if (searchFilters.minPrice !== undefined) {
+      filtered = filtered.filter(pub => (pub.price || 0) >= searchFilters.minPrice);
+    }
+    if (searchFilters.maxPrice !== undefined) {
+      filtered = filtered.filter(pub => (pub.price || 0) <= searchFilters.maxPrice);
+    }
+    
+    // Aplicar ordenamiento
+    switch (sortOption) {
+      case 'precio-asc':
+        return filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+      case 'precio-desc':
+        return filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+      case 'capacidad-asc':
+        return filtered.sort((a, b) => (a.capacidad || 0) - (b.capacidad || 0));
+      case 'capacidad-desc':
+        return filtered.sort((a, b) => (b.capacidad || 0) - (a.capacidad || 0));
+      case 'metros-asc':
+        return filtered.sort((a, b) => (a.metros_cuadrados || 0) - (b.metros_cuadrados || 0));
+      case 'metros-desc':
+        return filtered.sort((a, b) => (b.metros_cuadrados || 0) - (a.metros_cuadrados || 0));
+      case 'precio-por-metro-asc':
+        return filtered.sort((a, b) => {
+          const precioPorMetroA = (a.metros_cuadrados || 0) > 0 ? (a.price || 0) / (a.metros_cuadrados || 1) : Infinity;
+          const precioPorMetroB = (b.metros_cuadrados || 0) > 0 ? (b.price || 0) / (b.metros_cuadrados || 1) : Infinity;
+          return precioPorMetroA - precioPorMetroB;
+        });
+      case 'precio-por-persona-asc':
+        return filtered.sort((a, b) => {
+          const precioPorPersonaA = (a.capacidad || 0) > 0 ? (a.price || 0) / (a.capacidad || 1) : Infinity;
+          const precioPorPersonaB = (b.capacidad || 0) > 0 ? (b.price || 0) / (b.capacidad || 1) : Infinity;
+          return precioPorPersonaA - precioPorPersonaB;
+        });
+      default:
+        return filtered;
+    }
+  };
+
+  const sortedPublications = getSortedPublications();
+
   // Función para limpiar selecciones
   const clearSelection = useCallback(() => {
     setPublicacionSeleccionada(null);
@@ -191,7 +244,7 @@ const MainPage: React.FC = () => {
             <Sidebar 
               userData={userData}
               myRentals={myRentals}
-              publications={publications}
+              publications={sortedPublications}
               onLocationSearch={handleLocationSearch}
               currentLocation={currentLocation}
               onPublicationSelect={handlePublicationSelect}
@@ -325,16 +378,16 @@ const MainPage: React.FC = () => {
             
             {/* Contenido del drawer */}
             <Box h="calc(100vh - 80px)" overflowY="auto">
-              <Sidebar 
-                userData={userData}
-                myRentals={myRentals}
-                publications={publications}
-                onLocationSearch={handleLocationSearch}
-                currentLocation={currentLocation}
-                onPublicationSelect={handlePublicationSelect}
-                publicacionSeleccionada={publicacionSeleccionada}
-                grupoSeleccionado={grupoSeleccionado}
-              />
+            <Sidebar 
+              userData={userData}
+              myRentals={myRentals}
+              publications={sortedPublications}
+              onLocationSearch={handleLocationSearch}
+              currentLocation={currentLocation}
+              onPublicationSelect={handlePublicationSelect}
+              publicacionSeleccionada={publicacionSeleccionada}
+              grupoSeleccionado={grupoSeleccionado}
+            />
             </Box>
           </Box>
         </>
@@ -346,6 +399,8 @@ const MainPage: React.FC = () => {
         onClose={() => setShowFiltersPanel(false)}
         onFiltersChange={handleFiltersChange}
         currentFilters={searchFilters}
+        sortOption={sortOption}
+        onSortChange={handleSortChange}
       />
 
       {/* Contenedor de detalle lateral */}

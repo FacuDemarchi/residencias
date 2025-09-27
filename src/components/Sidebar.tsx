@@ -3,7 +3,10 @@ import {
   Box, 
   VStack, 
   Text, 
-  Button
+  Button,
+  HStack,
+  Badge,
+  Icon
 } from '@chakra-ui/react';
 import type { Tables } from '../types/database';
 import AddressSearchBar from './AddressSearchBar';
@@ -40,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
 
+
   return (
     <VStack gap={3} align="stretch" p={3} h="full" className="transparent-sidebar">
       {/* Buscador - Movido arriba */}
@@ -48,7 +52,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         currentLocation={currentLocation}
       />
       
-      {/* Botones de filtro */}
+
+      {/* Botones de usuario */}
       <VStack gap={2} align="stretch">
         {userData?.user_type === 'residencia' && (
           <Button 
