@@ -40,7 +40,7 @@ export async function getPublications(locationIds: string[]): Promise<Publicatio
     
     const { data, error } = await supabase
       .from('publications')
-      .select('*')
+      .select('*, images(*)')
       .in('location_id', validIds);
 
     console.log('📊 Publications query result:', { data, error });

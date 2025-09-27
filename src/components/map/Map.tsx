@@ -8,6 +8,10 @@ type Location = Tables<'locations'>;
 
 interface MapProps {
   locations?: Location[];
+  onPublicationSelect?: (publication: any) => void;
+  onGroupSelect?: (locations: Location[]) => void;
+  publicacionSeleccionada?: any | null;
+  grupoSeleccionado?: Location[] | null;
 }
 
 interface ClusteredItem {
@@ -17,11 +21,43 @@ interface ClusteredItem {
   count?: number;
 }
 
-const Map: React.FC<MapProps> = ({ locations = [] }) => {
+const Map: React.FC<MapProps> = ({ 
+  locations = [], 
+  onPublicationSelect,
+  onGroupSelect,
+  publicacionSeleccionada,
+  grupoSeleccionado
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const originalCenterRef = useRef<google.maps.LatLngLiteral | null>(null);
   const originalZoomRef = useRef<number | null>(null);
+
+  // Función para manejar click en marcador individual
+  const handleMarkerClick = (location: Location) => {
+    console.log('Marker clicked:', location);
+    // Por ahora solo hacemos pan to, más adelante buscaremos la publicación asociada
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.panTo({ lat: location.latitud, lng: location.longitud });
+      mapInstanceRef.current.setZoom(16);
+    }
+    // TODO: Buscar publicación asociada a esta ubicación y llamar onPublicationSelect
+  };
+
+  // Función para manejar click en marcador de grupo
+  const handleGroupClick = (locations: Location[]) => {
+    console.log('Group marker clicked:', locations);
+    if (mapInstanceRef.current && locations.length > 0) {
+      // Pan to al centro del grupo
+      mapInstanceRef.current.panTo({ 
+        lat: locations[0].latitud, 
+        lng: locations[0].longitud 
+      });
+      // Zoom in para mostrar mejor el grupo
+      mapInstanceRef.current.setZoom(17);
+    }
+    onGroupSelect?.(locations);
+  };
   
   const { 
     google, 
@@ -184,6 +220,7 @@ const Map: React.FC<MapProps> = ({ locations = [] }) => {
             key={`marker-${(item.data as Location).id}`}
             map={mapInstanceRef.current}
             location={item.data as Location}
+            onMarkerClick={handleMarkerClick}
           />
         ) : (
           <GroupMarker
@@ -191,6 +228,7 @@ const Map: React.FC<MapProps> = ({ locations = [] }) => {
             map={mapInstanceRef.current}
             locations={item.data as Location[]}
             centerPosition={item.center}
+            onGroupClick={handleGroupClick}
           />
         )
       )}

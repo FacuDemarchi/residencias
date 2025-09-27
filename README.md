@@ -58,23 +58,26 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Componentes**: PublicationCard, Map, Marker, GroupMarker implementados
 - **Datos**: Sistema de consultas a base de datos funcionando
 - **Rutas**: React Router configurado para navegación
+- **Sistema de Selección**: Selección de publicaciones desde sidebar y mapa ✅
+- **Panel de Detalle**: Carrusel de imágenes con navegación y información completa ✅
+- **UX Mejorada**: Destacado visual, pan to automático, layout optimizado ✅
 
 ## 🎯 Próximas tareas
 
 ### 🔥 Prioridad alta
-- [ ] **Sistema de selección de publicaciones**
-  - [ ] Configurar variables `publicacionSeleccionada` y `grupoSeleccionado`
-  - [ ] Click en publicación del sidebar → seleccionar publicación
-  - [ ] Click en marcador simple → seleccionar publicación
-  - [ ] Click en marcador de grupo → seleccionar grupo
-  - [ ] Destacar publicación seleccionada en sidebar
-  - [ ] Pan to automático hacia publicación seleccionada
-  - [ ] Contenedor de detalle al lado del sidebar
+- [x] **Sistema de selección de publicaciones** ✅
+  - [x] Configurar variables `publicacionSeleccionada` y `grupoSeleccionado`
+  - [x] Click en publicación del sidebar → seleccionar publicación
+  - [x] Click en marcador simple → seleccionar publicación
+  - [x] Click en marcador de grupo → seleccionar grupo
+  - [x] Destacar publicación seleccionada en sidebar
+  - [x] Pan to automático hacia publicación seleccionada
+  - [x] Contenedor de detalle al lado del sidebar
 
-- [ ] **Mejorar PublicationCard**
-  - [ ] Remover botón "ver y reservar"
-  - [ ] Hacer toda la card clickeable
-  - [ ] Invitar a hacer click para ver más información
+- [x] **Mejorar PublicationCard** ✅
+  - [x] Remover botón "ver y reservar"
+  - [x] Hacer toda la card clickeable
+  - [x] Invitar a hacer click para ver más información
 
 - [ ] **Mejorar filtros del sidebar**
   - [ ] Quitar títulos innecesarios

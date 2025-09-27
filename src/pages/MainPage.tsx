@@ -24,6 +24,7 @@ import type { Tables } from '../types/database';
 import Map from '../components/map/Map';
 import Sidebar from '../components/Sidebar';
 import FiltersPanel from '../components/FiltersPanel';
+import DetailContainer from '../components/DetailContainer';
 
 type Location = Tables<'locations'>;
 type Publication = Tables<'publications'>;
@@ -36,6 +37,10 @@ const MainPage: React.FC = () => {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [searchFilters, setSearchFilters] = useState<any>({});
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  
+  // Estados para selección de publicaciones
+  const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publication | null>(null);
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState<Location[] | null>(null);
 
   // Chakra UI hooks
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -140,12 +145,55 @@ const MainPage: React.FC = () => {
     console.log('Filtros actualizados:', filters);
   };
 
+  // Función para manejar selección de publicación individual
+  const handlePublicationSelect = (publication: Publication) => {
+    setPublicacionSeleccionada(publication);
+    setGrupoSeleccionado(null); // Limpiar selección de grupo
+    console.log('Publicación seleccionada:', publication);
+  };
+
+  // Función para manejar selección de grupo
+  const handleGroupSelect = (locations: Location[]) => {
+    setGrupoSeleccionado(locations);
+    setPublicacionSeleccionada(null); // Limpiar selección individual
+    console.log('Grupo seleccionado:', locations);
+  };
+
+  // Función para limpiar selecciones
+  const clearSelection = () => {
+    setPublicacionSeleccionada(null);
+    setGrupoSeleccionado(null);
+  };
+
+  // Función para manejar reservas
+  const handleReserve = (publication: Publication) => {
+    window.open(`/checkout?id=${publication.id}`, '_blank');
+  };
+
   console.log('Locations:', locations);
   console.log('Publications:', publications);
   console.log('My Publications:', myPublications);
   console.log('My Rentals:', myRentals);
   console.log('Current Location:', currentLocation);
   console.log('Search Filters:', searchFilters);
+  
+  // Console.log para selecciones
+  if (publicacionSeleccionada || grupoSeleccionado) {
+    console.log('🎯 SELECCIÓN ACTIVA:', {
+      publicacionSeleccionada: publicacionSeleccionada ? {
+        id: publicacionSeleccionada.id,
+        titulo: publicacionSeleccionada.titulo,
+        precio: publicacionSeleccionada.price
+      } : null,
+      grupoSeleccionado: grupoSeleccionado ? {
+        cantidad: grupoSeleccionado.length,
+        ubicaciones: grupoSeleccionado.map(loc => ({
+          id: loc.id,
+          direccion: loc.direccion
+        }))
+      } : null
+    });
+  }
 
   return (
     <Box className="w-full h-screen overflow-hidden transparent-sidebar" position="fixed" top="0" left="0" right="0" bottom="0">
@@ -167,6 +215,9 @@ const MainPage: React.FC = () => {
               publications={publications}
               onLocationSearch={handleLocationSearch}
               currentLocation={currentLocation}
+              onPublicationSelect={handlePublicationSelect}
+              publicacionSeleccionada={publicacionSeleccionada}
+              grupoSeleccionado={grupoSeleccionado}
             />
           </Box>
         )}
@@ -210,7 +261,13 @@ const MainPage: React.FC = () => {
             className={isMobile ? "pt-12" : ""}
             position="relative"
           >
-            <Map locations={locations} />
+            <Map 
+              locations={locations} 
+              onPublicationSelect={handlePublicationSelect}
+              onGroupSelect={handleGroupSelect}
+              publicacionSeleccionada={publicacionSeleccionada}
+              grupoSeleccionado={grupoSeleccionado}
+            />
             
             {/* Botón de filtros flotante */}
             {!isMobile && (
@@ -218,7 +275,7 @@ const MainPage: React.FC = () => {
                 position="absolute"
                 top="15px"
                 left="15px" // Pegado al sidebar
-                zIndex={998}
+                zIndex={publicacionSeleccionada || grupoSeleccionado ? 997 : 998}
               >
                 <Button
                   size="sm"
@@ -294,6 +351,9 @@ const MainPage: React.FC = () => {
                 publications={publications}
                 onLocationSearch={handleLocationSearch}
                 currentLocation={currentLocation}
+                onPublicationSelect={handlePublicationSelect}
+                publicacionSeleccionada={publicacionSeleccionada}
+                grupoSeleccionado={grupoSeleccionado}
               />
             </Box>
           </Box>
@@ -306,6 +366,15 @@ const MainPage: React.FC = () => {
         onClose={() => setShowFiltersPanel(false)}
         onFiltersChange={handleFiltersChange}
         currentFilters={searchFilters}
+      />
+
+      {/* Contenedor de detalle lateral */}
+      <DetailContainer
+        publicacionSeleccionada={publicacionSeleccionada}
+        grupoSeleccionado={grupoSeleccionado}
+        onClose={clearSelection}
+        onReserve={handleReserve}
+        isMobile={isMobile}
       />
     </Box>
   );

@@ -19,6 +19,9 @@ interface SidebarProps {
   publications: Publication[];
   onLocationSearch?: (location: { lat: number; lng: number; address: string }) => void;
   currentLocation?: { lat: number; lng: number; address: string } | null;
+  onPublicationSelect?: (publication: Publication) => void;
+  publicacionSeleccionada?: Publication | null;
+  grupoSeleccionado?: any[] | null;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -26,12 +29,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   myRentals, 
   publications, 
   onLocationSearch, 
-  currentLocation 
+  currentLocation,
+  onPublicationSelect,
+  publicacionSeleccionada,
+  grupoSeleccionado
 }) => {
   // Función para manejar selección de publicación
   const handlePublicationSelect = (publication: Publication) => {
-    console.log('Publicación seleccionada:', publication);
-    // Aquí puedes agregar lógica para centrar el mapa en la publicación
+    onPublicationSelect?.(publication);
   };
 
 
@@ -76,6 +81,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 key={pub.id}
                 publication={pub}
                 onSelect={handlePublicationSelect}
+                isSelected={publicacionSeleccionada?.id === pub.id}
+                isInSelectedGroup={grupoSeleccionado?.some(loc => loc.id === pub.location_id)}
               />
             ))
           ) : (
