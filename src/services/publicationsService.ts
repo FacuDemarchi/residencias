@@ -12,18 +12,36 @@ export interface RentalWithPublication extends Rental {
 export async function getPublications(locationIds: string[]): Promise<Publication[]> {
   console.log('🔍 getPublications called with locationIds:', locationIds);
   
-  if (locationIds.length === 0) {
+  // Validación estricta de locationIds
+  if (!locationIds || locationIds.length === 0) {
     console.log('⚠️ No locationIds provided, returning empty array');
     return [];
   }
+  
+  // Filtrar IDs inválidos
+  const validIds = locationIds.filter(id => 
+    id && 
+    typeof id === 'string' && 
+    id.trim() !== '' && 
+    id !== 'null' && 
+    id !== 'undefined' &&
+    !isNaN(Number(id)) === false // Verificar que no sea NaN convertido a string
+  );
+  
+  if (validIds.length === 0) {
+    console.log('⚠️ No valid locationIds after filtering, returning empty array');
+    return [];
+  }
+  
+  console.log('✅ Valid locationIds:', validIds);
 
   try {
-    console.log('📡 Querying publications table with location_ids:', locationIds);
+    console.log('📡 Querying publications table with location_ids:', validIds);
     
     const { data, error } = await supabase
       .from('publications')
       .select('*')
-      .in('location_id', locationIds);
+      .in('location_id', validIds);
 
     console.log('📊 Publications query result:', { data, error });
 
