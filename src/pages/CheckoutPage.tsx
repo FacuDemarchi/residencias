@@ -95,7 +95,7 @@ const CheckoutPage: React.FC = () => {
 
       // 2. Obtener el estado actual (el más reciente del historial)
       const currentState = publicationData.state_history
-        ?.sort((a: StateHistory, b: StateHistory) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())[0]
+        ?.sort((a: any, b: any) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())[0]
         ?.states;
 
       if (!currentState) {
@@ -310,7 +310,7 @@ const CheckoutPage: React.FC = () => {
               onClick={() => navigate('/')}
               variant="ghost"
             >
-              ←
+              <span>←</span>
             </IconButton>
             <Text fontSize="2xl" fontWeight="bold">
               {isSubscribed ? 'Cancelar Suscripción' : 
