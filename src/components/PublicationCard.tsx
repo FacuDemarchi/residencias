@@ -23,13 +23,18 @@ interface PublicationCardProps {
     states?: {
       nombre?: string;
     };
+    images?: Tables<'images'>[];
   };
   onSelect?: (publication: Publication) => void;
+  isSelected?: boolean;
+  isInSelectedGroup?: boolean;
 }
 
 const PublicationCard: React.FC<PublicationCardProps> = ({
   publication,
-  onSelect
+  onSelect,
+  isSelected = false,
+  isInSelectedGroup = false
 }) => {
   // Función para formatear precios
   const formatPrice = (price: number) => {
@@ -80,19 +85,43 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
   const stateBorderColor = getStateBorderColor(stateName);
   const stateTextColor = getStateTextColor(stateName);
 
+  // Estilos para selección
+  const getSelectionStyles = () => {
+    if (isSelected) {
+      return {
+        borderColor: 'blue.400',
+        borderWidth: '2px',
+        bg: 'blue.50',
+        boxShadow: 'md'
+      };
+    }
+    if (isInSelectedGroup) {
+      return {
+        borderColor: 'orange.300',
+        borderWidth: '1px',
+        bg: 'orange.50'
+      };
+    }
+    return {
+      borderColor: stateBorderColor,
+      borderWidth: '1px',
+      bg: 'transparent'
+    };
+  };
+
+  const selectionStyles = getSelectionStyles();
+
   return (
     <Box
-      bg={stateBgColor}
-      border="1px"
-      borderColor={stateBorderColor}
+      {...selectionStyles}
       borderRadius="md"
       overflow="hidden"
       cursor="pointer"
       transition="all 0.2s"
       _hover={{ 
         transform: 'translateY(-1px)',
-        boxShadow: 'sm',
-        borderColor: stateBorderColor.replace('200', '300')
+        boxShadow: isSelected ? 'lg' : 'sm',
+        borderColor: isSelected ? 'blue.500' : (isInSelectedGroup ? 'orange.400' : stateBorderColor.replace('200', '300'))
       }}
       onClick={() => onSelect?.(publication)}
       position="relative"
@@ -130,7 +159,9 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
       {/* Imagen compacta */}
       <Box position="relative" h="80px" mx={2} mb={2}>
         <Image
-          src={defaultImage}
+          src={publication.images && publication.images.length > 0 
+            ? publication.images[0].url_imagen 
+            : defaultImage}
           alt={publication.titulo}
           w="full"
           h="full"
@@ -215,10 +246,10 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           )}
         </HStack>
 
-        {/* Botón de acción compacto */}
+        {/* Texto de acción */}
         <Box
-          bg={stateTextColor}
-          color="white"
+          bg={isSelected ? 'blue.100' : (isInSelectedGroup ? 'orange.100' : 'gray.100')}
+          color={isSelected ? 'blue.700' : (isInSelectedGroup ? 'orange.700' : 'gray.600')}
           px={2}
           py={1}
           borderRadius="sm"
@@ -227,12 +258,8 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           fontWeight="medium"
           cursor="pointer"
           _hover={{ opacity: 0.8 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(`/checkout?id=${publication.id}`, '_blank');
-          }}
         >
-          Ver y Reservar
+          {isSelected ? 'Seleccionada' : (isInSelectedGroup ? 'En grupo seleccionado' : 'Click para ver detalles')}
         </Box>
       </VStack>
     </Box>

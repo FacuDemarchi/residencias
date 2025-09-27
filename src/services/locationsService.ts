@@ -1,7 +1,9 @@
 import { supabase } from './supabaseClient';
 import type { Tables } from '../types/database';
 
-type Location = Tables<'locations'>;
+type Location = Tables<'locations'> & {
+  publications?: Tables<'publications'>[];
+};
 
 // Función para determinar la distancia según el tipo de búsqueda
 const getSearchDistance = (searchType: string | null) => {
@@ -54,7 +56,16 @@ export async function getLocationsByCoordinates(
 
     const { data: locationsData, error: locationsError } = await supabase
       .from('locations')
-      .select('*')
+      .select(`
+        *,
+        publications (
+          id,
+          titulo,
+          capacidad,
+          price,
+          metros_cuadrados
+        )
+      `)
       .gte('latitud', center.lat - latOffset)
       .lte('latitud', center.lat + latOffset)
       .gte('longitud', center.lng - lngOffset)
@@ -72,7 +83,16 @@ export async function getLocationsByCoordinates(
       console.log('⚠️ No locations found with geographic filter, trying without filter...');
       const { data: allLocationsData, error: allLocationsError } = await supabase
         .from('locations')
-        .select('*')
+        .select(`
+          *,
+          publications (
+            id,
+            titulo,
+            capacidad,
+            price,
+            metros_cuadrados
+          )
+        `)
         .limit(10);
       
       if (!allLocationsError && allLocationsData && allLocationsData.length > 0) {

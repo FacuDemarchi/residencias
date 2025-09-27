@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Flex, 
@@ -24,18 +24,27 @@ import type { Tables } from '../types/database';
 import Map from '../components/map/Map';
 import Sidebar from '../components/Sidebar';
 import FiltersPanel from '../components/FiltersPanel';
+import DetailContainer from '../components/DetailContainer';
 
 type Location = Tables<'locations'>;
-type Publication = Tables<'publications'>;
+type Publication = Tables<'publications'> & {
+  location?: Tables<'locations'>;
+  states?: Tables<'states'>;
+  images?: Tables<'images'>[];
+};
 
 const MainPage: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [publications, setPublications] = useState<Publication[]>([]);
-  const [myPublications, setMyPublications] = useState<Publication[]>([]);
+  // const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [myRentals, setMyRentals] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [searchFilters, setSearchFilters] = useState<any>({});
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  
+  // Estados para selección de publicaciones
+  const [publicacionSeleccionada, setPublicacionSeleccionada] = useState<Publication | null>(null);
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState<Location[] | null>(null);
 
   // Chakra UI hooks
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -49,9 +58,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        console.log('Fetching locations with:', { center, currentSearchType });
         const data = await getLocations(center, currentSearchType);
-        console.log('Locations fetched:', data);
         setLocations(data);
       } catch (err) {
         console.error('Error al cargar locations:', err);
@@ -66,29 +73,20 @@ const MainPage: React.FC = () => {
     const fetchPublications = async () => {
       if (locations.length > 0) {
         try {
-          console.log('🔍 Raw locations data:', locations);
-          console.log('🔍 First location structure:', locations[0]);
-          console.log('🔍 Location IDs before conversion:', locations.map(l => ({ id: l.id, type: typeof l.id, keys: Object.keys(l) })));
-          
-          const locationIds = locations.map(location => location.id).filter(id => id != null); // Filtrar IDs nulos/undefined
-          console.log('Fetching publications for location IDs:', locationIds);
+          const locationIds = locations.map(location => location.id).filter(id => id != null);
           
           if (locationIds.length === 0) {
-            console.log('⚠️ No valid location IDs found, skipping publications fetch');
             setPublications([]);
             return;
           }
           
-          // Validación adicional: verificar que todos los IDs sean válidos
           const validLocationIds = locationIds.filter(id => id && typeof id === 'string' && id.trim() !== '');
           if (validLocationIds.length === 0) {
-            console.log('⚠️ No valid location IDs after validation, skipping publications fetch');
             setPublications([]);
             return;
           }
           
           const data = await getPublications(validLocationIds);
-          console.log('Publications fetched:', data);
           setPublications(data);
         } catch (err) {
           console.error('Error al cargar publicaciones:', err);
@@ -102,15 +100,15 @@ const MainPage: React.FC = () => {
   }, [locations]);
 
   // Consulta mis publicaciones (para residencias)
-  useEffect(() => {
-    const fetchMyPublications = async () => {
-      if (user?.id && userData?.user_type === 'residencia') {
-        const data = await PublicationsService.getPublicationsByUserId(user.id);
-        setMyPublications(data);
-      }
-    };
-    fetchMyPublications();
-  }, [user]);
+  // useEffect(() => {
+  //   const fetchMyPublications = async () => {
+  //     if (user?.id && userData?.user_type === 'residencia') {
+  //       const data = await PublicationsService.getPublicationsByUserId(user.id);
+  //       setMyPublications(data);
+  //     }
+  //   };
+  //   fetchMyPublications();
+  // }, [user]);
 
   // Consulta mis rentals
   useEffect(() => {
@@ -140,26 +138,55 @@ const MainPage: React.FC = () => {
     console.log('Filtros actualizados:', filters);
   };
 
-  console.log('Locations:', locations);
-  console.log('Publications:', publications);
-  console.log('My Publications:', myPublications);
-  console.log('My Rentals:', myRentals);
-  console.log('Current Location:', currentLocation);
-  console.log('Search Filters:', searchFilters);
+  // Función para manejar selección de publicación individual
+  const handlePublicationSelect = useCallback((publicationId: string) => {
+    const publication = publications.find(pub => pub.id === publicationId);
+    if (publication) {
+      setPublicacionSeleccionada(publication);
+      setGrupoSeleccionado(null); // Limpiar selección de grupo
+    }
+  }, [publications]);
+
+  // Función para manejar selección de grupo
+  const handleGroupSelect = useCallback((publicationIds: string[]) => {
+    const selectedPublications = publications.filter(pub => publicationIds.includes(pub.id));
+    if (selectedPublications.length > 0) {
+      // Para grupoSeleccionado necesitamos las locations, no las publicaciones
+      const selectedLocations = selectedPublications
+        .map(pub => pub.location)
+        .filter(loc => loc !== undefined) as Location[];
+      
+      setGrupoSeleccionado(selectedLocations);
+      setPublicacionSeleccionada(null); // Limpiar selección individual
+    }
+  }, [publications]);
+
+  // Función para limpiar selecciones
+  const clearSelection = useCallback(() => {
+    setPublicacionSeleccionada(null);
+    setGrupoSeleccionado(null);
+  }, []);
+
+  // Función para manejar reservas
+  const handleReserve = (publication: Publication) => {
+    window.open(`/checkout?id=${publication.id}`, '_blank');
+  };
+
+
 
   return (
-    <Box className="w-full h-screen overflow-hidden" position="fixed" top="0" left="0" right="0" bottom="0">
+    <Box className="w-full h-screen overflow-hidden transparent-sidebar" position="fixed" top="0" left="0" right="0" bottom="0">
       {/* Layout responsive */}
-      <Flex h="full" w="full">
+      <Flex h="full" w="full" className="transparent-sidebar">
         {/* Sidebar - Desktop */}
         {!isMobile && (
           <Box 
             w="250px" 
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(10px)"
+            bg="transparent"
+            backdropFilter="blur(4px)"
             borderRight="1px" 
-            borderColor="rgba(255, 255, 255, 0.2)"
-            className="sidebar-desktop"
+            borderColor="rgba(0, 0, 0, 0.1)"
+            className="sidebar-desktop transparent-sidebar"
           >
             <Sidebar 
               userData={userData}
@@ -167,6 +194,9 @@ const MainPage: React.FC = () => {
               publications={publications}
               onLocationSearch={handleLocationSearch}
               currentLocation={currentLocation}
+              onPublicationSelect={handlePublicationSelect}
+              publicacionSeleccionada={publicacionSeleccionada}
+              grupoSeleccionado={grupoSeleccionado}
             />
           </Box>
         )}
@@ -210,7 +240,14 @@ const MainPage: React.FC = () => {
             className={isMobile ? "pt-12" : ""}
             position="relative"
           >
-            <Map locations={locations} />
+            <Map 
+              locations={locations} 
+              publications={publications}
+              onPublicationSelect={handlePublicationSelect}
+              onGroupSelect={handleGroupSelect}
+              publicacionSeleccionada={publicacionSeleccionada}
+              grupoSeleccionado={grupoSeleccionado}
+            />
             
             {/* Botón de filtros flotante */}
             {!isMobile && (
@@ -218,7 +255,7 @@ const MainPage: React.FC = () => {
                 position="absolute"
                 top="15px"
                 left="15px" // Pegado al sidebar
-                zIndex={998}
+                zIndex={publicacionSeleccionada || grupoSeleccionado ? 997 : 998}
               >
                 <Button
                   size="sm"
@@ -261,8 +298,8 @@ const MainPage: React.FC = () => {
             left={0}
             bottom={0}
             w="250px"
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(10px)"
+            bg="transparent"
+            backdropFilter="blur(4px)"
             zIndex={1001}
             shadow="lg"
           >
@@ -294,6 +331,9 @@ const MainPage: React.FC = () => {
                 publications={publications}
                 onLocationSearch={handleLocationSearch}
                 currentLocation={currentLocation}
+                onPublicationSelect={handlePublicationSelect}
+                publicacionSeleccionada={publicacionSeleccionada}
+                grupoSeleccionado={grupoSeleccionado}
               />
             </Box>
           </Box>
@@ -306,6 +346,15 @@ const MainPage: React.FC = () => {
         onClose={() => setShowFiltersPanel(false)}
         onFiltersChange={handleFiltersChange}
         currentFilters={searchFilters}
+      />
+
+      {/* Contenedor de detalle lateral */}
+      <DetailContainer
+        publicacionSeleccionada={publicacionSeleccionada}
+        grupoSeleccionado={grupoSeleccionado}
+        onClose={clearSelection}
+        onReserve={handleReserve}
+        isMobile={isMobile}
       />
     </Box>
   );

@@ -51,81 +51,96 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - `npm run lint` – Linter
 - `npm run test:db` – Script de testing para verificar datos de la base de datos
 
-## ✅ Logros recientes
-- **Mapa implementado**: Google Maps integrado con pantalla completa
-- **Layout optimizado**: Sidebar compacto (250px) para mejor UX
-- **Interfaz limpia**: Controles del mapa removidos para diseño minimalista
-- **Responsive design**: Funciona perfectamente en desktop y móvil
-- **Marcadores funcionando**: Sistema de marcadores dinámicos con clustering automático
-- **Zoom ajustado**: Mapa con zoom inicial optimizado (13) para mejor visualización
-- **Estructura modular**: Componentes Map, Marker y GroupMarker organizados
-- **Checkout implementado**: Página de checkout con iframe de Pago TIC integrado
-- **Sistema de rutas**: React Router configurado para navegación entre páginas
-- **PublicationCard implementado**: Componente compacto para mostrar publicaciones en sidebar
-- **Integración de datos**: Sistema de consultas a base de datos funcionando
-- **Compatibilidad Chakra UI v3**: Errores de compatibilidad corregidos
+## ✅ Estado actual
+- **Mapa**: Google Maps integrado con marcadores dinámicos y clustering
+- **Layout**: Sidebar compacto responsive con navegación
+- **Checkout**: Página de checkout con iframe de Pago TIC
+- **Componentes**: PublicationCard, Map, Marker, GroupMarker implementados
+- **Datos**: Sistema de consultas a base de datos funcionando
+- **Rutas**: React Router configurado para navegación
+- **Sistema de Selección**: Selección de publicaciones desde sidebar y mapa ✅
+- **Panel de Detalle**: Carrusel de imágenes con navegación y información completa ✅
+- **UX Mejorada**: Destacado visual, pan to automático, layout optimizado ✅
+- **Tooltip de Marcadores**: Información básica en hover con datos de publicación ✅
 
-## 🎯 Tareas principales pendientes
+## 🎯 Próximas tareas
 
 ### 🔥 Prioridad alta
-- [x] **Crear ruta para el checkout** ✅
-  - [x] Implementar página de checkout
-  - [x] Integrar pasarela de pagos (Pago TIC con iframe)
-  - [x] Manejar estados de pago y confirmación
-  - [x] Configurar React Router para navegación
-  - [ ] Crear una publicación en estado disponible para testear pasarela de pagos
+- [x] **Sistema de selección de publicaciones** ✅
+  - [x] Configurar variables `publicacionSeleccionada` y `grupoSeleccionado`
+  - [x] Click en publicación del sidebar → seleccionar publicación
+  - [x] Click en marcador simple → seleccionar publicación
+  - [x] Click en marcador de grupo → seleccionar grupo
+  - [x] Destacar publicación seleccionada en sidebar
+  - [x] Pan to automático hacia publicación seleccionada
+  - [x] Contenedor de detalle al lado del sidebar
 
-- [x] **Agregar mapa al contenedor principal** ✅
-  - [x] Integrar Google Maps en el layout principal
-  - [x] Configurar controles y opciones del mapa
-  - [x] Implementar responsive design
+- [x] **Mejorar PublicationCard** ✅
+  - [x] Remover botón "ver y reservar"
+  - [x] Hacer toda la card clickeable
+  - [x] Invitar a hacer click para ver más información
 
-- [x] **Agregar marcadores al mapa** ✅
-  - [x] Crear marcadores dinámicos para publicaciones
-  - [x] Implementar iconos personalizados por tipo
-  - [x] Agregar eventos click y hover
-  - [x] Implementar clustering automático para ubicaciones cercanas
-  - [x] Crear componentes modulares (Map, Marker, GroupMarker)
-  - [ ] Corregir panTo y zoom al deseleccionar un marcador
+- [x] **Sistema de Tooltip para Marcadores** ✅
+  - [x] Tooltip simple en hover sobre marcadores
+  - [x] Mostrar información básica: título, capacidad, precio, metros cuadrados
+  - [x] Posicionamiento fijo en esquina superior derecha
+  - [x] Ocultar tooltip al quitar hover del marcador
+  - [x] Optimización de rendimiento sin console.logs excesivos
 
-- [ ] **Configurar Pago TIC**
-  - [ ] Crear usuario en Pago TIC
-  - [ ] Obtener credenciales de la API
-  - [ ] Testear funcionamiento en /checkout
+- [ ] **Mejorar filtros del sidebar**
+  - [ ] Quitar títulos innecesarios
+  - [ ] Agregar métodos de ordenamiento como fichas
+  - [ ] Implementar: menor precio, más grandes, etc.
 
 ### 🔧 Funcionalidades core
-- [x] **sidebar** ✅
-  - [x] Crear componente de sidebar con Chakra UI
-  - [x] Implementar navegación y filtros básicos
-  - [x] Integrar con el layout principal responsive
-  - [x] Solucionar problemas de compatibilidad Tailwind/Chakra
-  - [x] Configurar sistema de temas de Chakra UI correctamente
-  - [x] Extraer sidebar a componente separado (Sidebar.tsx)
-  - [ ] Mejorar UI del sidebar
+- [ ] **Actualizar base de datos**
+  - [ ] Truncar datos existentes
+  - [ ] Crear datos más realistas
+  - [ ] Distribuir mejor las ubicaciones en el mapa
 
-- [x] **Buscador del sidebar** ✅
-  - [x] Implementar búsqueda por ubicación
-  - [x] Agregar filtros avanzados
-  - [x] Conectar con la base de datos
-  - [ ] Mejorar UI del buscador
+- [ ] **Migrar Google Maps API**
+  - [ ] Reemplazar `google.maps.Marker` por `google.maps.marker.AdvancedMarkerElement`
+  - [ ] Reemplazar `google.maps.places.AutocompleteService` por `google.maps.places.AutocompleteSuggestion`
+  - [ ] Actualizar componentes Map, Marker y GroupMarker
 
-- [x] **Agregar publication cards** ✅
-  - [x] Crear componente de tarjeta compacta (PublicationCard)
-  - [x] Mostrar información básica en sidebar optimizado
-  - [x] Integrar con sistema de estados y ubicaciones
-  - [x] Conectar con marcadores del mapa
-  - [ ] Crear PublicationDetail para vista expandida
+- [ ] **Panel de administración para residencias**
+  - [ ] Dashboard para gestionar publicaciones
+  - [ ] Formulario para crear/editar publicaciones
+  - [ ] Gestión de imágenes de publicaciones
+  - [ ] Vista de reservas y alquileres
+  - [ ] Estadísticas de publicaciones
 
-- [ ] **Agregar manejador de filtros y orden**
-  - [ ] Implementar sistema de filtros
-  - [ ] Agregar opciones de ordenamiento
-  - [ ] Conectar con el estado global
+- [ ] **Panel de cliente**
+  - [ ] Historial de alquileres
+  - [ ] Favoritos/guardados
+  - [ ] Notificaciones de reservas
+  - [ ] Perfil y configuración
 
-### 🧪 Testing y calidad
-- [ ] **Construir sistema de testeo**
-  - [ ] Configurar Jest y React Testing Library
-  - [ ] Escribir tests unitarios para componentes
-  - [ ] Implementar tests de integración
-  - [ ] Configurar CI/CD con tests automáticos
+- [ ] **Sistema de reservas completo**
+  - [ ] Flujo de reserva paso a paso
+  - [ ] Calendario de disponibilidad
+  - [ ] Confirmación de reservas
+  - [ ] Notificaciones por email
+  - [ ] Gestión de estados de reserva
+
+- [ ] **Sistema de pagos**
+  - [ ] Integración completa con Pago TIC
+  - [ ] Historial de pagos
+  - [ ] Reembolsos y cancelaciones
+  - [ ] Facturación automática
+
+- [ ] **Mejoras de UX/UI**
+  - [ ] Loading states en todos los componentes
+  - [ ] Manejo de errores con mensajes claros
+  - [ ] Animaciones y transiciones
+  - [ ] Optimización para móviles
+  - [ ] Accesibilidad (a11y)
+
+- [ ] **Funcionalidades avanzadas**
+  - [ ] Búsqueda con filtros avanzados
+  - [ ] Sistema de calificaciones y reseñas
+  - [ ] Chat entre cliente y residencia
+  - [ ] Notificaciones push
+  - [ ] Modo offline básico
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
