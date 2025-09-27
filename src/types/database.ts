@@ -648,40 +648,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_locations_for_map: {
-        Args: { center_lat: number; center_lng: number; radius_km?: number }
-        Returns: {
-          estado: string
-          id: number
-          latitud: number
-          longitud: number
-        }[]
-      }
-      get_publications_for_sidebar: {
-        Args: {
-          center_lat?: number
-          center_lng?: number
-          limit_count?: number
-          offset_count?: number
-          order_type?: string
-          radius_km?: number
-        }
-        Returns: {
-          capacidad: number
-          created_at: string
-          descripcion: string
-          estado: string
-          id: number
-          latitud: number
-          location_id: number
-          longitud: number
-          metros_cuadrados: number
-          precio: number
-          titulo: string
-          updated_at: string
-          user_id: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

@@ -66,9 +66,28 @@ const MainPage: React.FC = () => {
     const fetchPublications = async () => {
       if (locations.length > 0) {
         try {
-          const locationIds = locations.map(location => Number(location.id));
+          console.log('🔍 Raw locations data:', locations);
+          console.log('🔍 First location structure:', locations[0]);
+          console.log('🔍 Location IDs before conversion:', locations.map(l => ({ id: l.id, type: typeof l.id, keys: Object.keys(l) })));
+          
+          const locationIds = locations.map(location => location.id).filter(id => id != null); // Filtrar IDs nulos/undefined
           console.log('Fetching publications for location IDs:', locationIds);
-          const data = await getPublications(locationIds);
+          
+          if (locationIds.length === 0) {
+            console.log('⚠️ No valid location IDs found, skipping publications fetch');
+            setPublications([]);
+            return;
+          }
+          
+          // Validación adicional: verificar que todos los IDs sean válidos
+          const validLocationIds = locationIds.filter(id => id && typeof id === 'string' && id.trim() !== '');
+          if (validLocationIds.length === 0) {
+            console.log('⚠️ No valid location IDs after validation, skipping publications fetch');
+            setPublications([]);
+            return;
+          }
+          
+          const data = await getPublications(validLocationIds);
           console.log('Publications fetched:', data);
           setPublications(data);
         } catch (err) {

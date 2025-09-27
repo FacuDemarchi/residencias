@@ -9,25 +9,51 @@ export interface RentalWithPublication extends Rental {
 }
 
 // Función simple para obtener publicaciones por location IDs
-export async function getPublications(locationIds: number[]): Promise<Publication[]> {
-  if (locationIds.length === 0) {
+export async function getPublications(locationIds: string[]): Promise<Publication[]> {
+  console.log('🔍 getPublications called with locationIds:', locationIds);
+  
+  // Validación estricta de locationIds
+  if (!locationIds || locationIds.length === 0) {
+    console.log('⚠️ No locationIds provided, returning empty array');
     return [];
   }
+  
+  // Filtrar IDs inválidos
+  const validIds = locationIds.filter(id => 
+    id && 
+    typeof id === 'string' && 
+    id.trim() !== '' && 
+    id !== 'null' && 
+    id !== 'undefined' &&
+    !isNaN(Number(id)) === false // Verificar que no sea NaN convertido a string
+  );
+  
+  if (validIds.length === 0) {
+    console.log('⚠️ No valid locationIds after filtering, returning empty array');
+    return [];
+  }
+  
+  console.log('✅ Valid locationIds:', validIds);
 
   try {
+    console.log('📡 Querying publications table with location_ids:', validIds);
+    
     const { data, error } = await supabase
       .from('publications')
       .select('*')
-      .in('location_id', locationIds);
+      .in('location_id', validIds);
+
+    console.log('📊 Publications query result:', { data, error });
 
     if (error) {
-      console.error('Error al cargar publicaciones:', error);
+      console.error('❌ Error al cargar publicaciones:', error);
       return [];
     }
 
+    console.log('✅ Publications found:', data?.length || 0);
     return data || [];
   } catch (err) {
-    console.error('Error al cargar publicaciones:', err);
+    console.error('💥 Exception al cargar publicaciones:', err);
     return [];
   }
 }
@@ -36,7 +62,7 @@ export class PublicationsService {
   private static cache: Map<string, any> = new Map();
 
   // 1. Obtener publicaciones por locationIds
-  static async getPublicationsByLocations(locationIds: number[]): Promise<Publication[]> {
+  static async getPublicationsByLocations(locationIds: string[]): Promise<Publication[]> {
     if (locationIds.length === 0) {
       return [];
     }

@@ -43,6 +43,15 @@ export async function getLocationsByCoordinates(
   }
 
   try {
+    console.log('🔍 Query parameters:', {
+      center,
+      latOffset,
+      lngOffset,
+      searchType,
+      latRange: [center.lat - latOffset, center.lat + latOffset],
+      lngRange: [center.lng - lngOffset, center.lng + lngOffset]
+    });
+
     const { data: locationsData, error: locationsError } = await supabase
       .from('locations')
       .select('*')
@@ -51,9 +60,28 @@ export async function getLocationsByCoordinates(
       .gte('longitud', center.lng - lngOffset)
       .lte('longitud', center.lng + lngOffset);
 
-    if (locationsError) throw locationsError;
+    if (locationsError) {
+      console.error('❌ Supabase error:', locationsError);
+      throw locationsError;
+    }
 
     const processedData = locationsData || [];
+    
+    // Si no se encontraron ubicaciones con filtro geográfico, intentar sin filtro
+    if (processedData.length === 0) {
+      console.log('⚠️ No locations found with geographic filter, trying without filter...');
+      const { data: allLocationsData, error: allLocationsError } = await supabase
+        .from('locations')
+        .select('*')
+        .limit(10);
+      
+      if (!allLocationsError && allLocationsData && allLocationsData.length > 0) {
+        console.log('✅ Found locations without geographic filter:', allLocationsData.length);
+        return allLocationsData;
+      } else {
+        console.log('❌ No locations found in database at all');
+      }
+    }
     
     // Guardar en cache
     cache.set(cacheKey, {
