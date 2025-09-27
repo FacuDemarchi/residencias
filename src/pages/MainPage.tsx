@@ -148,18 +148,18 @@ const MainPage: React.FC = () => {
   console.log('Search Filters:', searchFilters);
 
   return (
-    <Box className="w-full h-screen overflow-hidden" position="fixed" top="0" left="0" right="0" bottom="0">
+    <Box className="w-full h-screen overflow-hidden transparent-sidebar" position="fixed" top="0" left="0" right="0" bottom="0">
       {/* Layout responsive */}
-      <Flex h="full" w="full">
+      <Flex h="full" w="full" className="transparent-sidebar">
         {/* Sidebar - Desktop */}
         {!isMobile && (
           <Box 
             w="250px" 
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(10px)"
+            bg="transparent"
+            backdropFilter="blur(4px)"
             borderRight="1px" 
-            borderColor="rgba(255, 255, 255, 0.2)"
-            className="sidebar-desktop"
+            borderColor="rgba(0, 0, 0, 0.1)"
+            className="sidebar-desktop transparent-sidebar"
           >
             <Sidebar 
               userData={userData}
@@ -261,8 +261,8 @@ const MainPage: React.FC = () => {
             left={0}
             bottom={0}
             w="250px"
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(10px)"
+            bg="transparent"
+            backdropFilter="blur(4px)"
             zIndex={1001}
             shadow="lg"
           >

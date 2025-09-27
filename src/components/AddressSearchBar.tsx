@@ -67,6 +67,13 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
     }
   }, [currentLocation]);
 
+  // Enfocar el input por defecto al cargar el componente
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   // Función para buscar ubicaciones usando Google Places API
   const searchPlaces = async (query: string) => {
     if (!query.trim() || query.length < 3) {
@@ -245,11 +252,11 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
             onFocus={() => setShowResults(searchResults.length > 0)}
             size="sm"
             pr="8"
-            bg="rgba(255, 255, 255, 0.9)"
+            bg="transparent"
             border="1px"
             borderColor="rgba(0, 0, 0, 0.1)"
             _focus={{
-              bg: "rgba(255, 255, 255, 0.95)",
+              bg: "transparent",
               borderColor: "blue.400",
               boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.3)"
             }}
@@ -276,7 +283,7 @@ const AddressSearchBar: React.FC<AddressSearchBarProps> = ({
               top="100%"
               left="0"
               right="0"
-              bg="rgba(255, 255, 255, 0.95)"
+              bg="transparent"
               backdropFilter="blur(10px)"
               border="1px"
               borderColor="rgba(0, 0, 0, 0.1)"

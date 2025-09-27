@@ -82,7 +82,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
 
   return (
     <Box
-      bg={stateBgColor}
+      bg="transparent"
       border="1px"
       borderColor={stateBorderColor}
       borderRadius="md"

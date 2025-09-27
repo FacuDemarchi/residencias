@@ -3,9 +3,7 @@ import {
   Box, 
   VStack, 
   Text, 
-  Button,
-  Badge,
-  HStack
+  Button
 } from '@chakra-ui/react';
 import type { Tables } from '../types/database';
 import AddressSearchBar from './AddressSearchBar';
@@ -36,15 +34,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     // Aquí puedes agregar lógica para centrar el mapa en la publicación
   };
 
-  // Contar publicaciones por estado
-  const publicationsByState = publications.reduce((acc, pub) => {
-    const state = pub.current_state_id || 'sin estado';
-    acc[state] = (acc[state] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
 
   return (
-    <VStack gap={3} align="stretch" p={3} h="full">
+    <VStack gap={3} align="stretch" p={3} h="full" className="transparent-sidebar">
       {/* Buscador - Movido arriba */}
       <AddressSearchBar
         onLocationSelect={onLocationSearch || (() => {})}
@@ -75,46 +67,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           </Button>
         )}
       </VStack>
-
-      <Box h="1px" bg="gray.200" />
-
-      {/* Resumen de publicaciones */}
-      <Box>
-        <HStack justify="space-between" align="center" mb={2}>
-          <Text fontSize="sm" fontWeight="medium" color="gray.600">
-            Publicaciones encontradas
-          </Text>
-          <Badge colorScheme="blue" variant="subtle">
-            {publications.length}
-          </Badge>
-        </HStack>
-        
-        {/* Contador por estado */}
-        {Object.keys(publicationsByState).length > 0 && (
-          <HStack gap={1} wrap="wrap">
-            {Object.entries(publicationsByState).map(([state, count]) => (
-              <Badge 
-                key={state} 
-                size="sm" 
-                variant="outline" 
-                colorScheme={
-                  state === 'disponible' ? 'green' :
-                  state === 'reservada' ? 'yellow' :
-                  state === 'alquilada' ? 'red' :
-                  state === 'pausada' ? 'orange' :
-                  'gray'
-                }
-                fontSize="xs"
-              >
-                {state}: {count}
-              </Badge>
-            ))}
-          </HStack>
-        )}
-      </Box>
-
-      <Box h="1px" bg="gray.200" />
-
       {/* Lista de publicaciones */}
       <Box flex="1" overflowY="auto">
         <VStack gap={2} align="stretch">
