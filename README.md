@@ -62,6 +62,7 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Panel de Detalle**: Carrusel de imágenes con navegación y información completa ✅
 - **UX Mejorada**: Destacado visual, pan to automático, layout optimizado ✅
 - **Tooltip de Marcadores**: Información básica en hover con datos de publicación ✅
+- **Sistema de Filtros**: Panel de filtros con ordenamiento y filtro de precio funcional ✅
 
 ## 🎯 Próximas tareas
 
@@ -87,10 +88,13 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [x] Ocultar tooltip al quitar hover del marcador
   - [x] Optimización de rendimiento sin console.logs excesivos
 
-- [ ] **Mejorar filtros del sidebar**
-  - [ ] Quitar títulos innecesarios
-  - [ ] Agregar métodos de ordenamiento como fichas
-  - [ ] Implementar: menor precio, más grandes, etc.
+- [x] **Mejorar filtros del sidebar** ✅
+  - [x] Quitar títulos innecesarios
+  - [x] Agregar métodos de ordenamiento como fichas
+  - [x] Implementar: menor precio, más grandes, etc.
+  - [x] Mover filtros al panel de filtros
+  - [x] Implementar filtro de precio funcional
+  - [x] Agregar ordenamiento por relación precio/m² y precio/persona
 
 ### 🔧 Funcionalidades core
 - [ ] **Actualizar base de datos**
