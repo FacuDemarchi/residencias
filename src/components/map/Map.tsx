@@ -244,11 +244,11 @@ const Map: React.FC<MapProps> = ({
   }
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" style={{ width: '100%', height: '100%' }}>
       <div 
         ref={mapRef} 
         className="w-full h-full"
-        style={{ minHeight: '400px', backgroundColor: '#f0f0f0' }}
+        style={{ width: '100%', height: '100%', minHeight: '400px', backgroundColor: '#f0f0f0' }}
       />
       {isLoaded && mapInstanceRef.current && clusteredItems.map((item, index) => 
         item.type === 'single' ? (

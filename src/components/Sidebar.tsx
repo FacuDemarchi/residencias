@@ -55,17 +55,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Botones de usuario */}
       <VStack gap={2} align="stretch">
-        {userData?.user_type === 'residencia' && (
-          <Button 
-            colorScheme="purple" 
-            variant="outline" 
-            size="sm"
-            onClick={() => console.log('Mis publicaciones')}
-          >
-            Mis Publicaciones
-          </Button>
-        )}
-        
         {userData?.user_type === 'cliente' && myRentals.length > 0 && (
           <Button 
             colorScheme="blue" 

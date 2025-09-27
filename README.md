@@ -65,47 +65,44 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Sistema de Filtros**: Panel de filtros con ordenamiento y filtro de precio funcional ✅
 - **Corrección de Google Maps**: Solucionado error de inicialización de la API ✅
 
-### 🔧 Correcciones recientes
-- [x] **Corrección de Google Maps API** ✅
-  - [x] Solucionado error `Cannot read properties of undefined (reading 'ROADMAP')`
-  - [x] Solucionado error `google.maps.Map is not a constructor`
-  - [x] Implementada verificación robusta de disponibilidad de la API
-  - [x] Añadido sistema de reintentos para inicialización del mapa
-  - [x] Reemplazado `google.maps.MapTypeId.ROADMAP` por string `'roadmap'`
+## 🎯 Tareas pendientes
 
-## 🎯 Próximas tareas
+### 🔥 Prioridad alta - Correcciones urgentes
+- [ ] **Corregir zoom out al deseleccionar**
+  - [ ] Implementar zoom automático cuando se deselecciona una publicación
+  - [ ] Ajustar el nivel de zoom para mostrar todas las publicaciones
+  - [ ] Mantener el centro del mapa apropiado
 
-### 🔥 Prioridad alta
-- [x] **Sistema de selección de publicaciones** ✅
-  - [x] Configurar variables `publicacionSeleccionada` y `grupoSeleccionado`
-  - [x] Click en publicación del sidebar → seleccionar publicación
-  - [x] Click en marcador simple → seleccionar publicación
-  - [x] Click en marcador de grupo → seleccionar grupo
-  - [x] Destacar publicación seleccionada en sidebar
-  - [x] Pan to automático hacia publicación seleccionada
-  - [x] Contenedor de detalle al lado del sidebar
+- [ ] **Mejorar autocomplete de búsqueda**
+  - [ ] Expandir tipos de lugares en Google Places API
+  - [ ] Agregar más opciones de búsqueda (lugares, establecimientos)
+  - [ ] Mejorar relevancia de resultados
+  - [ ] Optimizar performance del autocomplete
 
-- [x] **Mejorar PublicationCard** ✅
-  - [x] Remover botón "ver y reservar"
-  - [x] Hacer toda la card clickeable
-  - [x] Invitar a hacer click para ver más información
-
-- [x] **Sistema de Tooltip para Marcadores** ✅
-  - [x] Tooltip simple en hover sobre marcadores
-  - [x] Mostrar información básica: título, capacidad, precio, metros cuadrados
-  - [x] Posicionamiento fijo en esquina superior derecha
-  - [x] Ocultar tooltip al quitar hover del marcador
-  - [x] Optimización de rendimiento sin console.logs excesivos
-
-- [x] **Mejorar filtros del sidebar** ✅
-  - [x] Quitar títulos innecesarios
-  - [x] Agregar métodos de ordenamiento como fichas
-  - [x] Implementar: menor precio, más grandes, etc.
-  - [x] Mover filtros al panel de filtros
-  - [x] Implementar filtro de precio funcional
-  - [x] Agregar ordenamiento por relación precio/m² y precio/persona
+- [ ] **Botón de checkout en detalle**
+  - [ ] Agregar botón "Reservar" en el panel de detalle
+  - [ ] Redireccionar correctamente al checkout con ID de publicación
+  - [ ] Validar disponibilidad antes de redireccionar
 
 ### 🔧 Funcionalidades core
+- [ ] **Sistema de amenities**
+  - [ ] Agregar campo de amenities en creación de publicaciones
+  - [ ] Configurar asociación de amenities con publicaciones
+  - [ ] Mostrar amenities en el detalle de publicación
+  - [ ] Filtros por amenities en el sidebar
+
+- [ ] **Revisar procedimiento de checkout**
+  - [ ] Analizar flujo actual de checkout
+  - [ ] Verificar integración con Pago TIC
+  - [ ] Mejorar validaciones y confirmaciones
+  - [ ] Optimizar experiencia de usuario
+
+- [ ] **Panel de publicaciones del usuario**
+  - [ ] Botón para buscar publicaciones alquiladas
+  - [ ] Historial de alquileres del usuario
+  - [ ] Estado de reservas activas
+  - [ ] Acceso rápido a publicaciones contratadas
+
 - [ ] **Actualizar base de datos**
   - [ ] Truncar datos existentes
   - [ ] Crear datos más realistas
@@ -116,19 +113,14 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [ ] Reemplazar `google.maps.places.AutocompleteService` por `google.maps.places.AutocompleteSuggestion`
   - [ ] Actualizar componentes Map, Marker y GroupMarker
 
-- [ ] **Panel de administración para residencias**
-  - [ ] Dashboard para gestionar publicaciones
-  - [ ] Formulario para crear/editar publicaciones
-  - [ ] Gestión de imágenes de publicaciones
-  - [ ] Vista de reservas y alquileres
-  - [ ] Estadísticas de publicaciones
-
-- [ ] **Panel de cliente**
+### 👤 Panel de cliente
+- [ ] **Gestión de usuario**
   - [ ] Historial de alquileres
   - [ ] Favoritos/guardados
   - [ ] Notificaciones de reservas
   - [ ] Perfil y configuración
 
+### 💳 Sistema de pagos y reservas
 - [ ] **Sistema de reservas completo**
   - [ ] Flujo de reserva paso a paso
   - [ ] Calendario de disponibilidad
@@ -142,18 +134,29 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
   - [ ] Reembolsos y cancelaciones
   - [ ] Facturación automática
 
-- [ ] **Mejoras de UX/UI**
+### 🎨 Mejoras de UX/UI
+- [ ] **Estados de carga y errores**
   - [ ] Loading states en todos los componentes
   - [ ] Manejo de errores con mensajes claros
-  - [ ] Animaciones y transiciones
-  - [ ] Optimización para móviles
-  - [ ] Accesibilidad (a11y)
+  - [ ] Animaciones y transiciones suaves
 
-- [ ] **Funcionalidades avanzadas**
-  - [ ] Búsqueda con filtros avanzados
+- [ ] **Optimización móvil**
+  - [ ] Mejoras específicas para dispositivos móviles
+  - [ ] Accesibilidad (a11y)
+  - [ ] Performance optimizations
+
+### 🚀 Funcionalidades avanzadas
+- [ ] **Búsqueda avanzada**
+  - [ ] Filtros más específicos (amenities, ubicación exacta)
+  - [ ] Búsqueda por texto con autocompletado mejorado
+
+- [ ] **Sistema social**
   - [ ] Sistema de calificaciones y reseñas
   - [ ] Chat entre cliente y residencia
   - [ ] Notificaciones push
+
+- [ ] **Funcionalidades offline**
   - [ ] Modo offline básico
+  - [ ] Cache de datos esenciales
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!

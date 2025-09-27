@@ -230,7 +230,7 @@ const MainPage: React.FC = () => {
 
 
   return (
-    <Box className="w-full h-screen transparent-sidebar" position="relative">
+    <Box className="w-screen h-screen transparent-sidebar" position="relative">
       {/* Layout responsive */}
       <Flex h="full" w="full" className="transparent-sidebar">
         {/* Sidebar - Desktop */}
@@ -257,7 +257,7 @@ const MainPage: React.FC = () => {
         )}
 
         {/* Contenido principal */}
-        <Box flex="1" position="relative">
+        <Box flex="1" w="full" position="relative">
           {/* Header móvil */}
           {isMobile && (
             <Box
@@ -327,9 +327,12 @@ const MainPage: React.FC = () => {
           {/* Mapa */}
           <Box
             flex="1"
+            w="full"
             h="full"
+            minW="0"
             className={isMobile ? "pt-12" : ""}
             position="relative"
+            style={{ width: '100%', height: '100%' }}
           >
             <Map 
               locations={locations} 
