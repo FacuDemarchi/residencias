@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Contar publicaciones por estado
   const publicationsByState = publications.reduce((acc, pub) => {
-    const state = pub.states?.nombre || 'sin estado';
+    const state = pub.current_state_id || 'sin estado';
     acc[state] = (acc[state] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         {/* Contador por estado */}
         {Object.keys(publicationsByState).length > 0 && (
-          <HStack spacing={1} wrap="wrap">
+          <HStack gap={1} wrap="wrap">
             {Object.entries(publicationsByState).map(([state, count]) => (
               <Badge 
                 key={state} 

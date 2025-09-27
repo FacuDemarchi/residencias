@@ -95,7 +95,7 @@ const CheckoutPage: React.FC = () => {
 
       // 2. Obtener el estado actual (el más reciente del historial)
       const currentState = publicationData.state_history
-        ?.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())[0]
+        ?.sort((a: any, b: any) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())[0]
         ?.states;
 
       if (!currentState) {
@@ -307,10 +307,11 @@ const CheckoutPage: React.FC = () => {
           <HStack justify="space-between" mb={6}>
             <IconButton
               aria-label="Volver"
-              icon={<span>←</span>}
               onClick={() => navigate('/')}
               variant="ghost"
-            />
+            >
+              <span>←</span>
+            </IconButton>
             <Text fontSize="2xl" fontWeight="bold">
               {isSubscribed ? 'Cancelar Suscripción' : 
                checkoutState === 'reserved_by_user' ? 'Completar Reserva' : 'Checkout'} - Pago TIC
@@ -321,7 +322,7 @@ const CheckoutPage: React.FC = () => {
           <Flex gap={6} direction={{ base: 'column', lg: 'row' }}>
             {/* Resumen */}
             <Box flex="1" bg="white" p={6} borderRadius="lg" shadow="sm" h="fit-content">
-              <VStack spacing={4} align="stretch">
+              <VStack gap={4} align="stretch">
                 <Text fontSize="lg" fontWeight="bold">
                   {isSubscribed ? 'Resumen de la suscripción' : 
                    checkoutState === 'reserved_by_user' ? 'Resumen de la reserva' : 'Resumen de la reserva'}
@@ -338,7 +339,7 @@ const CheckoutPage: React.FC = () => {
 
                 {isSubscribed ? (
                   // Información de suscripción activa
-                  <VStack spacing={2} align="stretch">
+                  <VStack gap={2} align="stretch">
                     <HStack justify="space-between">
                       <Text>Estado actual:</Text>
                       <Box 
@@ -378,7 +379,7 @@ const CheckoutPage: React.FC = () => {
                   </VStack>
                 ) : (
                   // Información de nueva reserva
-                  <VStack spacing={2} align="stretch">
+                  <VStack gap={2} align="stretch">
                     <HStack justify="space-between">
                       <Text>Precio por mes:</Text>
                       <Text fontWeight="bold">${publication.price?.toLocaleString()}</Text>
@@ -415,7 +416,7 @@ const CheckoutPage: React.FC = () => {
                   borderRadius="md" 
                   p={3}
                 >
-                  <HStack spacing={2}>
+                  <HStack gap={2}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" color={isSubscribed ? "orange.500" : "blue.500"}>
                       <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 10.5a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v3a.5.5 0 0 1-.5.5zm0-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 1 0v1a.5.5 0 0 1-.5.5z"/>
                     </svg>
@@ -432,7 +433,7 @@ const CheckoutPage: React.FC = () => {
 
             {/* Iframe de Pago TIC */}
             <Box flex="2" bg="white" p={6} borderRadius="lg" shadow="sm">
-              <VStack spacing={4} align="stretch">
+              <VStack gap={4} align="stretch">
                 <Text fontSize="lg" fontWeight="bold">
                   {isSubscribed ? 'Cancelar suscripción' : 'Completar pago'}
                 </Text>
@@ -477,7 +478,7 @@ const CheckoutPage: React.FC = () => {
                     borderRadius="md" 
                     p={3}
                   >
-                    <HStack spacing={2}>
+                    <HStack gap={2}>
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" color="red.500">
                         <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V4zm1 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
                       </svg>
