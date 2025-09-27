@@ -68,16 +68,16 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 ## 🎯 Tareas pendientes
 
 ### 🔥 Prioridad alta - Correcciones urgentes
-- [ ] **Corregir zoom out al deseleccionar**
-  - [ ] Implementar zoom automático cuando se deselecciona una publicación
-  - [ ] Ajustar el nivel de zoom para mostrar todas las publicaciones
-  - [ ] Mantener el centro del mapa apropiado
+- [x] **Corregir zoom out al deseleccionar** ✅
+  - [x] Implementar zoom automático cuando se deselecciona una publicación
+  - [x] Ajustar el nivel de zoom para mostrar todas las publicaciones
+  - [x] Mantener el centro del mapa apropiado
 
-- [ ] **Mejorar autocomplete de búsqueda**
-  - [ ] Expandir tipos de lugares en Google Places API
-  - [ ] Agregar más opciones de búsqueda (lugares, establecimientos)
-  - [ ] Mejorar relevancia de resultados
-  - [ ] Optimizar performance del autocomplete
+- [x] **Mejorar autocomplete de búsqueda** ✅
+  - [x] Expandir tipos de lugares en Google Places API
+  - [x] Agregar más opciones de búsqueda (lugares, establecimientos)
+  - [x] Mejorar relevancia de resultados
+  - [x] Optimizar performance del autocomplete
 
 - [ ] **Botón de checkout en detalle**
   - [ ] Agregar botón "Reservar" en el panel de detalle

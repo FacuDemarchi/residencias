@@ -216,11 +216,18 @@ const MainPage: React.FC = () => {
 
   const sortedPublications = getSortedPublications();
 
-  // Función para limpiar selecciones
+  // Función para limpiar selecciones y volver al centro original
   const clearSelection = useCallback(() => {
     setPublicacionSeleccionada(null);
     setGrupoSeleccionado(null);
-  }, []);
+    
+    // Volver al centro y zoom original
+    const originalCenter = { lat: -31.4167, lng: -64.1833 }; // Córdoba, Argentina
+    const originalZoom = 13;
+    
+    setCenter(originalCenter);
+    setZoom(originalZoom);
+  }, [setCenter, setZoom]);
 
   // Función para manejar reservas
   const handleReserve = (publication: Publication) => {
@@ -339,6 +346,7 @@ const MainPage: React.FC = () => {
               publications={publications}
               onPublicationSelect={handlePublicationSelect}
               onGroupSelect={handleGroupSelect}
+              onMapClick={clearSelection}
               publicacionSeleccionada={publicacionSeleccionada}
               grupoSeleccionado={grupoSeleccionado}
             />

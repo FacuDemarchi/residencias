@@ -13,6 +13,7 @@ interface MapProps {
   publications?: any[];
   onPublicationSelect?: (publicationId: string) => void;
   onGroupSelect?: (publicationIds: string[]) => void;
+  onMapClick?: () => void;
   publicacionSeleccionada?: any | null;
   grupoSeleccionado?: Location[] | null;
 }
@@ -29,6 +30,7 @@ const Map: React.FC<MapProps> = ({
   publications = [],
   onPublicationSelect,
   onGroupSelect,
+  onMapClick,
   publicacionSeleccionada,
   grupoSeleccionado
 }) => {
@@ -161,6 +163,13 @@ const Map: React.FC<MapProps> = ({
     originalCenterRef.current = center;
     originalZoomRef.current = zoom;
     
+      // Agregar listener para click en el mapa (deseleccionar)
+      map.addListener('click', () => {
+        if (onMapClick) {
+          onMapClick();
+        }
+      });
+      
       // Agregar listener para doble click en el mapa (volver al center y zoom originales)
       map.addListener('dblclick', () => {
         if (mapInstanceRef.current && originalCenterRef.current && originalZoomRef.current !== null) {
@@ -172,7 +181,7 @@ const Map: React.FC<MapProps> = ({
 
     initMap();
 
-  }, [isLoaded, google, center, zoom]);
+  }, [isLoaded, google, center, zoom, onMapClick]);
 
   // Actualizar centro cuando cambie (desde el sidebar)
   useEffect(() => {
