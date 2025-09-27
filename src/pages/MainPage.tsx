@@ -9,7 +9,7 @@ import {
   Icon,
   useBreakpointValue
 } from '@chakra-ui/react';
-import { FiFilter } from 'react-icons/fi';
+import { FiFilter, FiSettings } from 'react-icons/fi';
 // Icono hamburguesa SVG simple
 const HamburgerIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -19,6 +19,7 @@ const HamburgerIcon = () => (
 import { PublicationsService, getPublications } from '../services/publicationsService';
 import { getLocations } from '../services/locationsService';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { useGoogleMaps } from '../context/GoogleMapsContext';
 import type { Tables } from '../types/database';
 import Map from '../components/map/Map';
@@ -34,6 +35,8 @@ type Publication = Tables<'publications'> & {
 };
 
 const MainPage: React.FC = () => {
+  const { user, userData, signInWithGoogle, signOut } = useAuth();
+  const navigate = useNavigate();
   const [locations, setLocations] = useState<Location[]>([]);
   const [publications, setPublications] = useState<Publication[]>([]);
   // const [myPublications, setMyPublications] = useState<Publication[]>([]);
@@ -54,7 +57,6 @@ const MainPage: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // context - solo se ejecutan cuando cambian las dependencias
-  const { user, userData } = useAuth();
   const { center, currentSearchType, setCenter, setZoom } = useGoogleMaps();
 
   // Cargar locations
@@ -281,7 +283,43 @@ const MainPage: React.FC = () => {
                 <Text fontSize="lg" fontWeight="bold" color="gray.700" flex="1" textAlign="center">
                   Residencias
                 </Text>
-                <Box w="40px" /> {/* Espaciador para centrar el título */}
+                <HStack gap={2}>
+                  {/* Botón de administración para residencias en móvil */}
+                  {userData?.user_type === 'residencia' && (
+                    <IconButton
+                      aria-label="Panel de administración"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => navigate('/admin')}
+                      colorScheme="purple"
+                    >
+                      <Icon as={FiSettings} />
+                    </IconButton>
+                  )}
+                  
+                  {/* Botón de login/logout en móvil */}
+                  {!user ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={signInWithGoogle}
+                      colorScheme="blue"
+                    >
+                      Login
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={signOut}
+                      colorScheme="red"
+                    >
+                      Logout
+                    </Button>
+                  )}
+                  
+                  <Box w="40px" /> {/* Espaciador para centrar el título */}
+                </HStack>
               </HStack>
             </Box>
           )}
@@ -302,7 +340,7 @@ const MainPage: React.FC = () => {
               grupoSeleccionado={grupoSeleccionado}
             />
             
-            {/* Botón de filtros flotante */}
+            {/* Botones flotantes */}
             {!isMobile && (
               <Box
                 position="absolute"
@@ -310,19 +348,72 @@ const MainPage: React.FC = () => {
                 left="15px" // Pegado al sidebar
                 zIndex={publicacionSeleccionada || grupoSeleccionado ? 997 : 998}
               >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowFiltersPanel(!showFiltersPanel)}
-                  bg="rgba(255, 255, 255, 0.9)"
-                  backdropFilter="blur(10px)"
-                  border="1px"
-                  borderColor="rgba(0, 0, 0, 0.1)"
-                  _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
-                  boxShadow="lg"
-                >
-                  <Icon as={FiFilter} />
-                </Button>
+                <HStack gap={2}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowFiltersPanel(!showFiltersPanel)}
+                    bg="rgba(255, 255, 255, 0.9)"
+                    backdropFilter="blur(10px)"
+                    border="1px"
+                    borderColor="rgba(0, 0, 0, 0.1)"
+                    _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
+                    boxShadow="lg"
+                  >
+                    <Icon as={FiFilter} />
+                  </Button>
+                  
+                  {/* Botón de administración para residencias */}
+                  {userData?.user_type === 'residencia' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate('/admin')}
+                      bg="rgba(255, 255, 255, 0.9)"
+                      backdropFilter="blur(10px)"
+                      border="1px"
+                      borderColor="rgba(0, 0, 0, 0.1)"
+                      _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
+                      boxShadow="lg"
+                      colorScheme="purple"
+                    >
+                      <Icon as={FiSettings} />
+                    </Button>
+                  )}
+                  
+                  {/* Botón de login/logout */}
+                  {!user ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={signInWithGoogle}
+                      bg="rgba(255, 255, 255, 0.9)"
+                      backdropFilter="blur(10px)"
+                      border="1px"
+                      borderColor="rgba(0, 0, 0, 0.1)"
+                      _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
+                      boxShadow="lg"
+                      colorScheme="blue"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={signOut}
+                      bg="rgba(255, 255, 255, 0.9)"
+                      backdropFilter="blur(10px)"
+                      border="1px"
+                      borderColor="rgba(0, 0, 0, 0.1)"
+                      _hover={{ bg: "rgba(255, 255, 255, 0.95)" }}
+                      boxShadow="lg"
+                      colorScheme="red"
+                    >
+                      Cerrar Sesión
+                    </Button>
+                  )}
+                </HStack>
               </Box>
             )}
           </Box>

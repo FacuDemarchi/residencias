@@ -43,7 +43,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error fetching user data:', error);
         setUserData(null);
       } else {
-        setUserData(data);
+        // Validar que el user_type sea válido
+        if (data && (data.user_type === 'cliente' || data.user_type === 'residencia')) {
+          setUserData(data);
+        } else {
+          console.error('Invalid user_type:', data?.user_type);
+          setUserData(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
