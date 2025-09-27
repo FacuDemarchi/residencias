@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Flex, 
@@ -36,7 +36,7 @@ type Publication = Tables<'publications'> & {
 const MainPage: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [publications, setPublications] = useState<Publication[]>([]);
-  const [myPublications, setMyPublications] = useState<Publication[]>([]);
+  // const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [myRentals, setMyRentals] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [searchFilters, setSearchFilters] = useState<any>({});
@@ -58,9 +58,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        console.log('Fetching locations with:', { center, currentSearchType });
         const data = await getLocations(center, currentSearchType);
-        console.log('Locations fetched:', data);
         setLocations(data);
       } catch (err) {
         console.error('Error al cargar locations:', err);
@@ -75,29 +73,20 @@ const MainPage: React.FC = () => {
     const fetchPublications = async () => {
       if (locations.length > 0) {
         try {
-          console.log('🔍 Raw locations data:', locations);
-          console.log('🔍 First location structure:', locations[0]);
-          console.log('🔍 Location IDs before conversion:', locations.map(l => ({ id: l.id, type: typeof l.id, keys: Object.keys(l) })));
-          
-          const locationIds = locations.map(location => location.id).filter(id => id != null); // Filtrar IDs nulos/undefined
-          console.log('Fetching publications for location IDs:', locationIds);
+          const locationIds = locations.map(location => location.id).filter(id => id != null);
           
           if (locationIds.length === 0) {
-            console.log('⚠️ No valid location IDs found, skipping publications fetch');
             setPublications([]);
             return;
           }
           
-          // Validación adicional: verificar que todos los IDs sean válidos
           const validLocationIds = locationIds.filter(id => id && typeof id === 'string' && id.trim() !== '');
           if (validLocationIds.length === 0) {
-            console.log('⚠️ No valid location IDs after validation, skipping publications fetch');
             setPublications([]);
             return;
           }
           
           const data = await getPublications(validLocationIds);
-          console.log('Publications fetched:', data);
           setPublications(data);
         } catch (err) {
           console.error('Error al cargar publicaciones:', err);
@@ -111,15 +100,15 @@ const MainPage: React.FC = () => {
   }, [locations]);
 
   // Consulta mis publicaciones (para residencias)
-  useEffect(() => {
-    const fetchMyPublications = async () => {
-      if (user?.id && userData?.user_type === 'residencia') {
-        const data = await PublicationsService.getPublicationsByUserId(user.id);
-        setMyPublications(data);
-      }
-    };
-    fetchMyPublications();
-  }, [user]);
+  // useEffect(() => {
+  //   const fetchMyPublications = async () => {
+  //     if (user?.id && userData?.user_type === 'residencia') {
+  //       const data = await PublicationsService.getPublicationsByUserId(user.id);
+  //       setMyPublications(data);
+  //     }
+  //   };
+  //   fetchMyPublications();
+  // }, [user]);
 
   // Consulta mis rentals
   useEffect(() => {
@@ -150,19 +139,16 @@ const MainPage: React.FC = () => {
   };
 
   // Función para manejar selección de publicación individual
-  const handlePublicationSelect = (publicationId: string) => {
+  const handlePublicationSelect = useCallback((publicationId: string) => {
     const publication = publications.find(pub => pub.id === publicationId);
     if (publication) {
       setPublicacionSeleccionada(publication);
       setGrupoSeleccionado(null); // Limpiar selección de grupo
-      console.log('Publicación seleccionada:', publication);
-    } else {
-      console.log('No se encontró publicación con ID:', publicationId);
     }
-  };
+  }, [publications]);
 
   // Función para manejar selección de grupo
-  const handleGroupSelect = (publicationIds: string[]) => {
+  const handleGroupSelect = useCallback((publicationIds: string[]) => {
     const selectedPublications = publications.filter(pub => publicationIds.includes(pub.id));
     if (selectedPublications.length > 0) {
       // Para grupoSeleccionado necesitamos las locations, no las publicaciones
@@ -172,17 +158,14 @@ const MainPage: React.FC = () => {
       
       setGrupoSeleccionado(selectedLocations);
       setPublicacionSeleccionada(null); // Limpiar selección individual
-      console.log('Grupo seleccionado:', selectedLocations);
-    } else {
-      console.log('No se encontraron publicaciones con IDs:', publicationIds);
     }
-  };
+  }, [publications]);
 
   // Función para limpiar selecciones
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setPublicacionSeleccionada(null);
     setGrupoSeleccionado(null);
-  };
+  }, []);
 
   // Función para manejar reservas
   const handleReserve = (publication: Publication) => {
@@ -190,30 +173,6 @@ const MainPage: React.FC = () => {
   };
 
 
-  console.log('Locations:', locations);
-  console.log('Publications:', publications);
-  console.log('My Publications:', myPublications);
-  console.log('My Rentals:', myRentals);
-  console.log('Current Location:', currentLocation);
-  console.log('Search Filters:', searchFilters);
-  
-  // Console.log para selecciones
-  if (publicacionSeleccionada || grupoSeleccionado) {
-    console.log('🎯 SELECCIÓN ACTIVA:', {
-      publicacionSeleccionada: publicacionSeleccionada ? {
-        id: publicacionSeleccionada.id,
-        titulo: publicacionSeleccionada.titulo,
-        precio: publicacionSeleccionada.price
-      } : null,
-      grupoSeleccionado: grupoSeleccionado ? {
-        cantidad: grupoSeleccionado.length,
-        ubicaciones: grupoSeleccionado.map(loc => ({
-          id: loc.id,
-          direccion: loc.direccion
-        }))
-      } : null
-    });
-  }
 
   return (
     <Box className="w-full h-screen overflow-hidden transparent-sidebar" position="fixed" top="0" left="0" right="0" bottom="0">

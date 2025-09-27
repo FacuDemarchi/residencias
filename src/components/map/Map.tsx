@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { useGoogleMaps } from '../../context/GoogleMapsContext';
 import Marker from './Marker';
 import GroupMarker from './GroupMarker';
@@ -36,21 +36,16 @@ const Map: React.FC<MapProps> = ({
   const originalZoomRef = useRef<number | null>(null);
 
   // Función para manejar click en marcador individual
-  const handleMarkerClick = (location: Location) => {
-    console.log('Marker clicked:', location);
+  const handleMarkerClick = useCallback((location: Location) => {
     // Buscar publicación asociada a esta ubicación
     const associatedPublication = publications.find(pub => pub.location_id === location.id);
     if (associatedPublication && onPublicationSelect) {
-      console.log('Publicación encontrada:', associatedPublication.id);
       onPublicationSelect(associatedPublication.id);
-    } else {
-      console.log('No se encontró publicación asociada a esta ubicación');
     }
-  };
+  }, [publications, onPublicationSelect]);
 
   // Función para manejar click en marcador de grupo
-  const handleGroupClick = (locations: Location[]) => {
-    console.log('Group marker clicked:', locations);
+  const handleGroupClick = useCallback((locations: Location[]) => {
     // Buscar todas las publicaciones asociadas a estas ubicaciones
     const associatedPublications = locations
       .map(location => publications.find(pub => pub.location_id === location.id))
@@ -58,12 +53,9 @@ const Map: React.FC<MapProps> = ({
     
     if (associatedPublications.length > 0 && onGroupSelect) {
       const publicationIds = associatedPublications.map(pub => pub.id);
-      console.log('Publicaciones encontradas en grupo:', publicationIds);
       onGroupSelect(publicationIds);
-    } else {
-      console.log('No se encontraron publicaciones asociadas a este grupo');
     }
-  };
+  }, [publications, onGroupSelect]);
   
   const { 
     google, 
@@ -129,12 +121,8 @@ const Map: React.FC<MapProps> = ({
       }
     });
 
-    console.log(`Clustering: ${locations.length} locations → ${clustered.length} items`);
-    
     return clustered;
   }, [locations]);
-
-  console.log('Map render:', { isLoaded, error, center, zoom, locationsCount: locations.length, clusteredCount: clusteredItems.length });
 
   // Inicializar el mapa
   useEffect(() => {
@@ -257,6 +245,7 @@ const Map: React.FC<MapProps> = ({
             map={mapInstanceRef.current}
             location={item.data as Location}
             onMarkerClick={handleMarkerClick}
+            publication={(item.data as Location).publications?.[0]}
           />
         ) : (
           <GroupMarker

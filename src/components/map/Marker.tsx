@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Tables } from '../../types/database';
+import MarkerTooltip from './MarkerTooltip';
 
 type Location = Tables<'locations'>;
 
@@ -7,6 +8,7 @@ interface MarkerProps {
   map: google.maps.Map | null;
   location: Location;
   onMarkerClick?: (location: Location) => void;
+  publication?: any; // Información de la publicación asociada
   icon?: string;
   size?: { width: number; height: number };
 }
@@ -15,15 +17,15 @@ const Marker: React.FC<MarkerProps> = ({
   map, 
   location, 
   onMarkerClick,
+  publication,
   icon,
   size = { width: 24, height: 24 }
 }) => {
   const markerRef = useRef<google.maps.Marker | null>(null);
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   useEffect(() => {
     if (!map || !location.latitud || !location.longitud) {
-      console.warn('Marker: Missing required data', { map: !!map, latitud: location.latitud, longitud: location.longitud });
       return;
     }
 
@@ -43,29 +45,24 @@ const Marker: React.FC<MarkerProps> = ({
       }
     });
 
-    // Crear info window
-    infoWindowRef.current = new google.maps.InfoWindow({
-      content: `
-        <div class="p-2">
-          <h3 class="font-semibold text-gray-800">${location.direccion || 'Ubicación'}</h3>
-          <p class="text-sm text-gray-600">Lat: ${location.latitud?.toFixed(6) || 'N/A'}</p>
-          <p class="text-sm text-gray-600">Lng: ${location.longitud?.toFixed(6) || 'N/A'}</p>
-          <p class="text-sm text-gray-600">ID: ${location.id}</p>
-        </div>
-      `
-    });
-
     // Event listener para el click del marcador
     markerRef.current.addListener('click', () => {
       if (onMarkerClick) {
         onMarkerClick(location);
-      } else {
-        // Comportamiento por defecto
-        map.panTo(markerRef.current!.getPosition()!);
-        map.setZoom(16);
-        infoWindowRef.current!.open(map, markerRef.current!);
       }
     });
+
+    // Event listener para hover - mostrar tooltip
+    if (publication) {
+      markerRef.current.addListener('mouseover', () => {
+        setTooltipVisible(true);
+      });
+
+      // Event listener para quitar hover - ocultar tooltip
+      markerRef.current.addListener('mouseout', () => {
+        setTooltipVisible(false);
+      });
+    }
 
     // Limpiar al desmontar
     return () => {
@@ -73,7 +70,7 @@ const Marker: React.FC<MarkerProps> = ({
         markerRef.current.setMap(null);
       }
     };
-  }, [map, location, onMarkerClick, icon, size]);
+  }, [map, location.latitud, location.longitud, onMarkerClick, publication, icon, size.width, size.height]);
 
   // Actualizar posición si cambia la ubicación
   useEffect(() => {
@@ -82,8 +79,12 @@ const Marker: React.FC<MarkerProps> = ({
     }
   }, [location.latitud, location.longitud]);
 
-  // Este componente no renderiza nada visualmente
-  return null;
+  return (
+    <MarkerTooltip 
+      publication={publication}
+      isVisible={tooltipVisible}
+    />
+  );
 };
 
 export default Marker;
