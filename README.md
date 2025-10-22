@@ -64,27 +64,33 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 - **Tooltip de Marcadores**: Información básica en hover con datos de publicación ✅
 - **Sistema de Filtros**: Panel de filtros con ordenamiento y filtro de precio funcional ✅
 - **Corrección de Google Maps**: Solucionado error de inicialización de la API ✅
+- **Integración Pago TIC**: Sistema completo de pagos con Edge Functions ✅
+- **Base de datos actualizada**: Tabla pagotic_transactions con políticas RLS ✅
 
 ## 🎯 Tareas pendientes
 
 ### 🔥 Prioridad alta - Correcciones urgentes
 - [x] **Corregir zoom out al deseleccionar** ✅
 - [x] **Mejorar autocomplete de búsqueda** ✅
-- [ ] **Botón de checkout en detalle** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
+- [x] **Botón de checkout en detalle** ✅ → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
 
 ### 🔧 Funcionalidades core
 - [ ] **Sistema de amenities** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
-- [ ] **Revisar procedimiento de checkout** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
+- [x] **Revisar procedimiento de checkout** ✅ → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
 - [ ] **Panel de publicaciones del usuario** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
-- [ ] **Actualizar base de datos** → [Ver detalles](integration-plan.plan.md#1-crear-tabla-para-transacciones-de-pago-tic)
+- [x] **Actualizar base de datos** ✅ → [Ver detalles](integration-plan.plan.md#1-crear-tabla-para-transacciones-de-pago-tic)
 - [ ] **Migrar Google Maps API** → [Ver detalles](integration-plan.plan.md#8-testing-local)
 
-### 👤 Panel de cliente
-- [ ] **Gestión de usuario** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
+### 👤 Gestión de usuario
+- [ ] **Botón "Mis Reservas"** → [Ver detalles](integration-plan.plan.md#implementar-botón-mis-reservas-en-panel-principal)
+- [ ] **Botones de acción en detalle** → [Ver detalles](integration-plan.plan.md#agregar-botones-reservar-y-alquilar-en-detailcontainer)
+- [ ] **Consultar publicaciones del usuario** → [Ver detalles](integration-plan.plan.md#crear-servicio-para-consultar-publicaciones-del-usuario)
 
 ### 💳 Sistema de pagos y reservas
-- [ ] **Sistema de reservas completo** → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
-- [ ] **Sistema de pagos** → [Ver detalles](integration-plan.plan.md#3-crear-edge-function-para-iniciar-pago)
+- [x] **Sistema de reservas completo** ✅ → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
+- [x] **Sistema de pagos** ✅ → [Ver detalles](integration-plan.plan.md#3-crear-edge-function-para-iniciar-pago)
+- [ ] **Pruebas de integración Pago TIC** → [Ver detalles](integration-plan.plan.md#probar-integración-completa-con-pago-tic)
+- [ ] **Configurar webhook Pago TIC** → [Ver detalles](integration-plan.plan.md#configurar-webhook-de-pago-tic-para-notificaciones-automáticas)
 
 ### 🎨 Mejoras de UX/UI
 - [ ] **Estados de carga y errores** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)

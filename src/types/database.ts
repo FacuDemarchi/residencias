@@ -211,6 +211,75 @@ export type Database = {
           },
         ]
       }
+      pagotic_transactions: {
+        Row: {
+          amount: number
+          cancel_url: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string
+          id: string
+          metadata: Json | null
+          pagotic_transaction_id: string | null
+          payment_url: string | null
+          publication_id: string | null
+          reference: string
+          rental_id: string | null
+          return_url: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          cancel_url?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          pagotic_transaction_id?: string | null
+          payment_url?: string | null
+          publication_id?: string | null
+          reference: string
+          rental_id?: string | null
+          return_url?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          cancel_url?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          pagotic_transaction_id?: string | null
+          payment_url?: string | null
+          publication_id?: string | null
+          reference?: string
+          rental_id?: string | null
+          return_url?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagotic_transactions_publication_id_fkey"
+            columns: ["publication_id"]
+            isOneToOne: false
+            referencedRelation: "publications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pagotic_transactions_rental_id_fkey"
+            columns: ["rental_id"]
+            isOneToOne: false
+            referencedRelation: "rentals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_history: {
         Row: {
           created_at: string | null
@@ -781,44 +850,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-// Tipos para las funciones de base de datos que devuelven datos con la estructura de la aplicación
-export interface MapLocation {
-  id: number;
-  latitud: number;
-  longitud: number;
-  estado: string;
-}
-
-export interface PublicationForSidebar {
-  id: number;
-  location_id: number;
-  capacidad: number;
-  metros_cuadrados: number;
-  descripcion: string;
-  estado: string;
-  latitud: number;
-  longitud: number;
-  created_at: string;
-}
-
-// Tipo extendido para publicaciones con campos adicionales de la aplicación
-export interface ExtendedPublication extends PublicationForSidebar {
-  titulo: string;
-  price: number;
-  user_id: number;
-  imagen?: string; // Campo legacy
-  images?: Image[];
-  direccion?: string; // Campo calculado o de otra tabla
-  amenidades?: string[]; // Campo calculado o de otra tabla
-  updated_at?: string;
-}
-
-// Tipos de conveniencia para usar en componentes
-export type Publication = Database['public']['Tables']['publications']['Row'];
-export type PublicationInsert = Database['public']['Tables']['publications']['Insert'];
-export type PublicationUpdate = Database['public']['Tables']['publications']['Update'];
-
-export type Image = Database['public']['Tables']['images']['Row'];
-export type ImageInsert = Database['public']['Tables']['images']['Insert'];
-export type ImageUpdate = Database['public']['Tables']['images']['Update'];

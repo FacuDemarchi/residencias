@@ -11,6 +11,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
+import { PagoticService } from '../services/pagoticService';
 import type { Tables } from '../types/database';
 
 type Publication = Tables<'publications'>;
@@ -47,6 +48,8 @@ const CheckoutPage: React.FC = () => {
     returnUrl: '',
     cancelUrl: ''
   });
+  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'creating' | 'pending' | 'completed' | 'failed'>('idle');
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
@@ -156,61 +159,76 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  // Función para generar URL de cancelación de suscripción
-  const generateCancellationUrl = () => {
-    if (!userRental) return '';
+  // Función para crear pago usando el servicio
+  const createPayment = async () => {
+    if (!publication || !user) return;
 
-    const baseUrl = 'https://api.pagotic.com/subscription/cancel';
+    setPaymentStatus('creating');
     
-    const params = new URLSearchParams({
-      subscription_id: userRental.id,
-      amount: userRental.monto_total?.toString() || '0',
-      currency: 'ARS',
-      description: `Cancelación temprana - ${publication?.titulo}`,
-      reference: `CANCEL-${userRental.id}-${Date.now()}`,
-      return_url: `${window.location.origin}/checkout/cancellation-success`,
-      cancel_url: `${window.location.origin}/checkout/cancellation-cancel`,
-      customer_email: user?.email || '',
-      customer_name: user?.user_metadata?.full_name || 'Usuario'
-    });
-
-    return `${baseUrl}?${params.toString()}`;
-  };
-
-  // Función para generar URL de pago normal (nueva suscripción)
-  const generatePaymentUrl = () => {
-    if (!paymentData.amount) return '';
-
-    const baseUrl = 'https://api.pagotic.com/payment';
-    
-    const params = new URLSearchParams({
-      amount: paymentData.amount.toString(),
-      currency: paymentData.currency,
-      description: paymentData.description,
-      reference: paymentData.reference,
-      return_url: paymentData.returnUrl,
-      cancel_url: paymentData.cancelUrl,
-      customer_email: user?.email || '',
-      customer_name: user?.user_metadata?.full_name || 'Usuario'
-    });
-
-    return `${baseUrl}?${params.toString()}`;
-  };
-
-  // Configurar datos de pago cuando se carga la publicación
-  useEffect(() => {
-    if (publication && (checkoutState === 'available' || checkoutState === 'reserved_by_user')) {
-      const baseUrl = window.location.origin;
-      setPaymentData({
+    try {
+      const result = await PagoticService.createPayment({
+        publication_id: publication.id,
+        user_id: user.id,
         amount: publication.price || 0,
         currency: publication.currency || 'ARS',
         description: `Reserva - ${publication.titulo}`,
-        reference: `RES-${publication.id}-${Date.now()}`,
-        returnUrl: `${baseUrl}/checkout/success`,
-        cancelUrl: `${baseUrl}/checkout/cancel`
+        return_url: `${window.location.origin}/checkout/success`,
+        cancel_url: `${window.location.origin}/checkout/cancel`
       });
+
+      if (result.success && result.payment_url) {
+        setCurrentTransaction(result);
+        setPaymentStatus('pending');
+        return result.payment_url;
+      } else {
+        console.error('Error creando pago:', result.error);
+        setPaymentStatus('failed');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error creando pago:', error);
+      setPaymentStatus('failed');
+      return null;
+    }
+  };
+
+  // Función para verificar estado del pago
+  const checkPaymentStatus = async () => {
+    if (!currentTransaction?.transaction_db_id) return;
+
+    try {
+      const status = await PagoticService.getTransactionStatus(currentTransaction.transaction_db_id);
+      if (status) {
+        if (status.status === 'completed') {
+          setPaymentStatus('completed');
+          // Redirigir a página de éxito
+          navigate('/checkout/success');
+        } else if (status.status === 'failed' || status.status === 'cancelled') {
+          setPaymentStatus('failed');
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado del pago:', error);
+    }
+  };
+
+  // Crear pago automáticamente cuando se carga la publicación
+  useEffect(() => {
+    if (publication && (checkoutState === 'available' || checkoutState === 'reserved_by_user')) {
+      createPayment();
     }
   }, [publication, checkoutState]);
+
+  // Polling para verificar estado del pago
+  useEffect(() => {
+    if (paymentStatus === 'pending' && currentTransaction?.transaction_db_id) {
+      const interval = setInterval(() => {
+        checkPaymentStatus();
+      }, 5000); // Verificar cada 5 segundos
+
+      return () => clearInterval(interval);
+    }
+  }, [paymentStatus, currentTransaction]);
 
   const handleIframeLoad = () => {
     setIframeLoading(false);
@@ -298,7 +316,7 @@ const CheckoutPage: React.FC = () => {
 
     // Estados que permiten acción (available, reserved_by_user, subscribed)
     const isSubscribed = checkoutState === 'subscribed';
-    const iframeUrl = isSubscribed ? generateCancellationUrl() : generatePaymentUrl();
+    const iframeUrl = currentTransaction?.payment_url || '';
 
     return (
       <Box minH="100vh" bg="gray.50" p={4}>
@@ -438,12 +456,31 @@ const CheckoutPage: React.FC = () => {
                   {isSubscribed ? 'Cancelar suscripción' : 'Completar pago'}
                 </Text>
                 
-                {iframeLoading && (
+                {(iframeLoading || paymentStatus === 'creating') && (
                   <Box textAlign="center" py={8}>
                     <Spinner size="lg" />
                     <Text mt={4}>
-                      {isSubscribed ? 'Cargando formulario de cancelación...' : 'Cargando formulario de pago...'}
+                      {paymentStatus === 'creating' ? 'Creando pago...' : 
+                       isSubscribed ? 'Cargando formulario de cancelación...' : 
+                       'Cargando formulario de pago...'}
                     </Text>
+                  </Box>
+                )}
+
+                {paymentStatus === 'failed' && (
+                  <Box 
+                    bg="red.50" 
+                    border="1px solid" 
+                    borderColor="red.200" 
+                    borderRadius="md" 
+                    p={3}
+                  >
+                    <HStack gap={2}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" color="red.500">
+                        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V4zm1 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                      </svg>
+                      <Text color="red.700">Error al crear el pago. Por favor, intenta nuevamente.</Text>
+                    </HStack>
                   </Box>
                 )}
 
