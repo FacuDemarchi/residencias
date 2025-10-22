@@ -15,6 +15,7 @@ dist-ssr
 
 src/diagrams/code/plantuml.jar
 src/components/backup/
+*.plan.md
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

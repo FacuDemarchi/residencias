@@ -69,94 +69,30 @@ Aplicación web para gestión y búsqueda de residencias estudiantiles. Construi
 
 ### 🔥 Prioridad alta - Correcciones urgentes
 - [x] **Corregir zoom out al deseleccionar** ✅
-  - [x] Implementar zoom automático cuando se deselecciona una publicación
-  - [x] Ajustar el nivel de zoom para mostrar todas las publicaciones
-  - [x] Mantener el centro del mapa apropiado
-
 - [x] **Mejorar autocomplete de búsqueda** ✅
-  - [x] Expandir tipos de lugares en Google Places API
-  - [x] Agregar más opciones de búsqueda (lugares, establecimientos)
-  - [x] Mejorar relevancia de resultados
-  - [x] Optimizar performance del autocomplete
-
-- [ ] **Botón de checkout en detalle**
-  - [ ] Agregar botón "Reservar" en el panel de detalle
-  - [ ] Redireccionar correctamente al checkout con ID de publicación
-  - [ ] Validar disponibilidad antes de redireccionar
+- [ ] **Botón de checkout en detalle** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
 
 ### 🔧 Funcionalidades core
-- [ ] **Sistema de amenities**
-  - [ ] Agregar campo de amenities en creación de publicaciones
-  - [ ] Configurar asociación de amenities con publicaciones
-  - [ ] Mostrar amenities en el detalle de publicación
-  - [ ] Filtros por amenities en el sidebar
-
-- [ ] **Revisar procedimiento de checkout**
-  - [ ] Analizar flujo actual de checkout
-  - [ ] Verificar integración con Pago TIC
-  - [ ] Mejorar validaciones y confirmaciones
-  - [ ] Optimizar experiencia de usuario
-
-- [ ] **Panel de publicaciones del usuario**
-  - [ ] Botón para buscar publicaciones alquiladas
-  - [ ] Historial de alquileres del usuario
-  - [ ] Estado de reservas activas
-  - [ ] Acceso rápido a publicaciones contratadas
-
-- [ ] **Actualizar base de datos**
-  - [ ] Truncar datos existentes
-  - [ ] Crear datos más realistas
-  - [ ] Distribuir mejor las ubicaciones en el mapa
-
-- [ ] **Migrar Google Maps API**
-  - [ ] Reemplazar `google.maps.Marker` por `google.maps.marker.AdvancedMarkerElement`
-  - [ ] Reemplazar `google.maps.places.AutocompleteService` por `google.maps.places.AutocompleteSuggestion`
-  - [ ] Actualizar componentes Map, Marker y GroupMarker
+- [ ] **Sistema de amenities** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
+- [ ] **Revisar procedimiento de checkout** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
+- [ ] **Panel de publicaciones del usuario** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
+- [ ] **Actualizar base de datos** → [Ver detalles](integration-plan.plan.md#1-crear-tabla-para-transacciones-de-pago-tic)
+- [ ] **Migrar Google Maps API** → [Ver detalles](integration-plan.plan.md#8-testing-local)
 
 ### 👤 Panel de cliente
-- [ ] **Gestión de usuario**
-  - [ ] Historial de alquileres
-  - [ ] Favoritos/guardados
-  - [ ] Notificaciones de reservas
-  - [ ] Perfil y configuración
+- [ ] **Gestión de usuario** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
 
 ### 💳 Sistema de pagos y reservas
-- [ ] **Sistema de reservas completo**
-  - [ ] Flujo de reserva paso a paso
-  - [ ] Calendario de disponibilidad
-  - [ ] Confirmación de reservas
-  - [ ] Notificaciones por email
-  - [ ] Gestión de estados de reserva
-
-- [ ] **Sistema de pagos**
-  - [ ] Integración completa con Pago TIC
-  - [ ] Historial de pagos
-  - [ ] Reembolsos y cancelaciones
-  - [ ] Facturación automática
+- [ ] **Sistema de reservas completo** → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
+- [ ] **Sistema de pagos** → [Ver detalles](integration-plan.plan.md#3-crear-edge-function-para-iniciar-pago)
 
 ### 🎨 Mejoras de UX/UI
-- [ ] **Estados de carga y errores**
-  - [ ] Loading states en todos los componentes
-  - [ ] Manejo de errores con mensajes claros
-  - [ ] Animaciones y transiciones suaves
-
-- [ ] **Optimización móvil**
-  - [ ] Mejoras específicas para dispositivos móviles
-  - [ ] Accesibilidad (a11y)
-  - [ ] Performance optimizations
+- [ ] **Estados de carga y errores** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
+- [ ] **Optimización móvil** → [Ver detalles](integration-plan.plan.md#8-testing-local)
 
 ### 🚀 Funcionalidades avanzadas
-- [ ] **Búsqueda avanzada**
-  - [ ] Filtros más específicos (amenities, ubicación exacta)
-  - [ ] Búsqueda por texto con autocompletado mejorado
-
-- [ ] **Sistema social**
-  - [ ] Sistema de calificaciones y reseñas
-  - [ ] Chat entre cliente y residencia
-  - [ ] Notificaciones push
-
-- [ ] **Funcionalidades offline**
-  - [ ] Modo offline básico
-  - [ ] Cache de datos esenciales
+- [ ] **Búsqueda avanzada** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
+- [ ] **Sistema social** → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
+- [ ] **Funcionalidades offline** → [Ver detalles](integration-plan.plan.md#8-testing-local)
 
 ⭐ Si te gusta este proyecto, ¡dale una estrella!
