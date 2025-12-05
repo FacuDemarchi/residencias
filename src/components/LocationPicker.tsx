@@ -98,47 +98,47 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   // Crear marcador cuando se selecciona una ubicación
   useEffect(() => {
-    if (mapInstanceRef.current && selectedLocation && !markerRef.current) {
-      const marker = new google.maps.Marker({
-        position: { lat: selectedLocation.lat, lng: selectedLocation.lng },
-        map: mapInstanceRef.current,
-        draggable: true,
-        title: selectedLocation.address
-      });
-      markerRef.current = marker;
+    if (!isLoaded || !google || !mapInstanceRef.current || !selectedLocation || markerRef.current) return;
 
-      // Listener para arrastre del marcador
-      const dragListener = marker.addListener('dragend', async () => {
-        if (markerRef.current && geocoderRef.current) {
-          const position = markerRef.current.getPosition();
-          if (position) {
-            const lat = position.lat();
-            const lng = position.lng();
+    const marker = new google.maps.Marker({
+      position: { lat: selectedLocation.lat, lng: selectedLocation.lng },
+      map: mapInstanceRef.current,
+      draggable: true,
+      title: selectedLocation.address
+    });
+    markerRef.current = marker;
 
-            try {
-              const results = await geocoderRef.current.geocode({
-                location: { lat, lng }
-              });
+    // Listener para arrastre del marcador
+    const dragListener = marker.addListener('dragend', async () => {
+      if (markerRef.current && geocoderRef.current) {
+        const position = markerRef.current.getPosition();
+        if (position) {
+          const lat = position.lat();
+          const lng = position.lng();
 
-              const address = results.results[0]?.formatted_address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-              markerRef.current.setTitle(address);
+          try {
+            const results = await geocoderRef.current.geocode({
+              location: { lat, lng }
+            });
 
-              const newLocation = { lat, lng, address };
-              setSelectedLocation(newLocation);
-            } catch (error) {
-              console.error('Error al geocodificar:', error);
-            }
+            const address = results.results[0]?.formatted_address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            markerRef.current.setTitle(address);
+
+            const newLocation = { lat, lng, address };
+            setSelectedLocation(newLocation);
+          } catch (error) {
+            console.error('Error al geocodificar:', error);
           }
         }
-      });
+      }
+    });
 
-      return () => {
-        if (dragListener) {
-          google.maps.event.removeListener(dragListener);
-        }
-      };
-    }
-  }, [selectedLocation?.lat, selectedLocation?.lng]); // Solo dependencias específicas
+    return () => {
+      if (dragListener && google && google.maps && google.maps.event) {
+        google.maps.event.removeListener(dragListener);
+      }
+    };
+  }, [isLoaded, google, selectedLocation?.lat, selectedLocation?.lng]);
 
   // Actualizar centro del mapa cuando cambie
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   VStack, 
@@ -7,9 +7,12 @@ import {
   Badge, 
   HStack,
   Flex,
-  Button
+  Button,
+  Icon
 } from '@chakra-ui/react';
-import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiX, FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiX, FiCalendar, FiChevronLeft, FiChevronRight, FiCheckCircle } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseClient';
 import type { Tables } from '../types/database';
 
 type Location = Tables<'locations'>;
@@ -24,6 +27,7 @@ interface DetailContainerProps {
   grupoSeleccionado?: Location[] | null;
   onClose?: () => void;
   onReserve?: (publication: Publication) => void;
+  onRent?: (publication: Publication) => void;
   isMobile?: boolean;
 }
 
@@ -32,10 +36,14 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
   grupoSeleccionado,
   onClose,
   onReserve,
+  onRent,
   isMobile = false
 }) => {
+  const { user } = useAuth();
   // Estado para el índice de la imagen actual
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // Estado para verificar si el usuario tiene una reserva activa
+  const [userHasReservation, setUserHasReservation] = useState(false);
 
   // Función para formatear precios
   const formatPrice = (price: number) => {
@@ -63,6 +71,41 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
   React.useEffect(() => {
     setCurrentImageIndex(0);
   }, [publicacionSeleccionada?.id]);
+
+  // Verificar si el usuario tiene una reserva activa para esta publicación
+  useEffect(() => {
+    const checkUserReservation = async () => {
+      if (!publicacionSeleccionada?.id || !user?.id) {
+        setUserHasReservation(false);
+        return;
+      }
+
+      try {
+        const { data: rentalData, error } = await supabase
+          .from('rentals')
+          .select('*')
+          .eq('publication_id', publicacionSeleccionada.id)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error verificando reserva:', error);
+          setUserHasReservation(false);
+          return;
+        }
+
+        // El usuario tiene reserva si existe un rental y no está alquilado (contrato_aceptado = false)
+        setUserHasReservation(rentalData !== null && rentalData.contrato_aceptado === false);
+      } catch (error) {
+        console.error('Error verificando reserva:', error);
+        setUserHasReservation(false);
+      }
+    };
+
+    checkUserReservation();
+  }, [publicacionSeleccionada?.id, user?.id]);
 
   // Función para obtener color del estado
   const getStateColor = (stateName?: string) => {
@@ -94,29 +137,30 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
       bg="white"
       shadow="xl"
       zIndex={999}
-      overflowY="auto"
       borderLeft={isMobile ? "none" : "1px"}
       borderColor="gray.200"
+      display="grid"
+      gridTemplateRows="auto 1fr auto"
+      overflow="hidden"
     >
-      <VStack align="stretch" h="full">
-        {/* Header */}
-        <Flex align="center" p={4} borderBottom="1px" borderColor="gray.200" gap={3}>
-          <Button
-            aria-label="Cerrar"
-            size="sm"
-            variant="ghost"
-            onClick={onClose}
-            p={1}
-          >
-            <FiX />
-          </Button>
-          <Text fontSize="lg" fontWeight="bold" color="gray.800">
-            {publicacionSeleccionada ? 'Detalle de Publicación' : 'Grupo de Ubicaciones'}
-          </Text>
-        </Flex>
+      {/* Header */}
+      <Flex align="center" p={4} borderBottom="1px" borderColor="gray.200" gap={3}>
+        <Button
+          aria-label="Cerrar"
+          size="sm"
+          variant="ghost"
+          onClick={onClose}
+          p={1}
+        >
+          <FiX />
+        </Button>
+        <Text fontSize="lg" fontWeight="bold" color="gray.800">
+          {publicacionSeleccionada ? 'Detalle de Publicación' : 'Grupo de Ubicaciones'}
+        </Text>
+      </Flex>
 
-        {/* Contenido */}
-        <Box flex="1" p={4}>
+      {/* Contenido scrollable */}
+      <Box p={4} overflowY="auto" minH={0}>
           {publicacionSeleccionada ? (
             // Detalle de publicación individual
             <VStack align="stretch" gap={4}>
@@ -278,7 +322,7 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
 
                 {publicacionSeleccionada.deposit_amount && (
                   <HStack justify="space-between">
-                    <Text fontSize="sm" color="gray.600">Depósito</Text>
+                    <Text fontSize="sm" color="gray.600">Alquiler</Text>
                     <Text fontSize="sm" fontWeight="medium">{formatPrice(publicacionSeleccionada.deposit_amount)}</Text>
                   </HStack>
                 )}
@@ -308,17 +352,6 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
                 </HStack>
               </VStack>
 
-              {/* Botón de reserva */}
-              {publicacionSeleccionada.states?.nombre === 'disponible' && (
-                <Button
-                  colorScheme="blue"
-                  size="lg"
-                  onClick={() => onReserve?.(publicacionSeleccionada)}
-                >
-                  <FiCalendar style={{ marginRight: '8px' }} />
-                  Reservar Ahora
-                </Button>
-              )}
             </VStack>
           ) : grupoSeleccionado ? (
             // Detalle de grupo
@@ -357,8 +390,72 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
               </Text>
             </VStack>
           ) : null}
+      </Box>
+
+      {/* Botones de acción - versión con debug */}
+      {publicacionSeleccionada && (
+        <Box p={4} borderTop="1px" borderColor="gray.200" bg="white">
+          <VStack align="stretch" gap={2}>
+            {/* Botón de debug - siempre visible para verificar condiciones */}
+            <Button
+              colorScheme="purple"
+              size="md"
+              w="full"
+              variant="outline"
+              onClick={() => {
+                console.log('=== DEBUG BOTONES ===');
+                console.log('User:', user);
+                console.log('User ID:', user?.id);
+                console.log('Publicación:', publicacionSeleccionada);
+                console.log('Estado:', publicacionSeleccionada.states?.nombre);
+                console.log('HasReservation:', userHasReservation);
+                console.log('onReserve existe:', !!onReserve);
+                console.log('onRent existe:', !!onRent);
+                alert(`User: ${user ? 'Sí' : 'No'}\nEstado: ${publicacionSeleccionada.states?.nombre || 'N/A'}\nHasReservation: ${userHasReservation}`);
+              }}
+            >
+              <Text>DEBUG - Ver info en consola</Text>
+            </Button>
+
+            {/* Botón de reserva - solo cuando está disponible */}
+            {user && publicacionSeleccionada.states?.nombre === 'disponible' && (
+              <Button
+                colorScheme="blue"
+                size="lg"
+                w="full"
+                onClick={() => onReserve?.(publicacionSeleccionada)}
+              >
+                <HStack gap={2}>
+                  <Icon as={FiCalendar} />
+                  <Text>Reservar Ahora</Text>
+                </HStack>
+              </Button>
+            )}
+            
+            {/* Botón de alquilar - solo cuando está reservada por el usuario */}
+            {user && publicacionSeleccionada.states?.nombre === 'reservada' && userHasReservation && (
+              <Button
+                colorScheme="green"
+                size="lg"
+                w="full"
+                onClick={() => onRent?.(publicacionSeleccionada)}
+              >
+                <HStack gap={2}>
+                  <Icon as={FiCheckCircle} />
+                  <Text>Alquilar</Text>
+                </HStack>
+              </Button>
+            )}
+
+            {/* Mensaje si no hay usuario */}
+            {!user && (
+              <Text fontSize="sm" color="gray.500" textAlign="center" py={2}>
+                Inicia sesión para reservar o alquilar
+              </Text>
+            )}
+          </VStack>
         </Box>
-      </VStack>
+      )}
     </Box>
   );
 };

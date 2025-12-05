@@ -234,6 +234,11 @@ const MainPage: React.FC = () => {
     window.open(`/checkout?id=${publication.id}`, '_blank');
   };
 
+  // Función para manejar alquileres
+  const handleRent = (publication: Publication) => {
+    window.open(`/checkout?id=${publication.id}`, '_blank');
+  };
+
 
 
   return (
@@ -511,6 +516,7 @@ const MainPage: React.FC = () => {
         grupoSeleccionado={grupoSeleccionado}
         onClose={clearSelection}
         onReserve={handleReserve}
+        onRent={handleRent}
         isMobile={isMobile}
       />
     </Box>
