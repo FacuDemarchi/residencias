@@ -3,10 +3,7 @@ import {
   Box, 
   VStack, 
   Text, 
-  Button,
-  HStack,
-  Badge,
-  Icon
+  Button
 } from '@chakra-ui/react';
 import type { Tables } from '../types/database';
 import AddressSearchBar from './AddressSearchBar';

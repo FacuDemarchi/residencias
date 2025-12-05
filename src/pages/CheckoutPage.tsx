@@ -40,14 +40,6 @@ const CheckoutPage: React.FC = () => {
   const [userRental, setUserRental] = useState<Rental | null>(null);
   const [checkoutState, setCheckoutState] = useState<CheckoutState>('loading');
   const [iframeLoading, setIframeLoading] = useState(true);
-  const [paymentData, setPaymentData] = useState({
-    amount: 0,
-    currency: 'ARS',
-    description: '',
-    reference: '',
-    returnUrl: '',
-    cancelUrl: ''
-  });
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'creating' | 'pending' | 'completed' | 'failed'>('idle');
   

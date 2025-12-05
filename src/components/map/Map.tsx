@@ -139,6 +139,7 @@ const Map: React.FC<MapProps> = ({
         return;
       }
 
+      if (!mapRef.current) return;
       const map = new google.maps.Map(mapRef.current, {
       center,
       zoom,

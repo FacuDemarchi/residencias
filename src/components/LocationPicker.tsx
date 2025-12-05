@@ -206,12 +206,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             <Button
               size="sm"
               colorScheme="blue"
-              leftIcon={<Icon as={FiCheck} />}
               onClick={handleConfirmLocation}
               alignSelf="flex-start"
               ml={6}
             >
-              Confirmar ubicación
+              <HStack gap={2}>
+                <Icon as={FiCheck} />
+                <Text>Confirmar ubicación</Text>
+              </HStack>
             </Button>
           </VStack>
         </Box>

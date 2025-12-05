@@ -16,7 +16,7 @@ import {
   Spinner,
   Center
 } from '@chakra-ui/react';
-import { FiPlus, FiX, FiUpload, FiMapPin, FiArrowLeft } from 'react-icons/fi';
+import { FiX, FiUpload, FiMapPin, FiArrowLeft } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddressSearchBar from '../components/AddressSearchBar';
@@ -42,7 +42,6 @@ const EditPublicationPage: React.FC = () => {
   const [price, setPrice] = useState(0);
   const [capacidad, setCapacidad] = useState(1);
   const [metros_cuadrados, setMetrosCuadrados] = useState(0);
-  const [direccion, setDireccion] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [deposit_amount, setDepositAmount] = useState(0);
   const [min_stay_days, setMinStayDays] = useState(30);
@@ -85,7 +84,6 @@ const EditPublicationPage: React.FC = () => {
         // Configurar ubicación
         if (publicationData.locations) {
           const loc = publicationData.locations;
-          setDireccion(loc.direccion || '');
           setSelectedLocation({
             lat: loc.latitud,
             lng: loc.longitud,
@@ -107,13 +105,11 @@ const EditPublicationPage: React.FC = () => {
 
   // Manejar selección de dirección
   const handleAddressSelect = (location: { lat: number; lng: number; address: string }) => {
-    setDireccion(location.address);
     setSelectedLocation(location);
   };
 
   // Manejar selección de ubicación desde el mapa
   const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
-    setDireccion(location.address);
     setSelectedLocation(location);
   };
 
@@ -345,11 +341,13 @@ const EditPublicationPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              leftIcon={<Icon as={FiArrowLeft} />}
               onClick={() => navigate('/admin')}
               disabled={saving}
             >
-              Volver
+              <HStack gap={2}>
+                <Icon as={FiArrowLeft} />
+                <Text>Volver</Text>
+              </HStack>
             </Button>
             <VStack align="start" gap={0}>
               <Text fontSize="xl" fontWeight="bold" color="gray.800">
@@ -388,7 +386,6 @@ const EditPublicationPage: React.FC = () => {
                   onLocationSelect={handleAddressSelect}
                   currentLocation={selectedLocation}
                   placeholder="Buscar nueva dirección..."
-                  isInvalid={!!errors.direccion}
                 />
                 {errors.direccion && (
                   <Text fontSize="xs" color="red.500">{errors.direccion}</Text>
@@ -414,7 +411,7 @@ const EditPublicationPage: React.FC = () => {
                       <Text fontSize="sm" fontWeight="medium" color="green.800">
                         Ubicación actualizada
                       </Text>
-                      <Text fontSize="xs" color="green.600" noOfLines={2}>
+                      <Text fontSize="xs" color="green.600" lineClamp={2}>
                         {selectedLocation.address}
                       </Text>
                     </VStack>
@@ -447,7 +444,11 @@ const EditPublicationPage: React.FC = () => {
                     value={titulo}
                     onChange={(e) => setTitulo(e.target.value)}
                     placeholder="Ej: Residencia moderna en el centro"
-                    isInvalid={!!errors.titulo}
+                    borderColor={errors.titulo ? "red.300" : undefined}
+                    _focus={{
+                      borderColor: errors.titulo ? "red.400" : undefined,
+                      boxShadow: errors.titulo ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                    }}
                     size="sm"
                   />
                   {errors.titulo && (
@@ -462,7 +463,11 @@ const EditPublicationPage: React.FC = () => {
                     onChange={(e) => setDescripcion(e.target.value)}
                     placeholder="Describe tu residencia..."
                     rows={3}
-                    isInvalid={!!errors.descripcion}
+                    borderColor={errors.descripcion ? "red.300" : undefined}
+                    _focus={{
+                      borderColor: errors.descripcion ? "red.400" : undefined,
+                      boxShadow: errors.descripcion ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                    }}
                     size="sm"
                   />
                   {errors.descripcion && (
@@ -479,7 +484,11 @@ const EditPublicationPage: React.FC = () => {
                       value={price}
                       onChange={(e) => setPrice(Number(e.target.value))}
                       placeholder="0"
-                      isInvalid={!!errors.price}
+                      borderColor={errors.price ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.price ? "red.400" : undefined,
+                        boxShadow: errors.price ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.price && (
@@ -494,7 +503,11 @@ const EditPublicationPage: React.FC = () => {
                       value={capacidad}
                       onChange={(e) => setCapacidad(Number(e.target.value))}
                       placeholder="1"
-                      isInvalid={!!errors.capacidad}
+                      borderColor={errors.capacidad ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.capacidad ? "red.400" : undefined,
+                        boxShadow: errors.capacidad ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.capacidad && (
@@ -509,7 +522,11 @@ const EditPublicationPage: React.FC = () => {
                       value={metros_cuadrados}
                       onChange={(e) => setMetrosCuadrados(Number(e.target.value))}
                       placeholder="0"
-                      isInvalid={!!errors.metros_cuadrados}
+                      borderColor={errors.metros_cuadrados ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.metros_cuadrados ? "red.400" : undefined,
+                        boxShadow: errors.metros_cuadrados ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.metros_cuadrados && (
@@ -527,7 +544,11 @@ const EditPublicationPage: React.FC = () => {
                       value={deposit_amount}
                       onChange={(e) => setDepositAmount(Number(e.target.value))}
                       placeholder="0"
-                      isInvalid={!!errors.deposit_amount}
+                      borderColor={errors.deposit_amount ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.deposit_amount ? "red.400" : undefined,
+                        boxShadow: errors.deposit_amount ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.deposit_amount && (
@@ -542,7 +563,11 @@ const EditPublicationPage: React.FC = () => {
                       value={min_stay_days}
                       onChange={(e) => setMinStayDays(Number(e.target.value))}
                       placeholder="30"
-                      isInvalid={!!errors.min_stay_days}
+                      borderColor={errors.min_stay_days ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.min_stay_days ? "red.400" : undefined,
+                        boxShadow: errors.min_stay_days ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.min_stay_days && (
@@ -557,7 +582,11 @@ const EditPublicationPage: React.FC = () => {
                       value={max_stay_days}
                       onChange={(e) => setMaxStayDays(Number(e.target.value))}
                       placeholder="365"
-                      isInvalid={!!errors.max_stay_days}
+                      borderColor={errors.max_stay_days ? "red.300" : undefined}
+                      _focus={{
+                        borderColor: errors.max_stay_days ? "red.400" : undefined,
+                        boxShadow: errors.max_stay_days ? "0 0 0 1px rgba(245, 101, 101, 0.3)" : undefined
+                      }}
                       size="sm"
                     />
                     {errors.max_stay_days && (
@@ -587,14 +616,15 @@ const EditPublicationPage: React.FC = () => {
                             />
                             <IconButton
                               aria-label="Eliminar imagen"
-                              icon={<FiX />}
                               size="xs"
                               colorScheme="red"
                               position="absolute"
                               top={0}
                               right={0}
                               onClick={() => removeExistingImage(image.id)}
-                            />
+                            >
+                              <FiX />
+                            </IconButton>
                           </Box>
                         ))}
                       </SimpleGrid>
@@ -649,14 +679,15 @@ const EditPublicationPage: React.FC = () => {
                             />
                             <IconButton
                               aria-label="Eliminar nueva imagen"
-                              icon={<FiX />}
                               size="xs"
                               colorScheme="red"
                               position="absolute"
                               top={0}
                               right={0}
                               onClick={() => removeNewImage(index)}
-                            />
+                            >
+                              <FiX />
+                            </IconButton>
                           </Box>
                         ))}
                       </SimpleGrid>

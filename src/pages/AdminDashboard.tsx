@@ -111,12 +111,14 @@ const AdminDashboard: React.FC = () => {
             <Button
               colorScheme="blue"
               size="lg"
-              leftIcon={<Icon as={FiPlus} />}
               onClick={() => navigate('/admin/publications/new')}
               borderRadius="lg"
               px={8}
             >
-              Nueva Publicación
+              <HStack gap={2}>
+                <Icon as={FiPlus} />
+                <Text>Nueva Publicación</Text>
+              </HStack>
             </Button>
           </HStack>
         </Box>
@@ -174,12 +176,14 @@ const AdminDashboard: React.FC = () => {
               <Button
                 colorScheme="blue"
                 size="lg"
-                leftIcon={<Icon as={FiPlus} />}
                 onClick={() => navigate('/admin/publications/new')}
                 borderRadius="lg"
                 px={8}
               >
-                Crear tu primera publicación
+                <HStack gap={2}>
+                  <Icon as={FiPlus} />
+                  <Text>Crear tu primera publicación</Text>
+                </HStack>
               </Button>
             </Box>
           ) : (
@@ -239,7 +243,7 @@ const AdminDashboard: React.FC = () => {
                       {publication.titulo}
                     </Text>
                     {publication.descripcion && (
-                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                      <Text fontSize="sm" color="gray.500" lineClamp={1}>
                         {publication.descripcion}
                       </Text>
                     )}
@@ -293,7 +297,6 @@ const AdminDashboard: React.FC = () => {
                   <HStack gap={1} justify="center">
                     <IconButton
                       aria-label="Ver detalles"
-                      icon={<FiEye />}
                       size="sm"
                       variant="ghost"
                       colorScheme="blue"
@@ -302,10 +305,11 @@ const AdminDashboard: React.FC = () => {
                         e.stopPropagation();
                         // TODO: Implementar vista de detalles
                       }}
-                    />
+                    >
+                      <FiEye />
+                    </IconButton>
                     <IconButton
                       aria-label="Editar"
-                      icon={<FiEdit />}
                       size="sm"
                       variant="ghost"
                       colorScheme="green"
@@ -314,10 +318,11 @@ const AdminDashboard: React.FC = () => {
                         e.stopPropagation();
                         navigate(`/admin/publications/${publication.id}/edit`);
                       }}
-                    />
+                    >
+                      <FiEdit />
+                    </IconButton>
                     <IconButton
                       aria-label="Más opciones"
-                      icon={<FiMoreVertical />}
                       size="sm"
                       variant="ghost"
                       colorScheme="gray"
@@ -326,7 +331,9 @@ const AdminDashboard: React.FC = () => {
                         e.stopPropagation();
                         // TODO: Implementar menú de opciones
                       }}
-                    />
+                    >
+                      <FiMoreVertical />
+                    </IconButton>
                   </HStack>
                 </Box>
               ))}
