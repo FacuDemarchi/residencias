@@ -101,3 +101,7 @@ html, body {
   backdrop-filter: blur(4px) !important;
   -webkit-backdrop-filter: blur(4px) !important;
 }
+
+.gm-ui-hover-effect {
+  display: none !important;
+} 

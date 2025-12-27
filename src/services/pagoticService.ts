@@ -20,6 +20,27 @@ interface CreatePaymentResponse {
   error?: string;
 }
 
+interface CreateSubscriptionRequest {
+  publication_id: string;
+  user_id: string;
+  amount: number;
+  currency: string;
+  description: string;
+  return_url: string;
+  cancel_url: string;
+  interval?: 'monthly' | 'yearly';
+}
+
+interface CreateSubscriptionResponse {
+  success: boolean;
+  payment_url?: string;
+  subscription_id?: string;
+  reference?: string;
+  status?: string;
+  transaction_db_id?: string;
+  error?: string;
+}
+
 interface TransactionStatus {
   id: string;
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
@@ -56,6 +77,37 @@ export class PagoticService {
       return data;
     } catch (error) {
       console.error('Error en createPayment:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  }
+
+  /**
+   * Crear una suscripción (alquiler)
+   */
+  static async createSubscription(request: CreateSubscriptionRequest): Promise<CreateSubscriptionResponse> {
+    try {
+      console.log('Creando suscripción con datos:', request);
+      
+      const { data, error } = await supabase.functions.invoke('pagotic-create-subscription', {
+        method: 'POST',
+        body: request,
+      });
+
+      if (error) {
+        console.error('Error en createSubscription:', error);
+        return {
+          success: false,
+          error: error.message || 'Error desconocido',
+        };
+      }
+
+      console.log('Suscripción creada exitosamente:', data);
+      return data;
+    } catch (error) {
+      console.error('Error en createSubscription:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',

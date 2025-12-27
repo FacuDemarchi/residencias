@@ -6,7 +6,8 @@ import {
   HStack, 
   Text, 
   IconButton,
-  Spinner
+  Spinner,
+  Button
 } from '@chakra-ui/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -42,25 +43,30 @@ const CheckoutPage: React.FC = () => {
   const [iframeLoading, setIframeLoading] = useState(true);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'creating' | 'pending' | 'completed' | 'failed'>('idle');
+  const [checkoutAction, setCheckoutAction] = useState<'reserve' | 'rent' | null>(null);
+  const [pollAttempts, setPollAttempts] = useState(0);
+  const maxPollAttempts = 24;
+  const [lastError, setLastError] = useState<string | null>(null);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
 
   // Obtener ID de publicación desde URL
   const publicationId = searchParams.get('id');
+  const actionParam = searchParams.get('action');
 
   useEffect(() => {
-    if (!user) {
-      navigate('/');
-      return;
-    }
-
     if (publicationId) {
-      checkPublicationStatus(publicationId, user.id);
+      if (actionParam === 'reserve' || actionParam === 'rent') {
+        setCheckoutAction(actionParam);
+      } else {
+        setCheckoutAction(null);
+      }
+      checkPublicationStatus(publicationId, user?.id || '');
     }
-  }, [publicationId, user, navigate]);
+  }, [publicationId, actionParam, user, navigate]);
 
   // Función principal para verificar el estado de la publicación
   const checkPublicationStatus = async (pubId: string, userId: string) => {
@@ -99,19 +105,22 @@ const CheckoutPage: React.FC = () => {
       }
 
       // 3. Verificar si el usuario tiene algún rental para esta publicación
-      const { data: rentalData, error: rentalError } = await supabase
-        .from('rentals')
-        .select('*')
-        .eq('publication_id', pubId)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (rentalError && rentalError.code !== 'PGRST116') {
-        console.error('Error obteniendo rental:', rentalError);
-        setCheckoutState('error');
-        return;
+      let rentalData: Rental | null = null;
+      if (userId) {
+        const { data: rd, error: rentalError } = await supabase
+          .from('rentals')
+          .select('*')
+          .eq('publication_id', pubId)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (rentalError && rentalError.code !== 'PGRST116') {
+          console.error('Error obteniendo rental:', rentalError);
+          setCheckoutState('error');
+          return;
+        }
+        rentalData = rd as any;
       }
 
       setUserRental(rentalData);
@@ -156,6 +165,7 @@ const CheckoutPage: React.FC = () => {
     if (!publication || !user) return;
 
     setPaymentStatus('creating');
+    setLastError(null);
     
     try {
       const result = await PagoticService.createPayment({
@@ -175,11 +185,47 @@ const CheckoutPage: React.FC = () => {
       } else {
         console.error('Error creando pago:', result.error);
         setPaymentStatus('failed');
+        setLastError(result.error || 'No se pudo crear el pago');
         return null;
       }
     } catch (error) {
       console.error('Error creando pago:', error);
       setPaymentStatus('failed');
+      setLastError(error instanceof Error ? error.message : 'Error desconocido');
+      return null;
+    }
+  };
+
+  // Función para crear suscripción usando el servicio
+  const createSubscription = async () => {
+    if (!publication || !user) return;
+    setPaymentStatus('creating');
+    setLastError(null);
+    try {
+      const result = await PagoticService.createSubscription({
+        publication_id: publication.id,
+        user_id: user.id,
+        amount: publication.price || 0,
+        currency: publication.currency || 'ARS',
+        description: `Suscripción - ${publication.titulo}`,
+        return_url: `${window.location.origin}/checkout/success`,
+        cancel_url: `${window.location.origin}/checkout/cancel`,
+        interval: 'monthly'
+      });
+      if (result.success && result.payment_url) {
+        setCurrentTransaction(result);
+        setPaymentStatus('pending');
+        return result.payment_url;
+      } else {
+        console.error('Error creando suscripción:', result.error);
+        setPaymentStatus('failed');
+        setLastError(result.error || 'No se pudo crear la suscripción');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error creando suscripción:', error);
+      setPaymentStatus('failed');
+      setLastError(error instanceof Error ? error.message : 'Error desconocido');
       return null;
     }
   };
@@ -197,30 +243,62 @@ const CheckoutPage: React.FC = () => {
           navigate('/checkout/success');
         } else if (status.status === 'failed' || status.status === 'cancelled') {
           setPaymentStatus('failed');
+          setLastError('La transacción fue cancelada o falló');
         }
       }
     } catch (error) {
       console.error('Error verificando estado del pago:', error);
+      setLastError(error instanceof Error ? error.message : 'Error verificando estado');
     }
   };
 
-  // Crear pago automáticamente cuando se carga la publicación
+  // Crear pago o suscripción automáticamente según la acción
   useEffect(() => {
-    if (publication && (checkoutState === 'available' || checkoutState === 'reserved_by_user')) {
+    if (!publication) return;
+    if (!user) return;
+    // Si viene acción explícita en la URL, respetarla
+    if (checkoutAction === 'reserve' && checkoutState === 'available') {
+      createPayment();
+      return;
+    }
+    if (checkoutAction === 'rent' && checkoutState === 'reserved_by_user') {
+      createSubscription();
+      return;
+    }
+    // Fallback sin acción: comportamiento previo
+    if (!checkoutAction && (checkoutState === 'available' || checkoutState === 'reserved_by_user')) {
       createPayment();
     }
-  }, [publication, checkoutState]);
+  }, [publication, checkoutState, checkoutAction]);
 
   // Polling para verificar estado del pago
   useEffect(() => {
     if (paymentStatus === 'pending' && currentTransaction?.transaction_db_id) {
       const interval = setInterval(() => {
         checkPaymentStatus();
+        setPollAttempts((prev) => prev + 1);
       }, 5000); // Verificar cada 5 segundos
 
       return () => clearInterval(interval);
     }
   }, [paymentStatus, currentTransaction]);
+  
+  // Timeout para polling
+  useEffect(() => {
+    if (pollAttempts >= maxPollAttempts && paymentStatus === 'pending') {
+      setPaymentStatus('failed');
+      setLastError('Tiempo de espera agotado verificando el estado del pago');
+    }
+  }, [pollAttempts, paymentStatus]);
+
+  const retryCreate = () => {
+    setPollAttempts(0);
+    if (checkoutAction === 'rent') {
+      createSubscription();
+    } else {
+      createPayment();
+    }
+  };
 
   const handleIframeLoad = () => {
     setIframeLoading(false);
@@ -324,7 +402,8 @@ const CheckoutPage: React.FC = () => {
             </IconButton>
             <Text fontSize="2xl" fontWeight="bold">
               {isSubscribed ? 'Cancelar Suscripción' : 
-               checkoutState === 'reserved_by_user' ? 'Completar Reserva' : 'Checkout'} - Pago TIC
+               checkoutAction === 'rent' ? 'Completar Suscripción' :
+               checkoutState === 'reserved_by_user' || checkoutAction === 'reserve' ? 'Completar Reserva' : 'Checkout'} - Pago TIC
             </Text>
             <Box w="40px" />
           </HStack>
@@ -335,7 +414,7 @@ const CheckoutPage: React.FC = () => {
               <VStack gap={4} align="stretch">
                 <Text fontSize="lg" fontWeight="bold">
                   {isSubscribed ? 'Resumen de la suscripción' : 
-                   checkoutState === 'reserved_by_user' ? 'Resumen de la reserva' : 'Resumen de la reserva'}
+                   checkoutAction === 'rent' ? 'Resumen de la suscripción' : 'Resumen de la reserva'}
                 </Text>
                 
                 <Box>
@@ -448,13 +527,33 @@ const CheckoutPage: React.FC = () => {
                   {isSubscribed ? 'Cancelar suscripción' : 'Completar pago'}
                 </Text>
                 
+                {!user && (
+                  <Box 
+                    bg="yellow.50" 
+                    border="1px solid" 
+                    borderColor="yellow.200" 
+                    borderRadius="md" 
+                    p={3}
+                  >
+                    <VStack gap={3} align="stretch">
+                      <Text color="yellow.800">
+                        Necesitas iniciar sesión para continuar con el pago o suscripción.
+                      </Text>
+                      <Button colorScheme="blue" size="sm" onClick={signInWithGoogle}>
+                        Iniciar sesión con Google
+                      </Button>
+                    </VStack>
+                  </Box>
+                )}
+                
                 {(iframeLoading || paymentStatus === 'creating') && (
                   <Box textAlign="center" py={8}>
                     <Spinner size="lg" />
                     <Text mt={4}>
-                      {paymentStatus === 'creating' ? 'Creando pago...' : 
-                       isSubscribed ? 'Cargando formulario de cancelación...' : 
-                       'Cargando formulario de pago...'}
+                      {paymentStatus === 'creating' 
+                        ? (checkoutAction === 'rent' ? 'Creando suscripción...' : 'Creando pago...')
+                        : (isSubscribed ? 'Cargando formulario de cancelación...' 
+                          : (checkoutAction === 'rent' ? 'Cargando formulario de suscripción...' : 'Cargando formulario de pago...'))}
                     </Text>
                   </Box>
                 )}
@@ -471,12 +570,22 @@ const CheckoutPage: React.FC = () => {
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" color="red.500">
                         <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V4zm1 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
                       </svg>
-                      <Text color="red.700">Error al crear el pago. Por favor, intenta nuevamente.</Text>
+                      <Text color="red.700">
+                        {lastError || 'Error al crear el pago. Por favor, intenta nuevamente.'}
+                      </Text>
+                    </HStack>
+                    <HStack mt={3}>
+                      <Button size="sm" colorScheme="blue" onClick={retryCreate}>
+                        Reintentar
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate('/')}>
+                        Volver
+                      </Button>
                     </HStack>
                   </Box>
                 )}
 
-                {iframeUrl ? (
+                {iframeUrl && user ? (
                   <Box 
                     position="relative" 
                     minH="600px" 

@@ -12,12 +12,13 @@ Finalizar el prototipo para empezar a sumar residencias y habitaciones, mejorand
 - Panel de detalle con carrusel de imágenes
 - Sistema de filtros y ordenamiento
 - Autenticación con Google OAuth
+- Botones “Reservar/Alquilar” en Sidebar (PublicationCard) con navegación a checkout
+- Botón “Mis Reservas” en desktop y móvil con modal de listado y gestión
+- Estados de carga y errores unificados en la página principal
 
 ### Pendiente del Plan de Integración
-- Agregar botones "Reservar" y "Alquilar" en DetailContainer
 - Actualizar CheckoutPage para manejar diferentes acciones (reserve/rent/cancel)
-- Crear servicio para consultar publicaciones del usuario
-- Implementar botón "Mis Reservas" en panel principal
+- Crear servicio dedicado para consultar publicaciones del usuario
 - Configurar webhook de Pago TIC para notificaciones automáticas
 - Probar integración completa con Pago TIC
 
@@ -110,8 +111,8 @@ Finalizar el prototipo para empezar a sumar residencias y habitaciones, mejorand
 
 ### 4. Finalizar Funcionalidades Pendientes
 
-**Botones de Acción en DetailContainer**:
-- Modificar `src/components/DetailContainer.tsx`:
+**Botones de Acción en Sidebar**:
+- Modificar `src/components/PublicationCard.tsx`:
   - Agregar botón "Reservar" para publicaciones disponibles
   - Agregar botón "Alquilar" para publicaciones reservadas por el usuario
   - Redireccionar a `/checkout?id=123&action=reserve|rent`
@@ -234,9 +235,9 @@ Finalizar el prototipo para empezar a sumar residencias y habitaciones, mejorand
 - [ ] Asegurar que sea responsive y no interfiera con la funcionalidad del mapa
 
 ### Tarea 5: Funcionalidades Pendientes
-- [ ] Agregar botones "Reservar" y "Alquilar" en DetailContainer.tsx
+- [x] Agregar botones "Reservar" y "Alquilar" en Sidebar (PublicationCard)
 - [ ] Crear servicio userPublicationsService.ts
-- [ ] Implementar botón "Mis Reservas" en Sidebar.tsx
+- [x] Implementar botón "Mis Reservas" en Sidebar y header móvil
 - [ ] Actualizar CheckoutPage.tsx para manejar múltiples acciones
 - [ ] Configurar webhook de Pago TIC en el dashboard
 

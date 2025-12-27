@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Box, 
   VStack, 
@@ -9,8 +9,19 @@ import {
   Badge,
   IconButton,
   Spinner,
-  Center
+  Center,
+  useDisclosure,
+  DialogRoot,
+  DialogBackdrop,
+  DialogContent,
+  DialogHeader,
+  DialogCloseTrigger,
+  DialogBody,
+  DialogPositioner,
+  Separator,
+  Image,
 } from '@chakra-ui/react';
+import { createToaster, Toaster as ArkToaster } from '@ark-ui/react/toast';
 import { 
   FiPlus, 
   FiEdit, 
@@ -33,6 +44,9 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [myPublications, setMyPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPublication, setSelectedPublication] = useState<any | null>(null);
+  const detailsDisclosure = useDisclosure();
+  const toaster = useMemo(() => createToaster({ placement: 'top-end' }), []);
 
   // Cargar publicaciones del usuario
   useEffect(() => {
@@ -72,6 +86,49 @@ const AdminDashboard: React.FC = () => {
       year: 'numeric'
     });
   };
+  
+  const handleShowDetails = (publication: any) => {
+    setSelectedPublication(publication);
+    detailsDisclosure.onOpen();
+  };
+  
+  const handleToggleActive = async (publication: Publication) => {
+    try {
+      const adminService = new AdminService();
+      const updated = await adminService.togglePublicationStatus(publication.id, !publication.is_active);
+      setMyPublications(prev => prev.map(p => p.id === updated.id ? { ...p, is_active: updated.is_active } : p));
+      toaster.create({
+        type: updated.is_active ? 'success' : 'info',
+        title: updated.is_active ? 'Publicación activada' : 'Publicación desactivada'
+      });
+    } catch (error) {
+      console.error(error);
+      toaster.create({
+        type: 'error',
+        title: 'Error al cambiar estado'
+      });
+    }
+  };
+  
+  const handleDeletePublication = async (publication: Publication) => {
+    const confirmed = window.confirm('¿Seguro que deseas eliminar esta publicación?');
+    if (!confirmed) return;
+    try {
+      const adminService = new AdminService();
+      await adminService.deletePublication(publication.id);
+      setMyPublications(prev => prev.filter(p => p.id !== publication.id));
+      toaster.create({
+        type: 'success',
+        title: 'Publicación eliminada'
+      });
+    } catch (error) {
+      console.error(error);
+      toaster.create({
+        type: 'error',
+        title: 'Error al eliminar publicación'
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -95,6 +152,13 @@ const AdminDashboard: React.FC = () => {
       overflowY="auto"
       bg="gray.50"
     >
+      <ArkToaster toaster={toaster}>
+        {(t) => (
+          <Box bg="gray.800" color="white" px={3} py={2} borderRadius="md">
+            <Text fontWeight="bold">{t.title}</Text>
+          </Box>
+        )}
+      </ArkToaster>
       <VStack align="stretch" gap={8}>
         {/* Header */}
         <Box bg="white" p={6} borderRadius="xl" boxShadow="sm">
@@ -303,7 +367,7 @@ const AdminDashboard: React.FC = () => {
                       title="Ver detalles"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // TODO: Implementar vista de detalles
+                        handleShowDetails(publication as any);
                       }}
                     >
                       <FiEye />
@@ -322,17 +386,24 @@ const AdminDashboard: React.FC = () => {
                       <FiEdit />
                     </IconButton>
                     <IconButton
-                      aria-label="Más opciones"
+                      aria-label="Activar/Desactivar"
                       size="sm"
                       variant="ghost"
                       colorScheme="gray"
-                      title="Más opciones"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Implementar menú de opciones
-                      }}
+                      title={publication.is_active ? 'Desactivar' : 'Activar'}
+                      onClick={(e: any) => { e.stopPropagation(); handleToggleActive(publication); }}
                     >
                       <FiMoreVertical />
+                    </IconButton>
+                    <IconButton
+                      aria-label="Eliminar"
+                      size="sm"
+                      variant="ghost"
+                      colorScheme="red"
+                      title="Eliminar"
+                      onClick={(e: any) => { e.stopPropagation(); handleDeletePublication(publication); }}
+                    >
+                      <span>✖</span>
                     </IconButton>
                   </HStack>
                 </Box>
@@ -340,6 +411,92 @@ const AdminDashboard: React.FC = () => {
             </VStack>
           )}
         </Box>
+        
+        {/* Modal de detalles */}
+        <DialogRoot open={detailsDisclosure.open} onOpenChange={(e: any) => { if (!e.open) detailsDisclosure.onClose(); }}>
+          <DialogBackdrop />
+          <DialogPositioner>
+            <DialogContent>
+              <DialogHeader>
+              <HStack justify="space-between">
+                <Text>{selectedPublication?.titulo}</Text>
+                {selectedPublication && (
+                  <Badge
+                    colorScheme={selectedPublication.is_active ? 'green' : 'gray'}
+                    variant="subtle"
+                    borderRadius="full"
+                    px={3}
+                    py={1}
+                  >
+                    {selectedPublication.is_active ? 'Activa' : 'Inactiva'}
+                  </Badge>
+                )}
+              </HStack>
+              </DialogHeader>
+              <DialogCloseTrigger />
+              <DialogBody>
+              <VStack align="stretch" gap={4}>
+                <HStack gap={6}>
+                  <HStack gap={2}>
+                    <Icon as={FiDollarSign} color="green.500" />
+                    <Text fontWeight="medium">{formatPrice(selectedPublication?.price ?? null)}</Text>
+                  </HStack>
+                  <HStack gap={2}>
+                    <Icon as={FiUsers} color="blue.500" />
+                    <Text>{selectedPublication?.capacidad} persona{selectedPublication?.capacidad !== 1 ? 's' : ''}</Text>
+                  </HStack>
+                  <HStack gap={2}>
+                    <Icon as={FiHome} color="orange.500" />
+                    <Text>{selectedPublication?.metros_cuadrados ? `${selectedPublication?.metros_cuadrados} m²` : 'No definido'}</Text>
+                  </HStack>
+                  <HStack gap={2}>
+                    <Icon as={FiCalendar} color="gray.500" />
+                    <Text>{formatDate(selectedPublication?.created_at ?? null)}</Text>
+                  </HStack>
+                </HStack>
+                
+                <Separator />
+                
+                {selectedPublication?.descripcion && (
+                  <Box>
+                    <Text fontWeight="semibold" mb={2}>Descripción</Text>
+                    <Text color="gray.700">{selectedPublication.descripcion}</Text>
+                  </Box>
+                )}
+                
+                {(selectedPublication?.locations?.direccion || selectedPublication?.locations) && (
+                  <Box>
+                    <Text fontWeight="semibold" mb={2}>Ubicación</Text>
+                    <Text color="gray.700">
+                      {selectedPublication?.locations?.direccion ?? 'Ubicación disponible'}
+                    </Text>
+                  </Box>
+                )}
+                
+                {Array.isArray(selectedPublication?.images) && selectedPublication.images.length > 0 && (
+                  <Box>
+                    <Text fontWeight="semibold" mb={3}>Imágenes</Text>
+                    <HStack wrap="wrap" gap={3}>
+                      {selectedPublication.images.map((img: any) => (
+                        <Image
+                          key={img.id}
+                          src={img.url_imagen}
+                          alt="Imagen de la publicación"
+                          borderRadius="md"
+                          objectFit="cover"
+                          w="120px"
+                          h="90px"
+                          bg="gray.100"
+                        />
+                      ))}
+                    </HStack>
+                  </Box>
+                )}
+              </VStack>
+              </DialogBody>
+            </DialogContent>
+          </DialogPositioner>
+        </DialogRoot>
       </VStack>
     </Box>
   );

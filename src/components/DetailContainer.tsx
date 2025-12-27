@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   VStack, 
@@ -11,8 +11,6 @@ import {
   Icon
 } from '@chakra-ui/react';
 import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiX, FiCalendar, FiChevronLeft, FiChevronRight, FiCheckCircle } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/supabaseClient';
 import type { Tables } from '../types/database';
 
 type Location = Tables<'locations'>;
@@ -39,11 +37,8 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
   onRent,
   isMobile = false
 }) => {
-  const { user } = useAuth();
   // Estado para el índice de la imagen actual
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // Estado para verificar si el usuario tiene una reserva activa
-  const [userHasReservation, setUserHasReservation] = useState(false);
 
   // Función para formatear precios
   const formatPrice = (price: number) => {
@@ -72,40 +67,6 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
     setCurrentImageIndex(0);
   }, [publicacionSeleccionada?.id]);
 
-  // Verificar si el usuario tiene una reserva activa para esta publicación
-  useEffect(() => {
-    const checkUserReservation = async () => {
-      if (!publicacionSeleccionada?.id || !user?.id) {
-        setUserHasReservation(false);
-        return;
-      }
-
-      try {
-        const { data: rentalData, error } = await supabase
-          .from('rentals')
-          .select('*')
-          .eq('publication_id', publicacionSeleccionada.id)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error verificando reserva:', error);
-          setUserHasReservation(false);
-          return;
-        }
-
-        // El usuario tiene reserva si existe un rental y no está alquilado (contrato_aceptado = false)
-        setUserHasReservation(rentalData !== null && rentalData.contrato_aceptado === false);
-      } catch (error) {
-        console.error('Error verificando reserva:', error);
-        setUserHasReservation(false);
-      }
-    };
-
-    checkUserReservation();
-  }, [publicacionSeleccionada?.id, user?.id]);
 
   // Función para obtener color del estado
   const getStateColor = (stateName?: string) => {
@@ -392,67 +353,34 @@ const DetailContainer: React.FC<DetailContainerProps> = ({
           ) : null}
       </Box>
 
-      {/* Botones de acción - versión con debug */}
+      {/* Botones de acción */}
       {publicacionSeleccionada && (
         <Box p={4} borderTop="1px" borderColor="gray.200" bg="white">
           <VStack align="stretch" gap={2}>
-            {/* Botón de debug - siempre visible para verificar condiciones */}
             <Button
-              colorScheme="purple"
-              size="md"
+              colorScheme="blue"
+              size="lg"
               w="full"
-              variant="outline"
-              onClick={() => {
-                console.log('=== DEBUG BOTONES ===');
-                console.log('User:', user);
-                console.log('User ID:', user?.id);
-                console.log('Publicación:', publicacionSeleccionada);
-                console.log('Estado:', publicacionSeleccionada.states?.nombre);
-                console.log('HasReservation:', userHasReservation);
-                console.log('onReserve existe:', !!onReserve);
-                console.log('onRent existe:', !!onRent);
-                alert(`User: ${user ? 'Sí' : 'No'}\nEstado: ${publicacionSeleccionada.states?.nombre || 'N/A'}\nHasReservation: ${userHasReservation}`);
-              }}
+              onClick={() => onReserve?.(publicacionSeleccionada)}
             >
-              <Text>DEBUG - Ver info en consola</Text>
+              <HStack gap={2}>
+                <Icon as={FiCalendar} />
+                <Text>Reservar Ahora</Text>
+              </HStack>
+            </Button>
+            
+            <Button
+              colorScheme="green"
+              size="lg"
+              w="full"
+              onClick={() => onRent?.(publicacionSeleccionada)}
+            >
+              <HStack gap={2}>
+                <Icon as={FiCheckCircle} />
+                <Text>Alquilar</Text>
+              </HStack>
             </Button>
 
-            {/* Botón de reserva - solo cuando está disponible */}
-            {user && publicacionSeleccionada.states?.nombre === 'disponible' && (
-              <Button
-                colorScheme="blue"
-                size="lg"
-                w="full"
-                onClick={() => onReserve?.(publicacionSeleccionada)}
-              >
-                <HStack gap={2}>
-                  <Icon as={FiCalendar} />
-                  <Text>Reservar Ahora</Text>
-                </HStack>
-              </Button>
-            )}
-            
-            {/* Botón de alquilar - solo cuando está reservada por el usuario */}
-            {user && publicacionSeleccionada.states?.nombre === 'reservada' && userHasReservation && (
-              <Button
-                colorScheme="green"
-                size="lg"
-                w="full"
-                onClick={() => onRent?.(publicacionSeleccionada)}
-              >
-                <HStack gap={2}>
-                  <Icon as={FiCheckCircle} />
-                  <Text>Alquilar</Text>
-                </HStack>
-              </Button>
-            )}
-
-            {/* Mensaje si no hay usuario */}
-            {!user && (
-              <Text fontSize="sm" color="gray.500" textAlign="center" py={2}>
-                Inicia sesión para reservar o alquilar
-              </Text>
-            )}
           </VStack>
         </Box>
       )}

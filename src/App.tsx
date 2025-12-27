@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainPage from './pages/MainPage.tsx';
-import CheckoutPage from './pages/CheckoutPage.tsx';
-import AdminDashboard from './pages/AdminDashboard.tsx';
-import PublicationForm from './pages/PublicationForm.tsx';
-import EditPublicationPage from './pages/EditPublicationPage.tsx';
+import { lazy, Suspense } from 'react';
+const MainPage = lazy(() => import('./pages/MainPage.tsx'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage.tsx'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.tsx'));
+const PublicationForm = lazy(() => import('./pages/PublicationForm.tsx'));
+const EditPublicationPage = lazy(() => import('./pages/EditPublicationPage.tsx'));
 import { GoogleMapsProvider } from './context/GoogleMapsContext';
 import { AuthProvider } from './context/AuthContext';
 import { TagsProvider } from './context/TagsContext';
@@ -21,34 +22,36 @@ function App() {
               v7_relativeSplatPath: true
             }}
           >
-            <Routes>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requiredUserType="residencia">
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/publications/new" 
-                element={
-                  <ProtectedRoute requiredUserType="residencia">
-                    <PublicationForm />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/publications/:id/edit" 
-                element={
-                  <ProtectedRoute requiredUserType="residencia">
-                    <EditPublicationPage />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
+            <Suspense fallback={<div />}>
+              <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute requiredUserType="residencia">
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/publications/new" 
+                  element={
+                    <ProtectedRoute requiredUserType="residencia">
+                      <PublicationForm />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/publications/:id/edit" 
+                  element={
+                    <ProtectedRoute requiredUserType="residencia">
+                      <EditPublicationPage />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </Suspense>
           </Router>
         </TagsProvider>
       </AuthProvider>

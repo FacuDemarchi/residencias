@@ -1,104 +1,113 @@
-# 🏠 Residencias
+# Residencias
 
-Aplicación web para gestión y búsqueda de residencias estudiantiles. Construida con React, TypeScript, Tailwind CSS, Google Maps y Supabase.
+Aplicación web para gestión y búsqueda de residencias estudiantiles. Proyecto principal de portafolio con enfoque en arquitectura limpia, integración de servicios y experiencia de usuario.
 
-## 🚀 ¿Qué hace?
-- Autenticación con Google (Supabase Auth)
-- Búsqueda y visualización de residencias en mapa
-- Sistema de reservas y contratos de alquiler
-- Gestión de publicaciones para administradores
-- Pagos automáticos integrados
+## Resumen
+- SPA en `React + TypeScript` con `Vite`.
+- UI con `Chakra UI` y utilidades `Tailwind CSS`.
+- Datos y autenticación con `Supabase`.
+- Mapas interactivos con `Google Maps`.
+- Pasarela de pagos integrada con `Pago TIC` mediante `Supabase Edge Functions`.
 
-## 🛠️ Tecnologías
-- React 19 + TypeScript
-- **Tailwind CSS** (Layout responsive)
-- **Chakra UI** (Componentes UI) ✅
-- **React Router DOM** (Navegación entre páginas) ✅
-- Supabase (DB + Auth)
-- Google Maps API
-- **Pago TIC** (Pasarela de pagos con iframe) ✅
-- Vite
+## Cómo funciona
+- Página principal: muestra el mapa y un panel lateral con publicaciones. La ubicación del mapa filtra resultados en tiempo real y permite seleccionar una publicación para ver su detalle.
+- Búsqueda y filtros: barra de dirección, ordenamiento, precio y tags. Los filtros impactan el listado y los marcadores.
+- Detalle y selección: al elegir una publicación, se muestra galería, ubicación, características y acciones.
+- Checkout: crea un pago o suscripción con Pago TIC y registra la transacción. Se hace seguimiento del estado vía webhook o polling.
+- Administración: panel para crear, editar y activar/desactivar publicaciones; manejo de imágenes en un bucket de Supabase.
 
-## ⚡ Instalación rápida
-1. Clona el repo y entra a la carpeta:
-   ```bash
-   git clone https://github.com/FacuDemarchi/residencias.git
-   cd residencias
-   ```
-2. Instala dependencias:
-   ```bash
-   npm install
-   ```
-3. Crea un archivo `.env` en la raíz con:
-   ```env
-   VITE_SUPABASE_URL=tu_url_de_supabase
-   VITE_SUPABASE_API_KEY=tu_api_key_de_supabase
-   VITE_GOOGLE_MAPS_API_KEY=tu_api_key_de_google
-   ```
-4. Ejecuta en modo desarrollo:
-   ```bash
-   npm run dev
-   ```
+## Arquitectura
+- Enrutamiento: `react-router-dom` con rutas `"/"`, `"/checkout"`, `"/admin"` y formularios de publicaciones.
+- Estado global: Contextos para `Auth`, `Google Maps` y `Tags` envuelven la aplicación.
+- Servicios: capa de servicios sobre `@supabase/supabase-js` para consultas, joins y cache en memoria.
+- Edge Functions: tres funciones para crear pagos, crear suscripciones y recibir el webhook de Pago TIC.
+- Tipos: tipos de base generados desde Supabase y utilizados en páginas y servicios para seguridad de tipos.
 
-## 🛣️ Rutas disponibles
-- **`/`** - Página principal con mapa y sidebar
-- **`/checkout?id=123`** - Página de checkout con iframe de Pago TIC
+## Stack técnico
+- Frontend: `React 19`, `TypeScript`, `Chakra UI`, `Tailwind CSS`, `React Router`.
+- Build: `Vite 7` con división de vendors.
+- Datos: `Supabase` (DB, Auth, Storage, Edge Functions).
+- Mapas: `Google Maps JavaScript API`.
+- Pagos: `Pago TIC` (documentado en `docs/pagotic.md`).
+- Calidad: `ESLint` y configuración estricta de TypeScript.
 
-## 📦 Scripts útiles
-- `npm run dev` – Modo desarrollo
-- `npm run build` – Build de producción
-- `npm run preview` – Previsualizar build
-- `npm run lint` – Linter
-- `npm run test:db` – Script de testing para verificar datos de la base de datos
+## Estructura del proyecto
+- `src/components/` componentes de mapa, tarjetas, sidebar, filtros y rutas protegidas.
+- `src/context/` `AuthContext`, `GoogleMapsContext`, `TagsContext`.
+- `src/pages/` páginas principales y de administración.
+- `src/services/` `publicationsService`, `locationsService`, `pagoticService`, `adminService`, `supabaseClient`.
+- `src/types/` tipos generados y tipos de app.
+- `supabase/functions/` funciones Edge para pagos y webhooks.
+- `database/scripts/` utilidades para semillas y mantenimiento.
+- `docs/` documentación complementaria (Pago TIC).
+- Configuración: `vite.config.ts`, `tsconfig*.json`, `tailwind.config.js`, `postcss.config.cjs`, `eslint.config.js`.
 
-## ✅ Estado actual
-- **Mapa**: Google Maps integrado con marcadores dinámicos y clustering
-- **Layout**: Sidebar compacto responsive con navegación
-- **Checkout**: Página de checkout con iframe de Pago TIC
-- **Componentes**: PublicationCard, Map, Marker, GroupMarker implementados
-- **Datos**: Sistema de consultas a base de datos funcionando
-- **Rutas**: React Router configurado para navegación
-- **Sistema de Selección**: Selección de publicaciones desde sidebar y mapa ✅
-- **Panel de Detalle**: Carrusel de imágenes con navegación y información completa ✅
-- **UX Mejorada**: Destacado visual, pan to automático, layout optimizado ✅
-- **Tooltip de Marcadores**: Información básica en hover con datos de publicación ✅
-- **Sistema de Filtros**: Panel de filtros con ordenamiento y filtro de precio funcional ✅
-- **Corrección de Google Maps**: Solucionado error de inicialización de la API ✅
-- **Integración Pago TIC**: Sistema completo de pagos con Edge Functions ✅
-- **Base de datos actualizada**: Tabla pagotic_transactions con políticas RLS ✅
+## Proceso de creación
+- Diseño de dominio: definición de entidades (`publications`, `locations`, `states`, `state_history`, `pagotic_transactions`) y reglas de negocio (RLS en Supabase).
+- Tipado primero: generación de tipos de DB y uso de `Tables<'...'>` en toda la capa de datos para prevenir errores.
+- UI y UX iterativas: mapa con marcadores agrupados, sidebar responsive, panel de detalle con galería y accesibilidad de componentes Chakra.
+- Integración de servicios: Google Maps con carga segura del script y reintentos; Pago TIC encapsulado en Edge Functions para aislar secretos; almacenamiento de imágenes en buckets.
+- Observabilidad básica: estados de carga y error en contextos y páginas, logs controlados en funciones Edge.
+- Rendimiento: división de vendors en Vite, memoización y cache ligera en servicios, queries con filtros eficientes y paginación cuando aplica.
 
-## 🎯 Tareas pendientes
+## Roadmap e ideas a futuro
+- Búsqueda avanzada: por amenities, rango de fechas y distancia.
+- Optimización móvil y rendimiento: virtualización de listas y lazy chunks.
+- Sistema social: reseñas, calificaciones y verificación.
+- Funcionalidades offline: cache de resultados y últimas búsquedas.
+- Panel del usuario: reservas, pagos y publicaciones propias.
+- Pruebas automatizadas: `vitest` para UI y servicios, tests de integración de Edge Functions.
+- Observabilidad: métricas de uso y trazas de funciones.
 
-### 🔥 Prioridad alta - Correcciones urgentes
-- [x] **Corregir zoom out al deseleccionar** ✅
-- [x] **Mejorar autocomplete de búsqueda** ✅
-- [x] **Botón de checkout en detalle** ✅ → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
+## Scripts y desarrollo local
+- Instalar dependencias:
+  ```
+  npm install
+  ```
+- Variables de entorno (`.env`):
+  ```
+  VITE_SUPABASE_URL=<url>
+  VITE_SUPABASE_API_KEY=<anon_key>
+  VITE_GOOGLE_MAPS_API_KEY=<api_key>
+  ```
+- Desarrollo:
+  ```
+  npm run dev
+  ```
+- Build y preview:
+  ```
+  npm run build
+  npm run preview
+  ```
+- Lint:
+  ```
+  npm run lint
+  ```
+- Tipos de base:
+  ```
+  npm run db:types
+  ```
+- Verificación de datos:
+  ```
+  npm run test:db
+  ```
 
-### 🔧 Funcionalidades core
-- [ ] **Sistema de amenities** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
-- [x] **Revisar procedimiento de checkout** ✅ → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
-- [ ] **Panel de publicaciones del usuario** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
-- [x] **Actualizar base de datos** ✅ → [Ver detalles](integration-plan.plan.md#1-crear-tabla-para-transacciones-de-pago-tic)
-- [ ] **Migrar Google Maps API** → [Ver detalles](integration-plan.plan.md#8-testing-local)
+## Despliegue y servicios
+- Supabase: crear proyecto, configurar tablas y políticas; usar `env.example` como guía de variables.
+- Edge Functions: desplegar funciones de Pago TIC y configurar el webhook para actualizar transacciones.
+- Google Maps: restringir la clave de API por dominio y rutas.
+- Storage: bucket de imágenes con reglas de acceso seguras.
 
-### 👤 Gestión de usuario
-- [ ] **Botón "Mis Reservas"** → [Ver detalles](integration-plan.plan.md#implementar-botón-mis-reservas-en-panel-principal)
-- [ ] **Botones de acción en detalle** → [Ver detalles](integration-plan.plan.md#agregar-botones-reservar-y-alquilar-en-detailcontainer)
-- [ ] **Consultar publicaciones del usuario** → [Ver detalles](integration-plan.plan.md#crear-servicio-para-consultar-publicaciones-del-usuario)
+## Capacidades demostradas
+- Arquitectura de SPA con separación clara de responsabilidades.
+- Integración de terceros segura (Pago TIC, Google Maps, Supabase).
+- Tipado estricto y uso de generadores de tipos para DB.
+- Diseño de experiencia de usuario con mapa, filtros y detalle.
+- Automatización con scripts de base de datos y funciones.
 
-### 💳 Sistema de pagos y reservas
-- [x] **Sistema de reservas completo** ✅ → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
-- [x] **Sistema de pagos** ✅ → [Ver detalles](integration-plan.plan.md#3-crear-edge-function-para-iniciar-pago)
-- [ ] **Pruebas de integración Pago TIC** → [Ver detalles](integration-plan.plan.md#probar-integración-completa-con-pago-tic)
-- [ ] **Configurar webhook Pago TIC** → [Ver detalles](integration-plan.plan.md#configurar-webhook-de-pago-tic-para-notificaciones-automáticas)
+## Recursos
+- Documentación de pagos: `docs/pagotic.md`
+- Próximos pasos y tareas: `next_steps.md`
 
-### 🎨 Mejoras de UX/UI
-- [ ] **Estados de carga y errores** → [Ver detalles](integration-plan.plan.md#5-actualizar-checkoutpagetsx)
-- [ ] **Optimización móvil** → [Ver detalles](integration-plan.plan.md#8-testing-local)
-
-### 🚀 Funcionalidades avanzadas
-- [ ] **Búsqueda avanzada** → [Ver detalles](integration-plan.plan.md#6-crear-servicio-de-pago-tic)
-- [ ] **Sistema social** → [Ver detalles](integration-plan.plan.md#4-crear-edge-function-para-webhooks)
-- [ ] **Funcionalidades offline** → [Ver detalles](integration-plan.plan.md#8-testing-local)
-
-⭐ Si te gusta este proyecto, ¡dale una estrella!
+---
+Si este proyecto te resultó útil, considera dejar una estrella y visitar el código para ver cómo se estructura cada capa.

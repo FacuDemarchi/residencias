@@ -12,9 +12,9 @@ interface GroupMarkerProps {
   size?: { width: number; height: number };
 }
 
-const GroupMarker: React.FC<GroupMarkerProps> = ({ 
-  map, 
-  locations, 
+const GroupMarker: React.FC<GroupMarkerProps> = ({
+  map,
+  locations,
   centerPosition,
   onGroupClick,
   icon,
@@ -34,8 +34,8 @@ const GroupMarker: React.FC<GroupMarkerProps> = ({
       icon: {
         url: icon || 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
           <svg width="${size.width}" height="${size.height}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="#EF4444" stroke="#FFFFFF" stroke-width="2"/>
-            <text x="12" y="16" text-anchor="middle" fill="white" font-size="12" font-weight="bold">${locations.length}</text>
+            <circle cx="12" cy="12" r="10" fill="#DC2626" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="12" y="16" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="bold">${locations.length}</text>
           </svg>
         `),
         scaledSize: new google.maps.Size(size.width, size.height),
@@ -70,10 +70,24 @@ const GroupMarker: React.FC<GroupMarkerProps> = ({
       }
     });
 
+    // Hover para mostrar InfoWindow
+    markerRef.current.addListener('mouseover', () => {
+      markerRef.current?.setZIndex(google.maps.Marker.MAX_ZINDEX + 2);
+      infoWindowRef.current?.open(map, markerRef.current!);
+    });
+    markerRef.current.addListener('mouseout', () => {
+      markerRef.current?.setZIndex(undefined as any);
+      infoWindowRef.current?.close();
+    });
+
     // Limpiar al desmontar
     return () => {
       if (markerRef.current) {
         markerRef.current.setMap(null);
+      }
+      if (infoWindowRef.current) {
+        infoWindowRef.current.close();
+        infoWindowRef.current = null;
       }
     };
   }, [map, locations, centerPosition, onGroupClick, icon, size]);

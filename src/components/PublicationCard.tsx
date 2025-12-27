@@ -6,7 +6,8 @@ import {
   Badge, 
   VStack, 
   HStack,
-  Flex
+  Flex,
+  Button
 } from '@chakra-ui/react';
 import { FiMapPin, FiUsers, FiMaximize2, FiWifi, FiTruck, FiUser } from 'react-icons/fi';
 import type { Tables } from '../types/database';
@@ -26,6 +27,8 @@ interface PublicationCardProps {
     images?: Tables<'images'>[];
   };
   onSelect?: (publication: Publication) => void;
+  onReserve?: (publication: Publication) => void;
+  onRent?: (publication: Publication) => void;
   isSelected?: boolean;
   isInSelectedGroup?: boolean;
 }
@@ -33,6 +36,8 @@ interface PublicationCardProps {
 const PublicationCard: React.FC<PublicationCardProps> = ({
   publication,
   onSelect,
+  onReserve,
+  onRent,
   isSelected = false,
   isInSelectedGroup = false
 }) => {
@@ -239,21 +244,24 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           )}
         </HStack>
 
-        {/* Texto de acción */}
-        <Box
-          bg={isSelected ? 'blue.100' : (isInSelectedGroup ? 'orange.100' : 'gray.100')}
-          color={isSelected ? 'blue.700' : (isInSelectedGroup ? 'orange.700' : 'gray.600')}
-          px={2}
-          py={1}
-          borderRadius="sm"
-          textAlign="center"
-          fontSize="xs"
-          fontWeight="medium"
-          cursor="pointer"
-          _hover={{ opacity: 0.8 }}
-        >
-          {isSelected ? 'Seleccionada' : (isInSelectedGroup ? 'En grupo seleccionado' : 'Click para ver detalles')}
-        </Box>
+        <HStack gap={2}>
+          <Button
+            size="xs"
+            colorScheme="blue"
+            flex="1"
+            onClick={(e: any) => { e.stopPropagation(); onReserve?.(publication); }}
+          >
+            Reservar
+          </Button>
+          <Button
+            size="xs"
+            colorScheme="green"
+            flex="1"
+            onClick={(e: any) => { e.stopPropagation(); onRent?.(publication); }}
+          >
+            Alquilar
+          </Button>
+        </HStack>
       </VStack>
     </Box>
   );

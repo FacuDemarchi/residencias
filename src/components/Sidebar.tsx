@@ -20,8 +20,11 @@ interface SidebarProps {
   onLocationSearch?: (location: { lat: number; lng: number; address: string }) => void;
   currentLocation?: { lat: number; lng: number; address: string } | null;
   onPublicationSelect?: (publicationId: string) => void;
+  onReserve?: (publication: Publication) => void;
+  onRent?: (publication: Publication) => void;
   publicacionSeleccionada?: Publication | null;
   grupoSeleccionado?: any[] | null;
+  onOpenMyRentals?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -31,8 +34,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   onLocationSearch, 
   currentLocation,
   onPublicationSelect,
+  onReserve,
+  onRent,
   publicacionSeleccionada,
-  grupoSeleccionado
+  grupoSeleccionado,
+  onOpenMyRentals
 }) => {
   // Función para manejar selección de publicación
   const handlePublicationSelect = (publication: Publication) => {
@@ -57,9 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             colorScheme="blue" 
             variant="outline" 
             size="sm"
-            onClick={() => console.log('Mis alquileres')}
+            onClick={onOpenMyRentals}
           >
-            Mis Alquileres ({myRentals.length})
+            Mis Reservas ({myRentals.length})
           </Button>
         )}
       </VStack>
@@ -72,6 +78,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 key={pub.id}
                 publication={pub}
                 onSelect={handlePublicationSelect}
+                onReserve={() => onReserve?.(pub)}
+                onRent={() => onRent?.(pub)}
                 isSelected={publicacionSeleccionada?.id === pub.id}
                 isInSelectedGroup={grupoSeleccionado?.some(loc => loc.id === pub.location_id)}
               />
